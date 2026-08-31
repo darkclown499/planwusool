@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
-import { BadgeCheck, ChevronLeft, Cpu, Gift, Headphones, Laptop, Package, PackageSearch, Plus, ShieldCheck, ShoppingCart, Smartphone, Truck, Watch, Zap } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, ChevronLeft, ChevronRight, Cpu, Gift, Headphones, Laptop, Menu, Package, PackageSearch, Play, Plus, Search, ShieldCheck, ShoppingCart, SlidersHorizontal, Smartphone, Truck, Watch, X, Zap } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
@@ -16,28 +16,63 @@ import {
 import { useHomepageSettings } from '../shared/CategorySections';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
-import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
+import { useResolvedHero } from '../shared/heroMedia';
+import type { HeroMediaItem } from '../shared/heroMedia';
+import { HubProductStage } from './ElectronicsOverlays';
 
 /* ===================================================================== */
-/* عالم التقنية — Electronics Hub                                         */
-/* A cool tech-dealer storefront: slate surfaces with electric-blue       */
-/* accents, spec-first product cards, deal-of-the-day countdown and a     */
-/* warranty/trust stack.                                                  */
+/* عالَم التِقنية — Electronics Hub V2 (presentation rebuilt from zero)   */
+/* ===================================================================== */
+/* Position one, light-cool surfaces, deep-navy ink, electric-blue used   */
+/* as a controlled accent only (CTA / active / focus / hero focal light). */
+/* The hero and the flash-deals band are the two "navy stage" moments that */
+/* give the store its premium tech identity; everything else stays light. */
 /* ===================================================================== */
 
 const ACCENT = '#2563eb';
+const INK = '#0a1220';       // deep navy text / stage
+const INK_SOFT = '#141d2f';  // slightly lifted stage surface
+const PAPER = '#f3f5f8';     // page cool-neutral
+const LINE = '#e6ebf1';      // hairline
+const GRAPHITE = '#5b6472';  // secondary text
+
+const EASE = 'cubic-bezier(0.22,1,0.36,1)';
+const DUR = { micro: 140, normal: 200, overlay: 300 };
+
+/* Reduced-motion aware reveal */
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setVisible(true); return; }
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.06 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+const revealStyle = (v: boolean): React.CSSProperties => ({
+  opacity: v ? 1 : 0,
+  transform: v ? 'none' : 'translateY(14px)',
+  transition: `opacity ${DUR.normal}ms ${EASE}, transform ${DUR.normal}ms ${EASE}`,
+});
+
+/* Category icon resolver — technical glyph, no invented imagery */
 const CATEGORY_ICONS: Array<{ test: RegExp; icon: React.ReactNode }> = [
-  { test: /جوال|هاتف|phone/i, icon: <Smartphone className="h-5 w-5" /> },
-  { test: /لابتوب|حاسوب|laptop|pc/i, icon: <Laptop className="h-5 w-5" /> },
-  { test: /سماعة|صوت|audio/i, icon: <Headphones className="h-5 w-5" /> },
+  { test: /جوال|هاتف|آيفون|phone|iphone/i, icon: <Smartphone className="h-5 w-5" /> },
+  { test: /لابتوب|حاسوب|كمبيوتر|laptop|pc|notebook/i, icon: <Laptop className="h-5 w-5" /> },
+  { test: /سماعة|صوت|إذن|أذن|audio|headphone|earbud/i, icon: <Headphones className="h-5 w-5" /> },
   { test: /ساعة|watch/i, icon: <Watch className="h-5 w-5" /> },
 ];
-
 function categoryIcon(name: string) {
-  return CATEGORY_ICONS.find((c) => c.test.test(name))?.icon ?? <Cpu className="h-5 w-5" />;
+  return CATEGORY_ICONS.find((c) => c.test.test(name || ''))?.icon ?? <Cpu className="h-5 w-5" />;
 }
 
-/* ------------------------------ Header ------------------------------ */
+/* ================================================================== */
+/*  HEADER — compact, app-like, search as a first-class feature        */
+/* ================================================================== */
 
 export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   const { config, store, cart, auth, ui, wishlist, product, content, order, behavior } = useStorefrontCore() as any;
@@ -45,239 +80,446 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
   const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const canShowAuth = accountsOn && (auth?.isLoggedIn || loginEnabled);
   const [q, setQ] = useState('');
-  const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
-  const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
+  const [focused, setFocused] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const showCategoriesBar = (store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false;
+  const count = (cart.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const categories = (product?.categories || []).slice(0, 8);
 
   const handleMyOrders = () => {
-    if (auth?.isLoggedIn) {
-      order?.loadUserOrders?.();
-      auth.setShowOrdersModal(true);
-    } else {
-      auth.setShowLoginModal(true);
-    }
+    if (auth?.isLoggedIn) { order?.loadUserOrders?.(); auth.setShowOrdersModal(true); }
+    else auth.setShowLoginModal(true);
   };
 
   const matches = useMemo(() => {
     const query = q.trim().toLowerCase();
     if (query.length < 2) return [];
-    return (product?.products || []).filter((p: any) => String(p.name || '').toLowerCase().includes(query)).slice(0, 7);
+    return (product?.products || []).filter((p: any) => String(p.name || '').toLowerCase().includes(query)).slice(0, 6);
   }, [q, product?.products]);
+  const select = (p: any) => { setQ(''); product.handleProductClick(p); };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#0b1220]/97 backdrop-blur" dir="rtl">
-      {/* Trust strip — truthful neutral claims, not hardcoded 24h guarantee */}
-      <div className="border-b border-slate-800/70 bg-[#0e1729]">
-        <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 py-1.5 text-[11px] font-semibold text-slate-400 sm:px-6 lg:px-8">
-          <span className="flex items-center gap-1 whitespace-nowrap"><ShieldCheck className="h-3.5 w-3.5 text-blue-400" /> منتجات مضمونة</span>
-          <span className="flex items-center gap-1 whitespace-nowrap"><Truck className="h-3.5 w-3.5 text-blue-400" /> توصيل سريع</span>
-          <span className="flex items-center gap-1 whitespace-nowrap"><BadgeCheck className="h-3.5 w-3.5 text-blue-400" /> أجهزة أصلية</span>
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md" dir="rtl">
+      {/* Trust strip — desktop only */}
+      <div className="hidden border-b border-[#eef1f5] bg-[#fafbfc] lg:block">
+        <div className="mx-auto flex max-w-7xl items-center justify-center gap-10 px-4 py-1.5 text-[11px] font-semibold text-[#5b6472] sm:px-6 lg:px-8">
+          <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-[#2563eb]" /> منتجات مضمونة</span>
+          <span className="flex items-center gap-1.5"><Truck className="h-3.5 w-3.5 text-[#2563eb]" /> توصيل سريع</span>
+          <span className="flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5 text-[#2563eb]" /> أجهزة أصلية</span>
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <a href={homeHref} className="flex shrink-0 items-center gap-2">
-          {(config?.logo || store?.logo) ? (
-            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto rounded bg-white object-contain p-0.5" />
+      {/* Main row */}
+      <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2 border-b border-[#eef1f5] px-3 py-2.5 sm:grid-cols-[auto_1fr_auto] sm:px-6 lg:grid-cols-[auto_minmax(0,520px)_1fr_auto] lg:px-8 sm:py-3">
+        {/* Hamburger / (desktop:) logo */}
+        <button type="button" onClick={() => setMobileNavOpen(!mobileNavOpen)} aria-label="القائمة"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-[#0a1220] transition-colors hover:bg-[#f0f3f7] lg:order-2 lg:h-11 lg:w-auto lg:gap-2 lg:px-0 lg:hover:bg-transparent">
+          <Menu className="h-6 w-6 lg:hidden" />
+          {((config?.logo || store?.logo)) ? (
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="hidden h-9 w-auto bg-white object-contain lg:block" />
           ) : (
-            <>
-              <span className="rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 p-1.5 text-white shadow-lg shadow-blue-500/25"><Zap className="h-5 w-5" /></span>
-              <span className="hidden font-bold text-lg text-slate-900 sm:block">{config?.storeName || store?.name}</span>
-            </>
+            <span className="hidden items-center gap-2 lg:flex">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
+              <span className="text-base font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+            </span>
           )}
-        </a>
+        </button>
 
-        {/* Search-first */}
-        <div className="relative min-w-0 flex-1">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث عن جهاز… آيفون، لابتوب، سماعات"
-            className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-          {matches.length > 0 && (
-            <ul className="absolute inset-x-0 top-full z-50 mt-1.5 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 py-1 shadow-2xl">
-              {matches.map((p: any) => (
-                <li key={p.id}>
-                  <button type="button" onClick={() => { setQ(''); product.handleProductClick(p); }}
-                    className="flex w-full items-center gap-3 px-3 py-2 text-start transition hover:bg-slate-800">
-                    <img src={getImageUrl(p.image || '')} alt="" className="h-9 w-9 rounded object-cover" loading="lazy" />
-                    <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-slate-200">{p.name}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+        {/* Centered logo (mobile) */}
+        <div className="flex justify-center lg:hidden">
+          {config?.logo || store?.logo ? (
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto bg-white object-contain" />
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4 w-4" /></span>
+              <span className="text-[15px] font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
+            </span>
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1">
-          <div className="hidden sm:block">
-            <HeaderLoyaltyBadge />
-          </div>
+        {/* Desktop inline search (middle column) */}
+        <div className="relative hidden lg:block">
+          <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
+        </div>
+
+        {/* Right cluster: actions + cart */}
+        <div className="flex items-center justify-end gap-1.5">
+          <div className="hidden xl:block"><HeaderLoyaltyBadge /></div>
           {canShowAuth && (
-          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-lg border border-white/20 bg-white/10 p-2 text-white transition-colors hover:bg-white/20 sm:block">
-            <Package className="h-5 w-5" strokeWidth={1.8} />
-          </button>
-          )}
-          {canShowAuth && (
-          <button
-            type="button"
-            onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))}
-            aria-label="حسابي"
-            className="hidden rounded-lg border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20 sm:block"
-          >
-            دخول
-          </button>
+            <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-lg p-2.5 text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#0a1220] sm:flex sm:items-center sm:justify-center">
+              <Package className="h-5 w-5" strokeWidth={1.8} />
+            </button>
           )}
           <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة"
-            className="relative flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-sm font-black text-white transition hover:bg-blue-500">
-            <ShoppingCart className="h-4 w-4" />
-            {count > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-black text-blue-700">{count}</span>
-            )}
+            className="flex h-11 items-center gap-1.5 rounded-xl bg-[#2563eb] px-3 text-sm font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+            style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+            <ShoppingCart className="h-5 w-5" />
+            <span className="hidden sm:inline">السلة</span>
+            {count > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-[#2563eb]">{count}</span>}
           </button>
         </div>
       </div>
 
-      {/* Category bar — hidden by default; enable via settings.show_categories_bar */}
+      {/* Mobile prominent search row — ROW2, app-like */}
+      <div className="border-b border-[#eef1f5] px-3 pb-3 lg:hidden">
+        <SearchField value={q} setValue={setQ} matches={matches} select={select} focused={focused} setFocused={setFocused} />
+      </div>
+
+      {/* Category bar (desktop) */}
       {showCategoriesBar && categories.length > 0 && (
-        <div className="border-t border-slate-800/60">
+        <div className="hidden border-b border-[#eef1f5] lg:block">
           <div className="scrollbar-none mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-4 py-1.5 sm:px-6 lg:px-8">
             {categories.map((c: any) => (
               <a key={c.id} href={`/category/${c.slug || c.id}`}
-                className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-bold text-slate-300 transition hover:bg-slate-800 hover:text-blue-300">
-                <span className="text-blue-400">{categoryIcon(c.name)}</span>
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-bold text-[#5b6472] transition-colors hover:bg-[#f0f3f7] hover:text-[#2563eb]">
+                <span className="text-[#2563eb]">{categoryIcon(c.name)}</span>
                 {c.name}
               </a>
             ))}
           </div>
         </div>
       )}
+
+      {/* Mobile nav drawer */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-[55] lg:hidden" style={{ animation: `hubFadeOverlay ${DUR.overlay}ms ${EASE} both` }}>
+          <div className="absolute inset-0 bg-[#0a1220]/50 backdrop-blur-sm" onClick={() => setMobileNavOpen(false)} />
+          <nav className="absolute inset-y-0 right-0 flex w-72 max-w-[82vw] flex-col bg-white shadow-2xl" style={{ animation: `hubSlideLeft ${DUR.overlay}ms ${EASE} both` }}>
+            <div className="flex items-center justify-between border-b border-[#eef1f5] px-4 py-4">
+              <span className="text-sm font-extrabold text-[#0a1220]">القائمة</span>
+              <button type="button" onClick={() => setMobileNavOpen(false)} aria-label="إغلاق القائمة" className="rounded-lg p-2 text-[#5b6472] hover:bg-[#f0f3f7]"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3">
+              {categories.map((c: any) => (
+                <a key={c.id} href={`/category/${c.slug || c.id}`}
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] transition-colors hover:bg-[#f4f6f9]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</span>
+                  {c.name}
+                </a>
+              ))}
+            </div>
+            {canShowAuth && (
+              <div className="border-t border-[#eef1f5] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+                <button type="button" onClick={() => { setMobileNavOpen(false); handleMyOrders(); }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] hover:bg-[#f4f6f9]">
+                  <Package className="h-5 w-5 text-[#8a93a2]" /> طلباتي
+                </button>
+                <button type="button" onClick={() => { setMobileNavOpen(false); (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true))); }}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-[#0a1220] hover:bg-[#f4f6f9]">
+                  حسابي
+                </button>
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
 
-/* ------------------------------- Hero — hero_banner-aware ------------------------------- */
+function SearchField({ value, setValue, matches, select, focused, setFocused }: any) {
+  return (
+    <div className="relative">
+      <div className={`flex h-11 items-center overflow-hidden rounded-xl border bg-[#f4f6f9] transition-all ${focused ? 'border-[#2563eb] bg-white ring-2 ring-[#2563eb]/20' : 'border-[#e3e9f0]'}`}>
+        <Search className="pointer-events-none ms-3 h-4 w-4 shrink-0 text-[#8a93a2]" />
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setTimeout(() => setFocused(false), 150)}
+          placeholder="ابحث عن جهاز… آيفون، لابتوب، سماعات"
+          className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-[#0a1220] placeholder:text-[#9aa3b0] focus:outline-none"
+        />
+      </div>
+      {matches.length > 0 && (
+        <ul className="absolute inset-x-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-xl border border-[#e6ebf1] bg-white py-1 shadow-lg shadow-[#0a1220]/8">
+          {matches.map((p: any) => (
+            <li key={p.id}>
+              <button type="button" onMouseDown={() => select(p)}
+                className="flex w-full items-center gap-3 px-3 py-2 text-start transition-colors hover:bg-[#f4f6f9]">
+                <img src={getImageUrl(p.image || '')} alt="" className="h-9 w-9 shrink-0 rounded-lg bg-[#f4f6f9] object-cover" loading="lazy" />
+                <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-[#0a1220]">{p.name}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
-export function HubHero({ banner }: { banner?: any }) {
+/* ================================================================== */
+/*  HERO — premium navy product-showcase stage                         */
+/* ================================================================== */
+
+function HubHero({ banner }: { banner?: any }) {
   const hero = useResolvedHero();
-  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
-  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
+  const heroCore = useStorefrontCore() as any;
   const hasBanner = !!(banner?.image || banner?.title || banner?.subtitle);
-  if (!hero.hasDynamicHero && !hasBanner) return null;
-  const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
-  const fitMobile = hero.fitMobile ? (hero.fitMobile==='contain'?'object-contain':'object-cover') : fitClass;
-  const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
-  const posMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
-  const hasMobileImg = hero.imagesMobile.length>0;
-  const desktopImg = hero.images[0] || banner?.image || '';
-  const mobileImg = hasMobileImg ? hero.imagesMobile[0] : desktopImg;
-  const effectiveDesktop = {
-    image: (hero.hasDynamicHero && desktopImg) || banner?.image || '',
+  const hasDynamic = hero.hasDynamicHero;
+
+  /* ---- Build the ordered showcase media sequence ------------------- */
+  const media = useMemo<HeroMediaItem[]>(() => {
+    const list = (hero as any).media;
+    if (Array.isArray(list) && list.length) return list as HeroMediaItem[];
+    const out: HeroMediaItem[] = [];
+    if (hero.images[0]) {
+      out.push({
+        id: 'img-0', type: 'image', src: hero.images[0], srcMobile: hero.imagesMobile[0] || null,
+        poster: null, position: hero.position || null, positionMobile: hero.positionMobile || null,
+      });
+    }
+    if (hero.videoUrl) {
+      out.push({
+        id: 'vid-0', type: 'video', src: hero.videoUrl as string, srcMobile: (hero as any).videoUrlMobile || null,
+        poster: out.length ? (out[0] as any).src : (hero.images[0] || ''), position: hero.position || null, positionMobile: hero.positionMobile || null,
+      } as any);
+    }
+    if (hero.youtubeId) {
+      out.push({ id: 'yt-0', type: 'youtube', src: hero.youtubeId as string, srcMobile: (hero as any).youtubeIdMobile || null, poster: null, position: null, positionMobile: null });
+    }
+    return out;
+  }, [hero]);
+
+  const [active, setActive] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    const apply = () => setIsMobile(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
+  const multi = media.length > 1;
+  const clamp = (i: number) => ((i % media.length) + media.length) % media.length;
+  const next = () => setActive((a) => clamp(a + 1));
+  const prev = () => setActive((a) => clamp(a - 1));
+
+  const eff = {
     title: hero.heading || banner?.title || '',
     subtitle: hero.subtitle || banner?.subtitle || '',
     button_text: hero.ctaLabel || banner?.button_text || '',
     button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
   };
-  const effectiveMobile = {
-    image: (hero.hasDynamicHero && mobileImg) || banner?.image || '',
-    title: hero.heading || banner?.title || '',
-    subtitle: hero.subtitle || banner?.subtitle || '',
-    button_text: hero.ctaLabel || banner?.button_text || '',
-    button_link: hero.ctaLink || banner?.button_link || '#hub-deals',
-  };
-  const electronicsPromise = (()=>{ try{ const c=(hero as any)?.storeContent ?? (useStorefrontCore() as any)?.content; const v=c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise; if(typeof v==='string'&&v.trim()) return v.trim(); }catch{} return 'أحدث الأجهزة بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.'; })();
-  const hasMobileVideo = !!hero.videoUrlMobile;
-  const hasMobileYoutube = !!hero.youtubeIdMobile;
-  const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
-  const h = HERO_HEIGHTS['electronics-hub'];
-  const hubDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
-  const hubMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
-  if (isVideo) {
+  const promise = (() => { try { const c = heroCore?.content; const v = c?.electronics_promise ?? c?.electronics?.promise ?? c?.electronicsPromise; if (typeof v === 'string' && v.trim()) return v.trim(); } catch {} return 'أحدث الأجهزة الذكية بأسعار منافسة، ضمان رسمي معتمد، وتوصيل سريع لباب بيتك.'; })();
+
+  const overlayOpacity = typeof hero.overlayOpacity === 'number' ? hero.overlayOpacity : 0;
+
+  /* ---- Shared stage chrome: subtle technical texture + accent light -- */
+  const stageChrome = (
+    <>
+      <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
+      <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#2563eb]/25 blur-[90px]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-l from-transparent via-[#2563eb] to-transparent" />
+    </>
+  );
+
+  if (!hasDynamic && !hasBanner) return null;
+
+  /* ---- NO MEDIA: compact premium navy text stage (never empty) ------ */
+  if (!media.length) {
     return (
-      <section className="hub-hero hero-clamped relative overflow-hidden bg-black" dir="rtl" style={hasCustomHeight && hubDesktopH ? { height: hubDesktopH } as any : { height: hubDesktopH } as any}>
-        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .hub-hero{ height:${hubDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } }`}</style>}
-        {/* Desktop video */}
-        <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitClass} ${hasMobileVideo?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} poster={effectiveDesktop.image ? getHeroImageUrl(effectiveDesktop.image) : undefined} />
-        {/* Mobile video */}
-        {hasMobileVideo && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full opacity-60 ${fitMobile} block md:hidden`} style={posMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} poster={effectiveMobile.image ? getHeroImageUrl(effectiveMobile.image) : undefined} />}
-        <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
-        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
-          <div>
-            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effectiveDesktop.subtitle}</p>
-            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effectiveDesktop.title}</h1>
-            <p className="mt-3 max-w-md leading-relaxed text-slate-300">{electronicsPromise}</p>
-            <a href={effectiveDesktop.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effectiveDesktop.button_text}</a>
+      <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
+        <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+          <div className="relative overflow-hidden rounded-2xl bg-[#0a1220] text-white sm:rounded-3xl">
+            {stageChrome}
+            <div className="relative flex min-h-[240px] flex-col items-start justify-center gap-3 p-5 sm:min-h-[300px] sm:p-10 lg:p-12">
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold tracking-wide text-[#8ec5ff]">
+                <SlidersHorizontal className="h-3.5 w-3.5" /> عالَم التِقنية
+              </span>
+              <h1 className="max-w-xl text-2xl font-extrabold leading-tight text-white sm:text-3xl lg:text-4xl">{eff.title || 'أحدث الأجهزة الذكية'}</h1>
+              <p className="max-w-md text-sm leading-relaxed text-slate-300 sm:text-base">{promise}</p>
+              <a href={eff.button_link}
+                className="mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+                style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+                {eff.button_text || 'تسوّق الأجهزة'} <ArrowLeft className="h-4 w-4" />
+              </a>
+            </div>
           </div>
         </div>
       </section>
     );
   }
-  if (isYoutube) {
-    const ytDesktop = hero.youtubeId!;
-    const ytMobile = hero.youtubeIdMobile || ytDesktop;
-    return (
-      <section className="hub-hero hero-clamped relative overflow-hidden bg-black" dir="rtl" style={hasCustomHeight && hubDesktopH ? { height: hubDesktopH } as any : { height: hubDesktopH } as any}>
-        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .hub-hero{ height:${hubDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .hub-hero{ height:${hubMobileH} !important; } }`}</style>}
-        <div className={`absolute inset-0 w-full h-full opacity-60 ${hasMobileYoutube?'hidden md:block':'block'}`}>
-          <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube desktop" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-        </div>
-        {hasMobileYoutube && (
-          <div className="absolute inset-0 w-full h-full opacity-60 block md:hidden">
-            <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+
+  const item = media[active];
+
+  /* ---- Touch swipe handlers (mobile) -------------------------------- */
+  const touchStartX = useRef(0);
+  const onTouchStart = (e: any) => { if (multi) touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e: any) => {
+    if (!multi) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 48) { if (dx > 0) prev(); else next(); }
+  };
+
+  const progressDots = (onDark: boolean) => (
+    <div className="flex items-center gap-1.5">
+      {media.map((m, i) => (
+        <button key={m.id} type="button" onClick={() => setActive(i)} aria-label={`إظهار الوسائط ${i + 1}`}
+          className={`h-1.5 rounded-full transition-all ${onDark ? 'bg-white' : 'bg-[#0a1220]'} ${i === active ? (onDark ? 'bg-[#2563eb]' : 'bg-[#2563eb]') : 'opacity-30'}`}
+          style={{ width: i === active ? 22 : 6, transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }} />
+      ))}
+    </div>
+  );
+
+  const railThumb = (m: HeroMediaItem) => (
+    <button type="button" onClick={() => setActive(media.indexOf(m))} aria-label={`وسائط ${media.indexOf(m) + 1}`}
+      className={`group relative block aspect-[4/3] w-full overflow-hidden rounded-lg transition-all ${m.id === item.id ? 'ring-2 ring-[#2563eb] ring-offset-2 ring-offset-[#0a1220]/80' : 'opacity-70 hover:opacity-100'}`}
+      style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+      <ThumbVisual m={m} />
+      {m.type !== 'image' && (
+        <span className="absolute inset-0 flex items-center justify-center"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0a1220]/70 text-white"><Play className="h-3 w-3 fill-current" /></span></span>
+      )}
+    </button>
+  );
+
+  const chevron = (dir: 'prev' | 'next', onDark: boolean) => (
+    <button type="button" onClick={dir === 'prev' ? prev : next} aria-label={dir === 'prev' ? 'السابق' : 'التالي'}
+      className={`pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border transition-all backdrop-blur-sm ${onDark ? 'border-white/15 bg-white/10 text-white hover:bg-white/20' : 'border-[#0a1220]/10 bg-white text-[#0a1220] hover:bg-[#f3f5f8]'} shadow-lg`}
+      style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+      {dir === 'prev' ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+    </button>
+  );
+
+  /* ---- SHOWCASE HERO (media present) -------------------------------- */
+  return (
+    <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
+      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+        {isMobile ? (
+          /* ====================== MOBILE / TABLET (<1024) ====================== */
+          <div className="overflow-hidden rounded-2xl bg-[#0a1220] text-white">
+            {/* Main media + text overlay */}
+            <div className="relative h-[260px] overflow-hidden"
+              onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              <ShowcaseMedia key={item.id} item={item} isMobile fit={hero.fit} />
+              {/* RTL-correct bottom gradient for text readability */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a1220]/85 via-[#0a1220]/25 to-transparent" style={{ opacity: 0.92 + overlayOpacity * 0.08 }} />
+              {multi && (
+                <>
+                  <div className="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2">{chevron('prev', true)}</div>
+                  <div className="pointer-events-auto absolute left-2 top-1/2 -translate-y-1/2">{chevron('next', true)}</div>
+                </>
+              )}
+              {/* Text overlay bottom */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 p-5">
+                {eff.subtitle && <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold text-[#8ec5ff]">{eff.subtitle}</span>}
+                <h1 className="max-w-md text-xl font-extrabold leading-tight sm:text-2xl">{eff.title || 'أحدث الأجهزة الذكية'}</h1>
+                <p className="max-w-sm text-xs leading-relaxed text-slate-300 sm:text-sm">{promise}</p>
+                <a href={eff.button_link}
+                  className="pointer-events-auto mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+                  style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+                  {eff.button_text || 'تسوّق الأجهزة'} <ArrowLeft className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
+            {/* Dots strip (only when multi) */}
+            {multi && (
+              <div className="flex items-center justify-center gap-1.5 border-t border-white/10 py-3">{progressDots(true)}</div>
+            )}
+          </div>
+        ) : (
+          /* ====================== DESKTOP (>=1024) ====================== */
+          <div className="relative overflow-hidden rounded-2xl bg-[#0a1220] text-white sm:rounded-3xl">
+            {stageChrome}
+            <div className="relative h-[420px] lg:h-[460px]" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              {/* MAIN ACTIVE MEDIA — fills the whole hero surface (immersive) */}
+              <ShowcaseMedia key={item.id} item={item} isMobile={false} fit={hero.fit} />
+              {/* RTL directional scrim on the text side (right) */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-l from-[#0a1220]/80 via-[#0a1220]/30 to-transparent" style={{ opacity: 0.9 + overlayOpacity * 0.1 }} />
+              {/* Text block — start (right) side, vertically centered */}
+              <div className="pointer-events-none absolute inset-y-0 right-8 z-10 flex max-w-md flex-col justify-center gap-3 lg:right-12">
+                {eff.subtitle && <span className="inline-flex w-fit items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold text-[#8ec5ff]">{eff.subtitle}</span>}
+                <h1 className="text-2xl font-extrabold leading-tight lg:text-4xl">{eff.title || 'أحدث الأجهزة الذكية'}</h1>
+                <p className="text-sm leading-relaxed text-slate-300 lg:text-base">{promise}</p>
+                <a href={eff.button_link}
+                  className="pointer-events-auto mt-1 inline-flex w-fit items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-[#2563eb]/30 transition-all hover:bg-[#1d4ed8] active:scale-[0.97]"
+                  style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+                  {eff.button_text || 'تسوّق الأجهزة'} <ArrowLeft className="h-4 w-4" />
+                </a>
+              </div>
+              {multi && (
+                <>
+                  <div className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2">{chevron('prev', true)}</div>
+                  <div className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2">{chevron('next', true)}</div>
+                  <div className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2">{progressDots(true)}</div>
+                </>
+              )}
+              {/* COMPACT INTEGRATED RAIL — floats on the media edge (left in RTL),
+                  a navigator overlay, not a sidebar */}
+              {multi && (
+                <div className="absolute left-3 top-1/2 z-20 hidden w-[76px] -translate-y-1/2 flex-col gap-2 rounded-2xl bg-[#0a1220]/55 p-1.5 backdrop-blur-sm lg:flex">
+                  {media.map((m, i) => (
+                    <div key={m.id} className="flex-none">{railThumb(m)}</div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-l from-[#0b1220]/90 via-[#12203d]/60 to-transparent" />
-        <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.6 }} />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
-          <div>
-            <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effectiveDesktop.subtitle}</p>
-            <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effectiveDesktop.title}</h1>
-            <p className="mt-3 max-w-md leading-relaxed text-slate-300">{electronicsPromise}</p>
-            <a href={effectiveDesktop.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effectiveDesktop.button_text}</a>
-          </div>
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-l from-[#0b1220] via-[#12203d] to-[#0b1220]" dir="rtl">
-      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 right-10 h-72 w-72 rounded-full bg-cyan-400/15 blur-3xl" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-6 px-4 py-12 sm:grid-cols-2 sm:px-6 sm:py-16 lg:px-8">
-        <div>
-          <p className="mb-2 inline-block rounded-md bg-blue-500/15 px-2.5 py-1 text-xs font-black tracking-wide text-blue-300 ring-1 ring-blue-500/30">{effectiveDesktop.subtitle}</p>
-          <h1 className="text-3xl font-black leading-snug text-white sm:text-5xl">{effectiveDesktop.title}</h1>
-          <p className="mt-3 max-w-md leading-relaxed text-slate-400">{electronicsPromise}</p>
-          <a href={effectiveDesktop.button_link} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-xl shadow-blue-600/25 transition hover:bg-blue-500"><Zap className="h-4 w-4" /> {effectiveDesktop.button_text}</a>
-        </div>
-        {/* Desktop image */}
-        <div className={`relative hidden justify-self-end sm:block ${hasMobileImg?'hidden sm:block':'block'}`}>
-          {effectiveDesktop.image && <img src={getOptimizedImageUrl(effectiveDesktop.image, 'medium')} alt="" className={`max-h-64 rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40 w-full object-cover ${fitClass}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="(min-width:768px) 50vw, 100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effectiveDesktop.image))}} width={800} height={400} />}
-          {hero.hasDynamicHero && effectiveDesktop.image && <div className="pointer-events-none absolute inset-0 rounded-2xl bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
-        </div>
-        {/* Mobile image — aspect 4:5 when vertical asset exists, fallback to desktop */}
-        {hasMobileImg ? (
-          <div className="relative block sm:hidden w-full overflow-hidden rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" style={{ aspectRatio: '4/5' }}>
-            <img src={getOptimizedImageUrl(effectiveMobile.image, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitMobile}`} style={posMobile} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effectiveMobile.image))}} width={1080} height={1350} />
-            {hero.hasDynamicHero && <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
-          </div>
-        ) : effectiveDesktop.image ? (
-          <div className="relative block sm:hidden w-full overflow-hidden rounded-2xl border border-slate-700/60 shadow-2xl shadow-blue-900/40" style={{ aspectRatio: '4/5' }}>
-            <img src={getOptimizedImageUrl(effectiveDesktop.image, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(effectiveDesktop.image))}} width={1080} height={1350} />
-            {hero.hasDynamicHero && <div className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity * 0.5 }} />}
-          </div>
-        ) : null}
       </div>
     </section>
   );
 }
 
-/* --------------------------- Product card --------------------------- */
+/* ---- Active media renderer: image / video / youtube (only the active
+       item is mounted, so switching unmounts & stops any playback) ---- */
+function ShowcaseMedia({ item, isMobile, fit }: { item: HeroMediaItem; isMobile: boolean; fit?: string }) {
+  const src = isMobile ? (item.srcMobile || item.src) : item.src;
+  const pos = isMobile ? (item.positionMobile || item.position) : item.position;
+  const posStyle: any = pos && pos !== 'center' ? { objectPosition: pos } : {};
+  const fitClass = (item.type === 'image' && fit === 'contain') ? 'object-contain' : 'object-cover';
+
+  if (item.type === 'video') {
+    return (
+      <video autoPlay loop muted playsInline
+        src={getImageUrl(src)} poster={item.poster ? getImageUrl(item.poster) : undefined}
+        className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle} />
+    );
+  }
+  if (item.type === 'youtube') {
+    return (
+      <iframe className="absolute inset-0 h-full w-full"
+        src={`https://www.youtube.com/embed/${src}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${src}&modestbranding=1&rel=0`}
+        title="YouTube hero" frameBorder="0" allow="autoplay; fullscreen; encrypted-media" allowFullScreen />
+    );
+  }
+  return (
+    <img src={getImageUrl(src)} alt=""
+      className={`absolute inset-0 h-full w-full ${fitClass}`} style={posStyle}
+      loading="eager" decoding="async"
+      onError={(e) => { (e.currentTarget.src = getOptimizedImageUrl(src, 'medium')); }} />
+  );
+}
+
+/* ---- Gallery thumbnail visual: real poster / yt thumb / source image -- */
+function ThumbVisual({ m }: { m: HeroMediaItem }) {
+  const [failed, setFailed] = useState(false);
+  let src = '';
+  if (m.type === 'image') src = m.src;
+  else if (m.type === 'video') src = m.poster || '';
+  else src = m.poster || `https://i.ytimg.com/vi/${m.src}/hqdefault.jpg`;
+
+  if (failed || !src) {
+    return (
+      <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/80">
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-[#8ec5ff]"><Play className="h-4 w-4 fill-current" /></span>
+      </span>
+    );
+  }
+  return (
+    <img src={getImageUrl(src)} alt="" loading="lazy" decoding="async"
+      className="absolute inset-0 h-full w-full object-cover"
+      onError={() => setFailed(true)} />
+  );
+}
+
+/* ================================================================== */
+/*  PRODUCT CARD — image-first technical tile                          */
+/* ================================================================== */
 
 export function HubCard({ product }: { product: V2Product }) {
-  const { cart, product: productCtx, wishlist, ui } = useStorefrontCore();
+  const { cart, product: productCtx, wishlist } = useStorefrontCore();
   const formatPrice = usePriceFormatter();
   const discount = discountPercent(product);
   const out = product.availability === 'out_of_stock';
@@ -285,65 +527,71 @@ export function HubCard({ product }: { product: V2Product }) {
   const variable = isVariableProduct(product);
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
 
-  // Spec teaser: the first meaningful description line.
   const specLine = useMemo(() => {
     const line = String(product.description || '').split('\n').map((s) => s.trim()).find(Boolean);
-    return line ? line.slice(0, 64) : '';
+    return line ? line.slice(0, 60) : '';
   }, [product.description]);
 
   const add = async () => {
     if (variable) return productCtx.handleProductClick(product);
     await cart.addToCart(product as any);
   };
+  const open = () => productCtx.handleProductClick(product);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-[#101a2e] transition-all hover:-translate-y-0.5 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-950/50" dir="rtl">
-      <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-square w-full overflow-hidden bg-[#0b1220]" aria-label={product.name}>
-        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" width={400} height={400} />
-        {discount > 0 && !out && (
-          <span className="absolute top-2.5 right-2.5 rounded-md bg-red-600 px-1.5 py-0.5 text-[11px] font-black text-white">-{discount}%</span>
-        )}
-        {!!remaining && !out && (
-          <span className="absolute bottom-2.5 right-2.5 rounded-md bg-amber-500/95 px-1.5 py-0.5 text-[10px] font-black text-slate-900">آخر {remaining} قطع</span>
-        )}
-        {out && <span className="absolute inset-0 flex items-center justify-center bg-slate-950/70 text-sm font-black text-slate-400">غير متوفر</span>}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); wishlist.toggle(product.id); }}
-          aria-label="مقارنة/مفضلة"
-          className={`absolute top-2.5 left-2.5 rounded-lg p-1.5 backdrop-blur transition ${wished ? 'bg-blue-600 text-white' : 'bg-slate-900/70 text-slate-300'}`}
-        >
-          ♥
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#e8edf3] bg-white transition-all hover:-translate-y-0.5 hover:border-[#c9d4e3] hover:shadow-[0_10px_30px_-12px_rgba(10,18,32,0.18)]"
+      dir="rtl"
+      style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+      {/* Media */}
+      <div className="relative">
+        <button type="button" onClick={open} className="relative block aspect-square w-full overflow-hidden bg-[#f6f8fa]" aria-label={product.name}>
+          <HubProductStage src={product.image} alt={product.name} className="aspect-square transition-transform duration-300 group-hover:scale-[1.04]" fit="cover" />
+          {discount > 0 && !out && (
+            <span className="absolute right-2 top-2 rounded-md bg-[#e11d48] px-1.5 py-0.5 text-[11px] font-extrabold text-white shadow-sm">-{discount}%</span>
+          )}
+          {!!remaining && !out && (
+            <span className="absolute bottom-2 right-2 rounded-md bg-[#d97706] px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm">آخر {remaining} قطع</span>
+          )}
+          {out && <span className="absolute inset-0 flex items-center justify-center bg-[#0a1220]/55 text-sm font-bold text-white">غير متوفر</span>}
         </button>
-      </button>
+        <button type="button"
+          onClick={(e) => { e.stopPropagation(); wishlist.toggle(product.id); }}
+          aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+          className={`absolute left-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition-all ${
+            wished ? 'border-[#2563eb] bg-[#2563eb] text-white' : 'border-[#e3e8ee] bg-white/95 text-[#5b6472] hover:border-[#2563eb] hover:text-[#2563eb]'
+          }`}
+          style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+          <svg className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        </button>
+        {!out && !remaining && (
+          <span className="absolute bottom-2 left-2 z-10 hidden rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-bold text-[#059669] shadow-sm ring-1 ring-[#059669]/20 sm:block">متوفر</span>
+        )}
+      </div>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-3.5">
-        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-11 text-start text-[13.5px] font-bold leading-snug text-slate-100 hover:text-blue-300">
+      {/* Info */}
+      <div className="flex flex-1 flex-col gap-1 p-3 pt-2.5 sm:p-3.5 sm:pt-3">
+        <button type="button" onClick={open} className="line-clamp-2 min-h-[2.4rem] text-start text-[13px] font-bold leading-snug text-[#0a1220] transition-colors hover:text-[#2563eb]" style={{ transitionDuration: `${DUR.micro}ms` }}>
           {product.name}
         </button>
-        {specLine && (
-          <p className="line-clamp-1 min-h-4 text-[11px] text-slate-500" title={specLine}>{specLine}</p>
-        )}
-        <p className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-          <ShieldCheck className="h-3 w-3" /> ضمان سنة • أصلي
-        </p>
+        {specLine && <p className="line-clamp-1 text-[11px] font-medium text-[#8a93a2]">{specLine}</p>}
         {(() => {
           const ls = getLoyaltySettingsFromPage();
           if (!ls?.is_enabled) return null;
           const pts = calcEarnedPoints(Number(product.price) || 0, ls);
-          return pts > 0 ? <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-500"><Gift className="h-3 w-3" /> كسب {pts} نقطة</span> : null;
+          return pts > 0 ? <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#b45309]"><Gift className="h-3 w-3" /> +{pts} نقطة</span> : null;
         })()}
-        <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-1.5">
           <div className="leading-tight">
-            <p className="text-lg font-black text-white">{formatPrice(product.price)}</p>
+            <p className="text-[15px] font-extrabold tabular-nums text-[#0a1220] sm:text-lg">{formatPrice(product.price)}</p>
             {discount > 0 && !!product.originalPrice && (
-              <p className="text-xs text-slate-500 line-through">{formatPrice(product.originalPrice)}</p>
+              <p className="text-[11px] font-semibold text-[#8a93a2] line-through">{formatPrice(product.originalPrice)}</p>
             )}
           </div>
           {!out && (
             <button type="button" onClick={add} aria-label="أضف للسلة"
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-950/50 transition hover:bg-blue-500 active:scale-90">
-              <Plus className="h-4 w-4" strokeWidth={2.8} />
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0a1220] text-white shadow-md transition-all hover:bg-[#2563eb] active:scale-90"
+              style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
+              <Plus className="h-5 w-5" strokeWidth={2.6} />
             </button>
           )}
         </div>
@@ -352,9 +600,66 @@ export function HubCard({ product }: { product: V2Product }) {
   );
 }
 
-/* --------------------------- Deals section --------------------------- */
+/* ================================================================== */
+/*  CATEGORIES — electronics discovery rail / grid                     */
+/* ================================================================== */
 
-export function HubDealOfTheDay({ products }: { products: V2Product[] }) {
+function HubCategoryRail({ categories }: { categories: any[] }) {
+  if (!categories.length) return null;
+
+  /* Single category — full-width discovery card, never a lonely tile */
+  if (categories.length === 1) {
+    const c = categories[0];
+    return (
+      <a href={`/category/${c.slug || c.id}`}
+        className="group flex items-center gap-4 overflow-hidden rounded-2xl border border-[#e8edf3] bg-white p-4 shadow-sm transition-all hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.99]"
+        style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#eef2f8] text-[#2563eb]">{categoryIcon(c.name)}</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-extrabold text-[#0a1220]">{c.name}</p>
+          <p className="mt-0.5 text-xs font-medium text-[#8a93a2]">تصفح جميع أجهزة وإكسسوارات هذا القسم</p>
+        </div>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e3e8ee] text-[#2563eb] transition-colors group-hover:border-[#2563eb] group-hover:bg-[#2563eb] group-hover:text-white">←</span>
+      </a>
+    );
+  }
+
+  /* 2–4 categories — generous tiles */
+  if (categories.length <= 4) {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {categories.map((c: any) => (
+          <a key={c.id} href={`/category/${c.slug || c.id}`}
+            className="group flex items-center gap-3 rounded-2xl border border-[#e8edf3] bg-white p-3.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.98]"
+            style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#2563eb] transition-colors group-hover:bg-[#0a1220] group-hover:text-white">{categoryIcon(c.name)}</span>
+            <span className="line-clamp-2 text-[13px] font-bold text-[#0a1220]">{c.name}</span>
+          </a>
+        ))}
+      </div>
+    );
+  }
+
+  /* Many — horizontal touch rail (mobile) → grid (desktop) */
+  return (
+    <div className="scrollbar-none -mx-3 flex gap-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 lg:grid-cols-5 xl:grid-cols-6">
+      {categories.map((c: any) => (
+        <a key={c.id} href={`/category/${c.slug || c.id}`}
+          className="group flex min-w-[104px] max-w-[120px] shrink-0 snap-start flex-col items-center gap-2 rounded-2xl border border-[#e8edf3] bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#2563eb]/40 hover:shadow-md active:scale-[0.98] sm:min-w-0 sm:max-w-none sm:p-4"
+          style={{ transitionDuration: `${DUR.normal}ms`, transitionTimingFunction: EASE }}>
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#2563eb] transition-colors group-hover:bg-[#0a1220] group-hover:text-white">{categoryIcon(c.name)}</span>
+          <span className="line-clamp-2 max-w-[80px] text-center text-xs font-bold leading-tight text-[#0a1220] sm:max-w-[100px] sm:text-[13px]">{c.name}</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  FLASH DEALS — integrated navy promo band                          */
+/* ================================================================== */
+
+function HubDealOfTheDay({ products }: { products: V2Product[] }) {
   const deadline = useMemo(() => new Date(Date.now() + 26 * 3600_000), []);
   const cd = useCountdown(deadline);
   const deals = useMemo(
@@ -363,29 +668,43 @@ export function HubDealOfTheDay({ products }: { products: V2Product[] }) {
   );
   if (!deals.length || !cd) return null;
 
+  const reveal = useReveal();
+  const units = [
+    { v: String(cd.hours).padStart(2, '0'), l: 'ساعة' },
+    { v: String(cd.minutes).padStart(2, '0'), l: 'دقيقة' },
+    { v: String(cd.seconds).padStart(2, '0'), l: 'ثانية' },
+  ];
+
   return (
-    <section id="hub-deals" className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8" dir="rtl">
-      <div className="rounded-3xl border border-blue-900/50 bg-gradient-to-l from-[#0e1a33] to-[#101a2e] p-5 sm:p-7">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <span className="rounded-lg bg-red-600 px-2.5 py-1 text-sm">⚡ صفقات النهار</span>
+    <section id="hub-deals" ref={reveal.ref} className="mx-auto mt-6 max-w-7xl px-3 sm:px-6 lg:px-8" dir="rtl" style={revealStyle(reveal.visible)}>
+      <div className="relative overflow-hidden rounded-2xl border border-[#1c2740] bg-[#0a1220] p-3.5 sm:p-5 lg:p-6">
+        {/* band texture */}
+        <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+
+        <div className="relative mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
+          <h2 className="flex items-center gap-2 text-base font-extrabold text-white sm:text-xl">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2563eb] text-white"><Zap className="h-4 w-4" /></span>
+            عروض اليوم
           </h2>
-          <div className="flex items-center gap-1.5 font-black text-white" dir="ltr">
-            {[
-              { v: String(cd.hours).padStart(2, '0'), l: 'H' },
-              { v: String(cd.minutes).padStart(2, '0'), l: 'M' },
-              { v: String(cd.seconds).padStart(2, '0'), l: 'S' },
-            ].map(({ v, l }) => (
-              <span key={l} className="flex flex-col items-center">
-                <span className="min-w-11 rounded-lg bg-slate-800 px-2 py-1.5 text-center text-lg tabular-nums ring-1 ring-slate-700">{v}</span>
-                <span className="mt-0.5 text-[9px] font-bold text-slate-500">{l}</span>
-              </span>
+          <div className="flex items-center gap-1.5" dir="ltr">
+            {units.map((u, i) => (
+              <React.Fragment key={u.l}>
+                {i > 0 && <span className="text-white/20">:</span>}
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-sm tabular-nums text-white">
+                  <span className="font-extrabold">{u.v}</span>
+                  <span className="ms-1 text-[9px] font-bold text-[#8ec5ff]">{u.l}</span>
+                </span>
+              </React.Fragment>
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+
+        {/* Mobile horizontal rail / desktop grid */}
+        <div className="relative flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 sm:grid sm:grid-cols-2 sm:overflow-visible md:grid-cols-4">
           {deals.slice(0, 4).map((p) => (
-            <HubCard key={p.id} product={p} />
+            <div key={p.id} className="min-w-[150px] shrink-0 snap-start sm:min-w-0">
+              <HubCard product={p} />
+            </div>
           ))}
         </div>
       </div>
@@ -393,10 +712,9 @@ export function HubDealOfTheDay({ products }: { products: V2Product[] }) {
   );
 }
 
-/* ------------------------------ Footer ------------------------------ */
-// HubFooter removed — footer hidden across all theme families.
-
-/* ================================ ROOT ================================ */
+/* ================================================================== */
+/*  ROOT                                                               */
+/* ================================================================== */
 
 const SORTS = ['newest', 'price_asc', 'price_desc', 'name'];
 const SORT_LABELS: Record<string, string> = { newest: 'الأحدث', price_asc: 'الأرخص', price_desc: 'الأغلى', name: 'أبجدياً' };
@@ -405,11 +723,11 @@ export const ElectronicsHubRoot: React.FC<TemplateRootProps> = ({ storeData, mod
   if (mode === 'category') return <HubCategoryMode categoryData={categoryData} />;
   if (mode === 'page') {
     return (
-      <div dir="rtl" className="min-h-screen bg-[#0b1220] pb-16 md:pb-0">
+      <div dir="rtl" className="min-h-screen bg-[#f3f5f8] pb-16 md:pb-0">
         <HubHeader />
-        <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6 [&_a]:!text-blue-300 [&_h1]:!text-white [&_p]:!text-slate-300 [&_strong]:!text-white">
-          <h1 className="mb-6 border-b border-slate-800 pb-3 text-2xl font-black text-white">{page?.title}</h1>
-          <article dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
+        <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
+          <h1 className="mb-6 border-b border-[#e8edf3] pb-3 text-2xl font-extrabold text-[#0a1220]">{page?.title}</h1>
+          <article className="text-[#5b6472] [&_a]:!text-[#2563eb] [&_h1]:!text-[#0a1220] [&_h2]:!text-[#0a1220] [&_h3]:!text-[#0a1220] [&_p]:!text-[#5b6472] [&_strong]:!text-[#0a1220]" dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
         </main>
       </div>
     );
@@ -427,6 +745,10 @@ const sortList = (list: any[], sort?: string) => {
   }
 };
 
+/* ================================================================== */
+/*  HOME                                                               */
+/* ================================================================== */
+
 const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const { product } = useStorefrontCore();
   const products: any[] = product?.products || storeData?.products || [];
@@ -434,69 +756,42 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const banners: any[] = storeData?.content?.banners || [];
 
   const { showLatest, homepageCategories, productsPerCategory } = useHomepageSettings(storeData);
-
   const newest = useMemo(() => [...products].reverse().slice(0, 12), [products]);
-  const brands = useMemo(() => {
-    // Unique first tokens of product names — a light-weight brand rail.
-    const seen = new Set<string>();
-    for (const p of products) {
-      const token = String(p.name || '').split(' ')[0];
-      if (token && token.length > 1) seen.add(token);
-      if (seen.size >= 10) break;
-    }
-    return Array.from(seen);
-  }, [products]);
+
+  const catReveal = useReveal();
+  const latestReveal = useReveal();
+  const catSectionsReveal = useReveal();
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0b1220] text-slate-200 antialiased selection:bg-blue-600 selection:text-white">
+    <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased selection:bg-[#2563eb] selection:text-white">
       <HubHeader />
-      <main className="pb-16">
+      <main className="pb-16 md:pb-0">
         <HubHero banner={banners[0]} />
 
-        {/* Brand rail — merchant editable via electronics_brands_heading */}
-        {brands.length > 1 && (() => {
-          let headingLabel = 'الماركات';
-          try {
-            const c = (storeData as any)?.content ?? {};
-            const v = c.electronics_brands_heading ?? c.electronics?.brands_heading;
-            if (typeof v === 'string' && v.trim()) headingLabel = v.trim();
-          } catch {}
-          return (
-          <section className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-black text-slate-500">{headingLabel}</span>
-              {brands.map((b) => (
-                <span key={b} className="rounded-full border border-slate-700 bg-slate-900 px-3.5 py-1 text-xs font-bold text-slate-300">{b}</span>
-              ))}
-            </div>
-          </section>
-          );
-        })()}
-
-        <HubDealOfTheDay products={products} />
-
-        {/* Category tiles */}
+        {/* Categories */}
         {categories.length > 0 && (
-          <section className="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-4 text-xl font-black text-white">تسوّق حسب القسم</h2>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-              {categories.slice(0, 12).map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-1.5 rounded-2xl border border-slate-800 bg-[#101a2e] p-2.5 transition hover:border-blue-500/50 hover:bg-[#12203d] sm:gap-2 sm:p-4">
-                  <span className="text-blue-400">{categoryIcon(c.name)}</span>
-                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-slate-300 group-hover:text-blue-300 line-clamp-2">{c.name}</span>
-                </a>
-              ))}
+          <section ref={catReveal.ref} className="mx-auto mt-4 max-w-7xl px-3 sm:px-6 lg:px-8" style={revealStyle(catReveal.visible)}>
+            <div className="mb-3 flex items-center gap-2">
+              <span className="h-4 w-1 rounded-full bg-[#2563eb]" />
+              <h2 className="text-base font-extrabold text-[#0a1220] sm:text-lg">تسوّق حسب القسم</h2>
             </div>
+            <HubCategoryRail categories={categories} />
           </section>
         )}
 
-        {/* Newest arrivals — toggle show_latest_products */}
+        <HubDealOfTheDay products={products} />
+
+        {/* Latest products */}
         {showLatest && (
-          <section className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-black text-white">
-              وصل حديثاً <span className="rounded bg-blue-600/20 px-2 py-0.5 text-xs text-blue-300">NEW</span>
-            </h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+          <section ref={latestReveal.ref} className="mx-auto mt-8 max-w-7xl px-3 sm:px-6 lg:px-8" style={revealStyle(latestReveal.visible)}>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="h-4 w-1 rounded-full bg-[#2563eb]" />
+                <h2 className="text-base font-extrabold text-[#0a1220] sm:text-lg">وصل حديثاً</h2>
+                <span className="rounded-md bg-[#2563eb]/10 px-2 py-0.5 text-[11px] font-extrabold text-[#2563eb]">NEW</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 xl:grid-cols-5">
               {newest.map((p) => (
                 <HubCard key={p.id} product={p} />
               ))}
@@ -504,22 +799,24 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
           </section>
         )}
 
-        {/* Best sellers block hidden for electronics — still respects show_best_sellers */}
         {/* Dynamic category sections */}
         {homepageCategories.length > 0 && (
-          <div className="space-y-12 pt-12">
+          <div ref={catSectionsReveal.ref} className="mt-8 space-y-8 sm:mt-12 sm:space-y-12" style={revealStyle(catSectionsReveal.visible)}>
             {homepageCategories.map((catId: string) => {
               const cat = categories.find((c: any) => String(c.id) === String(catId));
               if (!cat) return null;
               const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
               if (!catProducts.length) return null;
               return (
-                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="flex items-center gap-2 text-xl font-black text-white">{cat.name}</h2>
-                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-blue-300 hover:text-white">عرض الكل ←</a>
+                <section key={cat.id} className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-4 w-1 rounded-full bg-[#2563eb]" />
+                      <h2 className="text-base font-extrabold text-[#0a1220] sm:text-lg">{cat.name}</h2>
+                    </div>
+                    <a href={`/category/${cat.slug || cat.id}`} className="text-sm font-bold text-[#2563eb] transition-colors hover:text-[#1d4ed8]">عرض الكل ←</a>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 xl:grid-cols-5">
                     {catProducts.map((p: any) => (
                       <HubCard key={p.id} product={p} />
                     ))}
@@ -529,11 +826,14 @@ const HubHome: React.FC<{ storeData: any }> = ({ storeData }) => {
             })}
           </div>
         )}
-
       </main>
     </div>
   );
 };
+
+/* ================================================================== */
+/*  CATEGORY MODE                                                      */
+/* ================================================================== */
 
 const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData }) => {
   const { product } = useStorefrontCore();
@@ -544,31 +844,28 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0b1220] text-slate-200 antialiased pb-16 md:pb-0">
+    <div dir="rtl" className="min-h-screen bg-[#f3f5f8] text-[#0a1220] antialiased pb-16 md:pb-0">
       <HubHeader homeHref="/" />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500">
-          <a href="/" className="font-bold hover:text-blue-300">الرئيسية</a>
+      <main className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
+        <nav className="mb-4 flex items-center gap-1.5 text-sm text-[#8a93a2]">
+          <a href="/" className="font-bold text-[#5b6472] transition-colors hover:text-[#2563eb]">الرئيسية</a>
           <ChevronLeft className="h-4 w-4" />
-          <span className="font-black text-white">{cat?.name}</span>
+          <span className="font-extrabold text-[#0a1220]">{cat?.name}</span>
         </nav>
-        <header className="mb-6 flex items-end justify-between gap-3">
+        <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2.5 text-2xl font-black text-white">
-              <span className="text-blue-400">{cat ? categoryIcon(cat.name) : null}</span> {cat?.name}
+            <h1 className="flex items-center gap-2.5 text-2xl font-extrabold text-[#0a1220]">
+              <span className="text-[#2563eb]">{cat ? categoryIcon(cat.name) : null}</span> {cat?.name}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">{categoryData?.total ?? 0} جهاز</p>
+            <p className="mt-1 text-sm text-[#8a93a2]">{categoryData?.total ?? 0} جهاز</p>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="scrollbar-none -mx-3 flex gap-1.5 overflow-x-auto px-3 sm:mx-0 sm:px-0">
             {SORTS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => navigate({ sort: s })}
-                className={`rounded-lg px-3 py-1.5 text-xs font-black transition ${
-                  categoryData?.sort === s ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 ring-1 ring-slate-800 hover:text-blue-300'
+              <button key={s} type="button" onClick={() => navigate({ sort: s })}
+                className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                  categoryData?.sort === s ? 'bg-[#0a1220] text-white shadow-sm' : 'bg-white text-[#5b6472] ring-1 ring-[#e3e8ee] hover:text-[#2563eb] hover:ring-[#2563eb]/40'
                 }`}
-              >
+                style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
                 {SORT_LABELS[s]}
               </button>
             ))}
@@ -577,13 +874,13 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
 
         {cat && products.length === 0 ? (
           <div className="flex flex-col items-center gap-4 py-24 text-center">
-            <PackageSearch className="h-12 w-12 text-slate-700" />
-            <p className="text-lg font-bold text-slate-400">لا توجد أجهزة بهذا القسم حالياً</p>
-            <a href="/" className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-black text-white hover:bg-blue-500">تصفح بقية الأقسام</a>
+            <PackageSearch className="h-12 w-12 text-[#b6bfcc]" />
+            <p className="text-lg font-bold text-[#8a93a2]">لا توجد أجهزة بهذا القسم حالياً</p>
+            <a href="/" className="rounded-xl bg-[#2563eb] px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#1d4ed8] active:scale-[0.97]">تصفح بقية الأقسام</a>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {products.map((p: any) => (
                 <HubCard key={p.id} product={p} />
               ))}
@@ -591,14 +888,11 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
             {categoryData && categoryData.lastPage > 1 && (
               <nav className="mt-10 flex items-center justify-center gap-1.5">
                 {Array.from({ length: categoryData.lastPage }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => navigate({ page: n })}
-                    className={`h-9 min-w-9 rounded-lg px-2 text-sm font-black transition ${
-                      n === categoryData.currentPage ? 'bg-blue-600 text-white' : 'bg-slate-900 text-slate-400 ring-1 ring-slate-800'
+                  <button key={n} type="button" onClick={() => navigate({ page: n })}
+                    className={`h-9 min-w-9 rounded-lg px-2 text-sm font-bold transition-all ${
+                      n === categoryData.currentPage ? 'bg-[#0a1220] text-white shadow-sm' : 'bg-white text-[#5b6472] ring-1 ring-[#e3e8ee] hover:text-[#2563eb]'
                     }`}
-                  >
+                    style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
                     {n}
                   </button>
                 ))}

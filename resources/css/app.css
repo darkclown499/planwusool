@@ -699,3 +699,26 @@ button[disabled],
     animation: none;
   }
 }
+
+/* ========== Electronics Hub — animation keyframes ========== */
+@keyframes hubFadeSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hubFadeOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hubSlideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-hero,
+  [dir="rtl"] header {
+    animation: none !important;
+  }
+}
