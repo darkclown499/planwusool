@@ -32,12 +32,15 @@ class GrocerySouqCertificationTest extends TestCase
 
     public function test_shared_server_search_used(): void
     {
-        $src = $this->souqHeaderSrc();
-        $this->assertStringContainsString('useServerSearch', $src, 'header must use shared server search');
-        $this->assertStringContainsString('api/storefront/search', file_get_contents(resource_path('js/hooks/useServerSearch.ts')));
         $overlay = $this->souqOverlaysSrc();
-        $this->assertStringContainsString('useServerSearch', $overlay);
-        $this->assertStringNotContainsString("String(p.name || '').toLowerCase().includes", $src, 'must not use client filter only');
+        $this->assertStringContainsString('SearchSheet', $overlay, 'SouqOverlays must delegate to shared SearchSheet');
+        $searchSheet = file_get_contents(resource_path('js/templates-v2/shared/SearchSheet.tsx'));
+        $this->assertStringContainsString('useServerSearch', $searchSheet, 'SearchSheet must use useServerSearch hook');
+        $hook = file_get_contents(resource_path('js/hooks/useServerSearch.ts'));
+        $this->assertStringContainsString('api/storefront/search', $hook, 'useServerSearch must call canonical storefront search endpoint');
+        $this->assertStringContainsString('store_id', $hook, 'useServerSearch must enforce store scope');
+        $this->assertStringNotContainsString("String(p.name || '').toLowerCase().includes", $overlay, 'must not use client-only filter');
+        $this->assertStringNotContainsString("String(p.name || '').toLowerCase().includes", $this->souqHeaderSrc(), 'must not use client-only filter');
     }
 
     public function test_category_visible_limit_behavior(): void
