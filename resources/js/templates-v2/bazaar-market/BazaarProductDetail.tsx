@@ -307,12 +307,30 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
               <div className="flex flex-wrap gap-1.5">
                 {(group.values || group.options || []).map((val: string) => {
                   const activeVal = selection[group.name] === val;
+                  const combos: any[] = product.variantCombinations || product.variant_combinations || [];
+                  const isUnavailable = (() => {
+                    if (!combos.length || product.allowBackorder) return false;
+                    const testSel = { ...selection, [group.name]: val };
+                    // If selection incomplete, allow; only disable when no combo can satisfy partial selection
+                    const keys = Object.keys(testSel);
+                    const matching = combos.filter((c: any) => {
+                      const vals: string[] = (c.values || []).map((v: any) => String(v).trim());
+                      return keys.every((k) => vals.includes(String(testSel[k]).trim()));
+                    });
+                    if (matching.length === 0) return false;
+                    // If all matching combos are OOS, disable this value
+                    return matching.every((c: any) => {
+                      const st = c.stock !== undefined ? Number(c.stock) : NaN;
+                      return Number.isFinite(st) && st <= 0;
+                    });
+                  })();
                   return (
                     <button
                       key={val}
                       type="button"
-                      onClick={() => setSelection((s) => ({ ...s, [group.name]: val }))}
-                      className={`bazaar-variant rounded-full border px-3 py-1.5 text-[13px] font-bold transition ${activeVal ? 'text-white' : 'border-slate-200 text-slate-700 hover:border-teal-300'}`}
+                      disabled={isUnavailable}
+                      onClick={() => { if (!isUnavailable) setSelection((s) => ({ ...s, [group.name]: val })); }}
+                      className={`bazaar-variant rounded-full border px-3 py-1.5 text-[13px] font-bold transition ${activeVal ? 'text-white' : isUnavailable ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 line-through opacity-60' : 'border-slate-200 text-slate-700 hover:border-teal-300'}`}
                       style={activeVal ? ({ background: 'var(--store-primary, #0d9488)', borderColor: 'var(--store-primary, #0d9488)' } as any) : undefined}
                     >
                       {val}

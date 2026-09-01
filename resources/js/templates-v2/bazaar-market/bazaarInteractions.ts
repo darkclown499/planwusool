@@ -352,8 +352,8 @@ export function ensureBazaarInteractionsStyle(): void {
     @keyframes bazaarAnnouncementIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
     .bazaar-announcement-slide { will-change: opacity, transform; }
 
-    /* ── Bazaar product sheet ── */
-    .bazaar-product-sheet { will-change: transform; }
+    /* ── Bazaar product sheet — LEVEL 3 elevation ── */
+    .bazaar-product-sheet { will-change: transform; box-shadow: var(--bazaar-shadow-lg) !important; }
     [data-bazaar-drag-handle] { touch-action: none; }
     [data-bazaar-product-media] { touch-action: none; }
 
