@@ -204,6 +204,10 @@ class ReturnService
 
             // Update order aggregation (historical totals remain, only refunded_amount changes)
             $order->refunded_amount = $newTotal;
+            // refund date semantics: set once on first recorded refund, unless a larger one lands
+            if (!$order->refunded_at || $newTotal > $alreadyRefunded) {
+                $order->refunded_at = now();
+            }
             // payment_status partial/full
             if ($newTotal >= $paid - 0.01) {
                 $order->payment_status = 'refunded';

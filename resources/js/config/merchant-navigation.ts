@@ -116,8 +116,8 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     // Dashboard
     if (path === '/dashboard' || path === '/' ) return 'dashboard';
 
-    // Orders area: /orders, /returns, /cod-payments, /pos
-    if (path.startsWith('/orders') || path.startsWith('/returns') || path.startsWith('/cod-payments') || path.startsWith('/pos')) {
+    // Orders area: /orders, /returns, /cod-payments, /payments/operations, /pos
+    if (path.startsWith('/orders') || path.startsWith('/returns') || path.startsWith('/cod-payments') || path.startsWith('/payments/operations') || path.startsWith('/pos')) {
         return 'orders';
     }
 
@@ -239,6 +239,9 @@ export function getMerchantContextNav(
             }
             if (hasPermission('manage-cod-payments')) {
                 items.push({ title: t('COD Payments'), href: tryRoute('cod-payments.index', '/cod-payments') });
+            }
+            if (hasPermission('manage-orders')) {
+                items.push({ title: t('Payment Operations') !== 'Payment Operations' ? t('Payment Operations') : 'عمليات الدفع', href: tryRoute('payments.operations', '/payments/operations'), activePaths: ['/payments/operations'] });
             }
             if (hasPermission('manage-pos') && routeExists('pos.index')) {
                 items.push({ title: t('POS System'), href: tryRoute('pos.index', '/pos') });

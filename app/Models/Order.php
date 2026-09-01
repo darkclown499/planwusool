@@ -27,6 +27,9 @@ class Order extends Model
     protected $fillable = [
         'status',
         'payment_status',
+        'paid_at',
+        'payment_confirmed_by',
+        'refunded_at',
         'customer_email',
         'customer_phone',
         'customer_first_name',
@@ -77,6 +80,8 @@ class Order extends Model
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
         'post_order_extras_at' => 'datetime',
+        'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
     ];
 
     public function store(): BelongsTo
@@ -102,6 +107,11 @@ class Order extends Model
     public function returns(): HasMany
     {
         return $this->hasMany(\App\Models\OrderReturn::class);
+    }
+
+    public function codPayment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\CodPayment::class);
     }
 
     public static function generateOrderNumber(): string

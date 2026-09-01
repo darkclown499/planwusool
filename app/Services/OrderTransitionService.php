@@ -179,16 +179,22 @@ class OrderTransitionService
 
     /**
      * Mark COD as collected — semantic payment action.
-     * Only for COD + pending payment.
+     *
+     * Canonical single path for "the money for this COD order arrived":
+     * - flips orders.payment_status → paid (idempotent)
+     * - stamps orders.paid_at / payment_confirmed_by
+     * - syncs the advanced COD module record when one exists (both COD paths
+     *   now converge on the same financial truth)
+     * - dispatches the merchant cod_collected notification (idempotent)
+     * - dispatches the customer payment_received email exactly once
      */
     public static function collectCod(Order $order): Order
     {
         $pm = strtolower((string)($order->payment_method ?? ''));
         $ps = strtolower((string)($order->payment_status ?? ''));
-        if ($pm !== 'cod' && $pm !== 'cash' && $pm !== 'cash_on_delivery') {
+        if (!in_array($pm, ['cod','cash','cash_on_delivery'], true)) {
             throw new \Exception('هذا الإجراء مخصص للدفع عند الاستلام فقط');
         }
-        if ($ps === 'paid') throw new \Exception('المبلغ محصل بالفعل');
         if (in_array($ps, ['refunded','partially_refunded'], true)) throw new \Exception('لا يمكن تحصيل طلب مسترجع');
         $status = strtolower((string)$order->status);
         if (in_array($status, ['cancelled','failed'], true)) throw new \Exception('لا يمكن تحصيل طلب ملغي أو فاشل');
@@ -196,12 +202,152 @@ class OrderTransitionService
         return DB::transaction(function () use ($order) {
             $locked = Order::where('id',$order->id)->lockForUpdate()->first();
             $psLocked = strtolower((string)$locked->payment_status);
-            if ($psLocked==='paid') throw new \Exception('المبلغ محصل بالفعل');
-            $locked->update(['payment_status'=>'paid']);
+            // Idempotent: marking an already-paid COTI order is a no-op (report current state)
+            if ($psLocked === 'paid') return $locked->fresh();
+            if (in_array($psLocked, ['refunded','partially_refunded'], true)) throw new \Exception('لا يمكن تحصيل طلب مسترجع');
+            if (in_array(strtolower((string)$locked->status), ['cancelled','failed'], true)) throw new \Exception('لا يمكن تحصيل طلب ملغي أو فاشل');
+
+            $now = now();
+            $locked->update([
+                'payment_status' => 'paid',
+                'paid_at' => $locked->paid_at ?? $now,
+                'payment_confirmed_by' => $locked->payment_confirmed_by ?? auth()->id() ?? null,
+            ]);
             $fresh = $locked->fresh();
-            // Dispatch payment email (same as OrderController did)
-            try { \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit(); } catch (\Throwable $e) {}
+
+            self::auditAfterPaid($fresh, 'cod');
+
             return $fresh;
         });
+    }
+
+    /**
+     * Confirm a bank transfer — semantic payment action for bank/bank_transfer orders.
+     * Idempotent: confirming twice reports the current (already paid) state without side effects.
+     */
+    public static function confirmBankTransfer(Order $order): Order
+    {
+        $pm = strtolower((string)($order->payment_method ?? ''));
+        if (!in_array($pm, ['bank','bank_transfer'], true)) {
+            throw new \Exception('هذا الإجراء مخصص للتحويل البنكي فقط');
+        }
+        $ps = strtolower((string)($order->payment_status ?? ''));
+        if (in_array($ps, ['refunded','partially_refunded'], true)) throw new \Exception('لا يمكن تأكيد دفعة مسترجعة');
+        $status = strtolower((string)$order->status);
+        if (in_array($status, ['cancelled','failed'], true)) throw new \Exception('لا يمكن تأكيد دفعة طلب ملغي أو فاشل');
+
+        return DB::transaction(function () use ($order) {
+            $locked = Order::where('id',$order->id)->lockForUpdate()->first();
+            if (strtolower((string)$locked->payment_status) === 'paid') return $locked->fresh(); // exactly once
+            if (in_array(strtolower((string)$locked->payment_status), ['refunded','partially_refunded'], true)) throw new \Exception('لا يمكن تأكيد دفعة مسترجعة');
+            if (in_array(strtolower((string)$locked->status), ['cancelled','failed'], true)) throw new \Exception('لا يمكن تأكيد دفعة طلب ملغي أو فاشل');
+
+            $now = now();
+            $locked->update([
+                'payment_status' => 'paid',
+                'paid_at' => $locked->paid_at ?? $now,
+                'payment_confirmed_by' => $locked->payment_confirmed_by ?? auth()->id() ?? null,
+            ]);
+            $fresh = $locked->fresh();
+
+            self::auditAfterPaid($fresh, 'bank_transfer');
+
+            return $fresh;
+        });
+    }
+
+    /**
+     * Reject a bank transfer proof. Flips the order to payment_status=failed.
+     * The order itself is NOT deleted — the merchant can follow up with the customer.
+     */
+    public static function rejectBankProof(Order $order, ?string $note = null, ?int $userId = null): Order
+    {
+        $pm = strtolower((string)($order->payment_method ?? ''));
+        if (!in_array($pm, ['bank','bank_transfer'], true)) {
+            throw new \Exception('هذا الإجراء مخصص للتحويل البنكي فقط');
+        }
+
+        return DB::transaction(function () use ($order, $note, $userId) {
+            $locked = Order::where('id',$order->id)->lockForUpdate()->first();
+            if ($locked->payment_status === 'paid') throw new \Exception('لا يمكن رفض دفعة تم تأكيدها');
+            $prevNote = trim((string)$locked->notes);
+            $rejectNote = trim((string)($note ?? 'لم يتم التحقق من التحويل'));
+            $locked->update([
+                'payment_status' => 'failed',
+                'notes' => $prevNote !== '' ? $prevNote . ' | ' . $rejectNote : $rejectNote,
+            ]);
+            $fresh = $locked->fresh();
+
+            try {
+                \App\Services\MerchantNotificationService::create([
+                    'user_id' => $fresh->store?->user_id,
+                    'store_id' => $fresh->store_id,
+                    'type' => 'system',
+                    'title' => 'تم رفض إثبات التحويل',
+                    'body' => "تم رفض إثبات التحويل البنكي للطلب #{$fresh->order_number}. السبب: {$rejectNote}",
+                    'icon' => 'XCircle',
+                    'color' => 'red',
+                    'action_url' => route('orders.show', $fresh->id, false),
+                    'related_id' => $fresh->id,
+                    'related_type' => 'order',
+                    'data' => ['order_number' => $fresh->order_number, 'reason' => $rejectNote],
+                    'is_urgent' => true,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Bank reject notification failed', ['order_id' => $fresh->id, 'error' => $e->getMessage()]);
+            }
+
+            return $fresh;
+        });
+    }
+
+    /**
+     * Shared side-effects that run exactly once after an offline payment becomes paid.
+     */
+    private static function auditAfterPaid(Order $fresh, string $kind): void
+    {
+        // Sync the advanced COD module record (if one exists) so both COD paths agree.
+        if ($kind === 'cod') {
+            try {
+                $cod = \App\Models\CodPayment::where('order_id', $fresh->id)->first();
+                if ($cod && $cod->status !== 'paid') {
+                    $remaining = (float) $cod->amount_remaining;
+                    if ($remaining > 0) {
+                        app(\App\Services\CodPaymentService::class)->recordCollection($cod, $remaining, [
+                            'payment_method' => 'cash',
+                            'collected_by_name' => self::actorName(),
+                            'collected_by_user_id' => auth()->id(),
+                            'reference' => 'Collect #' . $fresh->order_number,
+                            'notes' => 'تأكيد التحصيل من صفحة الطلب',
+                        ]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('COD module sync failed on collect', ['order_id' => $fresh->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        // Merchant notification (idempotent inside the service — one per order & type).
+        try {
+            \App\Services\MerchantNotificationService::paymentCollected($fresh, $kind === 'bank_transfer' ? 'bank_transfer' : 'cod_collected');
+        } catch (\Throwable $e) {
+            Log::warning('Payment collected notification failed', ['order_id' => $fresh->id, 'error' => $e->getMessage()]);
+        }
+
+        // Customer payment email — only when the transition actually happened (idempotent callers).
+        try {
+            \App\Jobs\SendStoreCustomerEmail::dispatch($fresh->store_id, 'payment_received', $fresh->customer_email, $fresh->id, null, $fresh->customer_id)->afterCommit();
+        } catch (\Throwable $e) {
+            Log::warning('Payment received email dispatch failed', ['order_id' => $fresh->id, 'error' => $e->getMessage()]);
+        }
+    }
+
+    private static function actorName(): ?string
+    {
+        $user = auth()->user();
+        if (!$user) return null;
+        return trim(((string)$user->first_name) . ' ' . ((string)$user->last_name)) !== ''
+            ? trim((string)$user->first_name . ' ' . $user->last_name)
+            : ($user->name ?? '');
     }
 }

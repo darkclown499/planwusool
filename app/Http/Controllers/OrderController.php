@@ -187,7 +187,7 @@ class OrderController extends Controller
             'status' => $order->status,
             'paymentStatus' => $order->payment_status,
             'paymentMethod' => $order->payment_method,
-            'bankTransferReceipt' => $order->bank_transfer_receipt ? '/storage/' . $order->bank_transfer_receipt : null,
+            'bankTransferReceipt' => $order->bank_transfer_receipt ? route('orders.receipt', $order->id, false) : null,
             'customer' => [
                 'name' => $order->customer_first_name . ' ' . $order->customer_last_name,
                 'email' => $order->customer_email,
@@ -267,6 +267,10 @@ class OrderController extends Controller
                 'method'=>$order->payment_method,
                 'status'=>$order->payment_status,
                 'total'=>(float)$order->total_amount,
+                'paid_at'=>$order->paid_at?->format('Y-m-d H:i'),
+                'confirmed_by'=>$order->payment_confirmed_by,
+                'refunded_amount'=>(float)($order->refunded_amount ?? 0),
+                'refunded_at'=>$order->refunded_at?->format('Y-m-d H:i'),
                 'cod_amount'=> (strtolower($order->payment_method ?? '')==='cod' && strtolower($order->payment_status ?? '')!=='paid') ? (float)$order->total_amount : 0,
             ],
             // Canonical allowed actions — backend authoritative
@@ -574,9 +578,16 @@ class OrderController extends Controller
                     }
                     $newPayment = 'paid';
                 } else {
-                    // bank/offline: allow direct
-                    $order->forceFill(['payment_status'=>'paid'])->save();
-                    try { \App\Jobs\SendStoreCustomerEmail::dispatch($order->store_id, 'payment_received', $order->customer_email, $order->id, null, $order->customer_id)->afterCommit(); } catch (\Throwable $e) {}
+                    // bank/offline: use the canonical confirm path (sets paid_at + confirmed_by +
+                    // idempotent notification + email), same as the dedicated bank endpoints.
+                    try {
+                        $order = \App\Services\OrderTransitionService::confirmBankTransfer($order);
+                    } catch (\Exception $e) {
+                        $msg = $e->getMessage();
+                        if ($request->wantsJson() || $request->expectsJson()) return response()->json(['message'=>$msg,'errors'=>['payment_status'=>[$msg]]], 422);
+                        return redirect()->back()->withErrors(['payment_status'=>$msg]);
+                    }
+                    $newPayment = 'paid';
                 }
             } elseif (in_array($newPayment, ['refunded','partially_refunded','failed'], true)) {
                 $msg = 'حالة الدفع هذه تتم عبر مسار الاسترجاع/فشل الدفع النظامي — لا يمكن تغييرها يدوياً من هنا';
@@ -673,6 +684,69 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
         }
+    }
+
+    /**
+     * Confirm a bank transfer receipt (semantic payment action).
+     */
+    public function confirmBank(Request $request, $id)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+        $order = Order::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+        try {
+            $fresh = \App\Services\OrderTransitionService::confirmBankTransfer($order);
+            return response()->json(['message'=>'تم تأكيد استلام التحويل البنكي','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
+        } catch (\Exception $e) {
+            return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
+        }
+    }
+
+    /**
+     * Reject a bank transfer proof. Does NOT delete the order.
+     */
+    public function rejectBank(Request $request, $id)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+        $order = Order::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+
+        $note = null;
+        if ($request->filled('note')) {
+            $request->validate(['note'=>'nullable|string|max:2000', 'reason'=>'nullable|string|max:2000']);
+            $note = trim((string)($request->input('note') ?: $request->input('reason')));
+        }
+
+        try {
+            $fresh = \App\Services\OrderTransitionService::rejectBankProof($order, $note, $user->id);
+            return response()->json(['message'=>'تم رفض إثبات التحويل وإخفاء الطلب من الإيراد المحصّل','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
+        } catch (\Exception $e) {
+            return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
+        }
+    }
+
+    /**
+     * Tenant-scoped streaming of a bank transfer receipt (stored on the private/local disk).
+     * Only the owning merchant's store may view it — never a public /storage URL.
+     */
+    public function receipt(Request $request, $id)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+        $order = Order::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+
+        $path = $order->bank_transfer_receipt;
+        if (!$path) {
+            abort(404);
+        }
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        if (!$disk->exists($path)) {
+            abort(404);
+        }
+
+        $mime = $disk->mimeType($path) ?: 'application/octet-stream';
+        return $disk->response($path, null, ['Content-Type' => $mime]);
     }
 
     /**

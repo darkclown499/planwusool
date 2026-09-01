@@ -453,6 +453,12 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                   {fulfillment.cod_amount !== undefined && Number(fulfillment.cod_amount) >0 && (
                     <div className="flex justify-between font-bold bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"><span>المبلغ المطلوب تحصيله (COD)</span><span>{formatCurrency(Number(fulfillment.cod_amount)||0)}</span></div>
                   )}
+                  {order.payment?.paid_at && (
+                    <div className="flex justify-between text-xs text-muted-foreground"><span>تاريخ التحصيل</span><span dir="ltr">{order.payment.paid_at}</span></div>
+                  )}
+                  {(order.payment?.refunded_amount || 0) > 0 && (
+                    <div className="flex justify-between text-xs text-destructive"><span>المبلغ المسترد</span><span>{formatCurrency(Number(order.payment.refunded_amount)||0)}{order.payment.refunded_at ? ` (${order.payment.refunded_at})` : ''}</span></div>
+                  )}
                 </div>
                 {order.notes && <div className="border-t pt-3"><p className="text-xs font-bold">ملاحظات:</p><p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{order.notes}</p></div>}
               </CardContent>

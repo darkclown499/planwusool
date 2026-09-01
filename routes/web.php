@@ -917,6 +917,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('orders/{id}', [\App\Http\Controllers\OrderController::class, 'update'])->middleware('permission:edit-orders')->name('orders.update');
             Route::post('orders/{id}/transition', [\App\Http\Controllers\OrderController::class, 'transition'])->middleware('permission:edit-orders')->name('orders.transition');
             Route::post('orders/{id}/collect-cod', [\App\Http\Controllers\OrderController::class, 'collectCod'])->middleware('permission:edit-orders')->name('orders.collect-cod');
+            Route::post('orders/{id}/confirm-bank', [\App\Http\Controllers\OrderController::class, 'confirmBank'])->middleware('permission:edit-orders')->name('orders.confirm-bank');
+            Route::post('orders/{id}/reject-bank', [\App\Http\Controllers\OrderController::class, 'rejectBank'])->middleware('permission:edit-orders')->name('orders.reject-bank');
+            Route::get('orders/{id}/receipt', [\App\Http\Controllers\OrderController::class, 'receipt'])->middleware('permission:view-orders')->name('orders.receipt');
             Route::delete('orders/{id}', [\App\Http\Controllers\OrderController::class, 'destroy'])->middleware('permission:delete-orders')->name('orders.destroy');
             Route::get('orders/{id}', [\App\Http\Controllers\OrderController::class, 'show'])->middleware('permission:view-orders')->name('orders.show');
 
@@ -995,6 +998,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('cod-payments/{codPayment}/collect', [CodPaymentController::class, 'recordCollection'])->middleware('permission:collect-cod-payments')->name('cod-payments.collect');
             Route::post('cod-payments/{codPayment}/delivery-info', [CodPaymentController::class, 'updateDeliveryInfo'])->middleware('permission:manage-cod-payments')->name('cod-payments.delivery-info');
             Route::post('cod-payments/{codPayment}/status', [CodPaymentController::class, 'changeStatus'])->middleware('permission:manage-cod-payments')->name('cod-payments.status');
+
+        // Payment Operations (merchant financial operations center)
+            Route::get('payments/operations', [\App\Http\Controllers\PaymentOperationsController::class, 'index'])->middleware('permission:manage-orders')->name('payments.operations');
+            Route::get('payments/operations/export', [\App\Http\Controllers\PaymentOperationsController::class, 'export'])->middleware('permission:export-orders')->name('payments.operations.export');
+            Route::post('payments/settlements', [\App\Http\Controllers\PaymentOperationsController::class, 'storeSettlement'])->middleware('permission:manage-orders')->name('payments.settlements.store');
+            Route::post('payments/settlements/{id}/settle', [\App\Http\Controllers\PaymentOperationsController::class, 'settleSettlement'])->middleware('permission:manage-orders')->name('payments.settlements.settle');
+            Route::delete('payments/settlements/{id}', [\App\Http\Controllers\PaymentOperationsController::class, 'destroySettlement'])->middleware('permission:manage-orders')->name('payments.settlements.destroy');
         });
 
         // Smart Notifications routes (admin panel)

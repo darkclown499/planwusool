@@ -193,6 +193,52 @@ class MerchantNotificationService
     }
 
     /**
+     * Create a notification when an order payment is financially confirmed
+     * (COD collected / bank transfer confirmed). Idempotent: one notification
+     * per order & type regardless of how many paths converge on the same state.
+     */
+    public static function paymentCollected(Order $order, string $type = 'cod_collected'): void
+    {
+        $store = $order->store;
+        if (!$store || !$store->user) {
+            return;
+        }
+
+        $exists = MerchantNotification::where('store_id', $order->store_id)
+            ->where('related_id', $order->id)
+            ->where('related_type', 'order')
+            ->where('type', $type)
+            ->exists();
+        if ($exists) return;
+
+        $customerName = trim($order->customer_first_name . ' ' . $order->customer_last_name);
+        $amount = $order->total_amount;
+        $title = $type === 'bank_transfer' ? 'تم تأكيد التحويل البنكي' : 'تم تحصيل المبلغ';
+        $body = $type === 'bank_transfer'
+            ? "تم تأكيد التحويل البنكي للطلب #{$order->order_number} بقيمة {$amount}"
+            : "تم تحصيل مبلغ الطلب #{$order->order_number} من {$customerName} بقيمة {$amount}";
+
+        self::create([
+            'user_id' => $store->user_id,
+            'store_id' => $order->store_id,
+            'type' => $type,
+            'title' => $title,
+            'body' => $body,
+            'icon' => 'Banknote',
+            'color' => 'green',
+            'action_url' => route('orders.show', $order->id, false),
+            'related_id' => $order->id,
+            'related_type' => 'order',
+            'data' => [
+                'order_number' => $order->order_number,
+                'order_total' => $amount,
+                'customer_name' => $customerName,
+            ],
+            'is_urgent' => false,
+        ]);
+    }
+
+    /**
      * Create a notification for a new product review.
      */
     public static function newReview(ProductReview $review): void

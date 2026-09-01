@@ -89,6 +89,11 @@ class CodPaymentService
                 'collected_at' => $options['collected_at'] ?? now(),
             ]);
 
+            // Converge on order-level financial truth: a fully collected COD payment
+            // means the order itself is paid (financial confirmation), unless the order
+            // is in a terminal state. Partial collections keep the order pending.
+            $this->syncOrderPayment($codPayment, $status, $newCollected, $newRemaining);
+
             return $codPayment->fresh(['history']);
         });
     }
@@ -144,6 +149,56 @@ class CodPaymentService
         ]);
 
         return $codPayment->fresh();
+    }
+
+    /**
+     * Sync the parent order's payment state to match the COD module.
+     *
+     * Order status and payment status remain independent (delivered ≠ paid); only a
+     * full financial confirmation (COD fully collected) flips the order to paid.
+     */
+    private function syncOrderPayment(CodPayment $codPayment, string $codStatus, float $collected, float $remaining): void
+    {
+        try {
+            $order = $codPayment->order()->lockForUpdate()->first();
+        } catch (\Throwable $e) {
+            Log::warning('COD order lock failed', ['cod_payment_id' => $codPayment->id, 'error' => $e->getMessage()]);
+            $order = $codPayment->order()->first();
+        }
+        if (!$order) return;
+
+        $orderTerminal = in_array(strtolower((string)$order->status), ['cancelled','failed','refunded'], true);
+        $orderPs = strtolower((string)$order->payment_status);
+
+        if ($codStatus === 'paid') {
+            // Deliver/refund states still allow the order to be (or become) paid —
+            // but a terminal order cannot be switched to paid.
+            if ($orderTerminal || $orderPs === 'paid') return;
+            $order->update([
+                'payment_status' => 'paid',
+                'paid_at' => $order->paid_at ?? now(),
+                'payment_confirmed_by' => $order->payment_confirmed_by ?? auth()->id() ?? null,
+            ]);
+            try {
+                \App\Services\MerchantNotificationService::paymentCollected($order, 'cod_collected');
+            } catch (\Throwable $e) {
+                Log::warning('COD collected notification failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+            try {
+                \App\Jobs\SendStoreCustomerEmail::dispatch($order->store_id, 'payment_received', $order->customer_email, $order->id, null, $order->customer_id)->afterCommit();
+            } catch (\Throwable $e) {
+                Log::warning('Payment received email dispatch failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+            return;
+        }
+
+        if (in_array($codStatus, ['failed','cancelled','returned'], true)) {
+            // Soft downgrade only — never un-pay an order that is already paid.
+            if ($orderPs !== 'paid') {
+                $order->update(['payment_status' => 'failed']);
+            }
+        }
+        // partial: leave the order pending — partial collection is not full payment.
     }
 
     /**
