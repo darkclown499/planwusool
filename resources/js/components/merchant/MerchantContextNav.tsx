@@ -40,29 +40,29 @@ export function MerchantContextNav({ title, items }: Props) {
     if (!items || items.length === 0) return null;
 
     return (
-        <nav aria-label={`${title} navigation`} className="flex flex-col gap-2.5 py-3">
-            <div className="ps-3 pe-3">
-                <h2 className="text-[11px] font-semibold tracking-wide text-gray-400 uppercase leading-none text-start">{title}</h2>
+        <nav aria-label={`${title} navigation`} className="flex flex-col gap-3 py-4 overflow-x-hidden">
+            <div className="ps-3 pe-3 overflow-hidden">
+                <h2 className="text-[10.5px] font-semibold tracking-widest text-gray-400 uppercase leading-none text-start truncate">{title}</h2>
             </div>
-            <ul className="flex flex-col gap-0.5 px-1.5">
+            <ul className="flex flex-col gap-0.5 px-1.5 overflow-x-hidden">
                 {items.map((item) => {
                     const active = isActive(item.href, item.activePaths, url);
                     return (
-                        <li key={item.title}>
+                        <li key={item.title} className="min-w-0 overflow-hidden">
                             <Link
                                 href={item.href || '#'}
                                 prefetch
                                 aria-current={active ? 'page' : undefined}
                                 data-active={active}
                                 className={cn(
-                                    'relative flex w-full items-center rounded-md ps-2.5 pe-2 py-2 text-[12.5px] leading-none font-normal transition-colors duration-150 min-h-[36px]',
-                                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600',
+                                    'relative flex w-full items-center rounded-md ps-2.5 pe-2 py-2 text-[12.5px] leading-none font-normal transition-colors duration-150 min-h-[36px] overflow-hidden',
+                                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 min-w-0',
                                     active
-                                        ? 'bg-emerald-50 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[8px]'
-                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                                        ? 'bg-emerald-50 text-emerald-700 font-medium border-s-[2.5px] border-emerald-600 -ms-px ps-[9px]'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-transparent'
                                 )}
                             >
-                                <span className="truncate">{item.title}</span>
+                                <span className="truncate min-w-0 flex-1 text-start">{item.title}</span>
                             </Link>
                         </li>
                     );

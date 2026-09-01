@@ -19,7 +19,7 @@ export function NavUser({ position, compact = false }: { position: 'left' | 'rig
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size={compact ? 'default' : 'lg'}
-                            className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group flex items-center gap-2 min-w-0 overflow-hidden truncate rounded-lg hover:bg-gray-50 data-[state=open]:bg-gray-50"
+                            className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group flex items-center gap-2 min-w-0 overflow-hidden truncate rounded-lg hover:bg-gray-50 data-[state=open]:bg-gray-50 max-w-full"
                         >
                             {position === 'right' ? (
                                 <>

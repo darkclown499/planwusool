@@ -40,7 +40,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
     return (
         <BrandProvider globalSettings={globalSettings} user={user}>
             <SidebarProvider defaultOpen={isOpen} open={isOpen} onOpenChange={handleSidebarChange}>
-                <div className="flex w-full max-w-full min-w-0 overflow-x-hidden">
+                <div className="flex w-full max-w-full min-w-0 overflow-hidden">
                     {children}
                     <FloatingChatGpt />
                     {shouldShowCookie && <CookieConsentBanner />}

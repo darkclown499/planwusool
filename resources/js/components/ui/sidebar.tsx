@@ -138,7 +138,7 @@ function SidebarProvider({
             } as React.CSSProperties
           }
           className={cn(
-            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full max-w-full min-w-0 overflow-x-clip",
+            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full max-w-full min-w-0 overflow-x-hidden",
             className
           )}
           {...props}
@@ -209,17 +209,17 @@ function Sidebar({
 
   return (
     <div
-      className="group peer text-sidebar-foreground hidden xl:block"
+      className="group peer text-sidebar-foreground hidden xl:block overflow-x-hidden"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
       data-side={side}
       data-slot="sidebar"
     >
-      {/* This is what handles the sidebar gap on desktop — now reflects merchant 16rem/5rem via wrapper var */}
+      {/* This is what handles the sidebar gap on desktop — now reflects merchant 10.5rem/21.75rem via wrapper var */}
       <div
         className={cn(
-          "relative h-svh w-(--sidebar-width) shrink-0 transition-[width] duration-200 ease-linear",
+          "relative h-svh w-(--sidebar-width) shrink-0 overflow-x-hidden transition-[width] duration-200 ease-linear",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
@@ -229,7 +229,7 @@ function Sidebar({
       />
       <div
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear xl:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) overflow-x-hidden transition-[left,right,width] duration-200 ease-linear xl:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -243,7 +243,7 @@ function Sidebar({
       >
         <div
           data-sidebar="sidebar"
-          className="bg-gray-50 group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-gray-50 group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col overflow-x-hidden group-data-[variant:floating]:rounded-lg group-data-[variant:floating]:border group-data-[variant:floating]:shadow-sm"
           style={style}
         >
           {children}
@@ -375,7 +375,7 @@ function SidebarContent({ className, style, ...props }: React.ComponentProps<"di
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-1 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overflow-x-hidden group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
       style={style}

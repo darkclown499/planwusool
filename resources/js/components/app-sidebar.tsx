@@ -133,10 +133,12 @@ export function AppSidebar() {
     const isStoreSettings = isStoreSettingsUrl(pageUrl);
     const desktopContextActive = hasContext && !isStoreSettings;
 
-    // Premium SaaS: primary 150px + context 176px = 326px (20.375rem)
-    // Readable horizontal labels, no truncation, light hierarchy.
-    // No context (dashboard, analytics, store-settings) collapses to primary only.
-    const sidebarWidth = isMerchant ? (desktopContextActive ? '20.375rem' : '9.375rem') : undefined;
+    // Refined SaaS: primary 168px + context 180px = 348px (21.75rem)
+    // Fits Arabic labels without clipping, avoids oversized empty column,
+    // and keeps combined nav under 34% at 1024px.
+    // No context (dashboard, analytics, store-settings) collapses to primary only
+    // to avoid reserving an empty 180px column.
+    const sidebarWidth = isMerchant ? (desktopContextActive ? '21.75rem' : '10.5rem') : undefined;
 
     // Sync CSS variable to provider wrapper so SidebarInset offset equals actual width
     // (Sidebar component's fixed element alone doesn't affect peer offset)
@@ -160,20 +162,24 @@ export function AppSidebar() {
 
     if (isMerchant) {
         // Compact plan row + user row helpers reuse same markup in desktop footer & mobile drawer
+        // Fix: min-w-0 + truncate on every text node, single subtle card, no horizontal overflow
         const compactPlanRow = auth.user?.plan ? (
-            <div className="flex items-center gap-2 px-2 py-2.5">
-                <div className="h-6 w-6 rounded-md bg-emerald-50 flex items-center justify-center shrink-0">
-                    <Zap className="h-3 w-3 text-emerald-600" />
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden rounded-lg border border-emerald-100 bg-emerald-50/70 px-2.5 py-2">
+                <div className="h-7 w-7 rounded-md bg-emerald-100 flex items-center justify-center shrink-0">
+                    <Zap className="h-3.5 w-3.5 text-emerald-600" />
                 </div>
-                <div className="flex-1 min-w-0 text-start flex items-center gap-1.5">
-                    <span className="text-[12px] font-medium text-gray-700 truncate">{t(auth.user.plan?.name || 'Free')}</span>
-                    <span className="text-[11px] text-gray-400 hidden sm:inline">•</span>
-                    <span className="text-[11px] text-gray-500 hidden sm:inline truncate">{t('Plan')}</span>
+                <div className="flex-1 min-w-0 text-start overflow-hidden">
+                    <div className="flex items-center gap-1 min-w-0">
+                        <span className="text-[12px] font-semibold text-gray-800 truncate max-w-[72px]">{t(auth.user.plan?.name || 'Free')}</span>
+                        <span className="text-[11px] text-gray-400 shrink-0">•</span>
+                        <span className="text-[11px] text-gray-500 truncate">{t('Plan')}</span>
+                    </div>
+                    <span className="block text-[11px] leading-none text-gray-500 truncate">{t('Current plan')}</span>
                 </div>
                 <Link
                     href={route('plans.index')}
                     prefetch
-                    className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 whitespace-nowrap px-2 py-1 rounded-md hover:bg-emerald-50 transition-colors"
+                    className="shrink-0 text-[11px] font-semibold text-emerald-700 hover:text-emerald-800 whitespace-nowrap px-2.5 py-1.5 rounded-md bg-white border border-emerald-200 hover:bg-emerald-50 transition-colors"
                 >
                     {t('Upgrade')}
                 </Link>
@@ -190,17 +196,17 @@ export function AppSidebar() {
                 dir={position === 'right' ? 'rtl' : 'ltr'}
                 style={sidebarWidth ? ({ '--sidebar-width': sidebarWidth, '--sidebar-width-icon': '5rem' } as React.CSSProperties) : undefined}
             >
-                <SidebarHeader className={`h-13 shrink-0 justify-center border-b border-gray-100 ${style !== 'plain' ? 'sidebar-styled' : ''}`} style={sidebarStyle}>
-                    <div className="flex justify-center items-center">
-                        <Link href={route('dashboard')} prefetch className="flex items-center justify-center">
-                            <div className="flex items-center">
+                <SidebarHeader className={`h-[68px] shrink-0 justify-center border-b border-gray-100 bg-white ${style !== 'plain' ? 'sidebar-styled' : ''}`} style={sidebarStyle}>
+                    <div className="flex justify-center items-center min-w-0 overflow-hidden px-2">
+                        <Link href={route('dashboard')} prefetch className="flex items-center justify-center min-w-0 overflow-hidden">
+                            <div className="flex items-center min-w-0">
                                 {(() => {
                                     const isDark = document.documentElement.classList.contains('dark');
                                     const currentLogo = isDark ? logoLight : logoDark;
                                     return currentLogo ? (
-                                        <img key={currentLogo} src={getImageUrl(currentLogo)} alt="Logo" className="w-auto h-6 object-contain" onError={() => updateBrandSettings({ [isDark ? 'logoLight' : 'logoDark']: '' })} />
+                                        <img key={currentLogo} src={getImageUrl(currentLogo)} alt="Logo" className="w-auto h-7 max-w-[120px] object-contain" onError={() => updateBrandSettings({ [isDark ? 'logoLight' : 'logoDark']: '' })} />
                                     ) : (
-                                        <div className="h-7 text-inherit font-semibold flex items-center text-[16px] tracking-tight">{titleText || 'وصول'}</div>
+                                        <div className="h-7 text-inherit font-semibold flex items-center text-[17px] tracking-tight truncate">{titleText || 'وصول'}</div>
                                     );
                                 })()}
                             </div>
@@ -232,41 +238,38 @@ export function AppSidebar() {
                     )}
                 </SidebarHeader>
 
-                <SidebarContent className="p-0 min-h-0">
-                    {/* Desktop: premium two-column — xl+ only (1280+). <1280 uses Sheet drawer */}
-                    <div className="hidden xl:flex h-full w-full min-h-0">
-                        {/* Level 1 — primary */}
-                        <div className="w-[150px] shrink-0 border-e border-gray-100 bg-[#fcfcfc] flex flex-col overflow-y-auto overflow-x-hidden min-h-0" style={sidebarStyle as any}>
+                <SidebarContent className="p-0 min-h-0 overflow-hidden">
+                    {/* Desktop: coherent two-column shell — xl+ only (1280+). <1280 uses Sheet drawer */}
+                    <div className="hidden xl:flex h-full w-full min-h-0 overflow-hidden bg-[#fcfcfc] border-e border-gray-100">
+                        {/* Level 1 — primary (168px) */}
+                        <div className="w-[168px] shrink-0 border-e border-gray-100/80 bg-[#fcfcfc] flex flex-col overflow-y-auto overflow-x-hidden min-h-0 scrollbar-thin" style={sidebarStyle as any}>
                             <MerchantPrimaryNav activePrimary={activePrimary} />
                         </div>
-                        {/* Level 2 — contextual, light sub-nav */}
+                        {/* Level 2 — contextual, subtle (180px) — only rendered when route has children */}
                         {desktopContextActive && contextNav ? (
-                            <div className="w-[176px] shrink-0 bg-white border-e border-gray-100 overflow-y-auto overflow-x-hidden min-h-0">
+                            <div className="w-[180px] shrink-0 bg-white/80 border-e border-gray-100 overflow-y-auto overflow-x-hidden min-h-0 scrollbar-thin">
                                 <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
                             </div>
-                        ) : (
-                            <div className="w-0" />
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Mobile/Tablet drawer (<xl): ONE Sheet from right, nested hierarchy */}
-                    <div className="xl:hidden flex flex-col h-full min-h-0 overflow-y-auto bg-white">
-                        <div className="flex-1 min-h-0">
+                    <div className="xl:hidden flex flex-col h-full min-h-0 overflow-y-auto overflow-x-hidden bg-white">
+                        <div className="flex-1 min-h-0 overflow-x-hidden">
                             <MerchantDrawerNav activePrimary={activePrimary} contextNav={contextNav} />
                         </div>
                         {/* Drawer footer: compact plan + user — single system, no big cards */}
-                        <div className="shrink-0 border-t border-gray-100 bg-gray-50/50">
-                            {compactPlanRow && <div className="border-b border-gray-100">{compactPlanRow}</div>}
-                            <div className="px-1.5 py-2">
+                        <div className="shrink-0 border-t border-gray-100 bg-gray-50/50 overflow-x-hidden">
+                            {compactPlanRow && <div className="border-b border-gray-100 p-2 overflow-hidden">{compactPlanRow}</div>}
+                            <div className="px-1.5 py-2 overflow-hidden">
                                 <NavUser position={position} compact />
                             </div>
                         </div>
                     </div>
                 </SidebarContent>
 
-                <SidebarFooter className="hidden xl:flex xl:flex-col shrink-0 border-t border-gray-100 bg-white p-0 gap-0">
-                    {compactPlanRow && desktopContextActive && <div className="mx-1 mt-1 border-b border-gray-100 pb-1">{compactPlanRow}</div>}
-                    {!desktopContextActive && compactPlanRow && <div className="mx-1 mt-1 border-b border-gray-100 pb-1 hidden">{compactPlanRow}</div>}
+                <SidebarFooter className="hidden xl:flex xl:flex-col shrink-0 border-t border-gray-100 bg-white p-0 gap-0 overflow-hidden">
+                    {compactPlanRow && <div className="p-2 border-b border-gray-100 overflow-hidden">{compactPlanRow}</div>}
                     {/* User row — single compact row, no clipped text */}
                     <div className="px-1.5 pt-2 pb-2 min-w-0">
                         {desktopContextActive ? (

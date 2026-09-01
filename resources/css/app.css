@@ -556,6 +556,19 @@ button[disabled],
   }
 }
 
+/* Merchant navigation shell: never allow horizontal scrolling */
+[data-slot="sidebar-wrapper"],
+[data-slot="sidebar"],
+[data-sidebar="sidebar"],
+[data-slot="sidebar-content"] {
+  overflow-x: hidden !important;
+}
+[data-slot="sidebar-content"]::-webkit-scrollbar:horizontal,
+[data-slot="sidebar-wrapper"]::-webkit-scrollbar:horizontal {
+  display: none;
+  height: 0;
+}
+
 /* ========== Storefront mobile optimizations ========== */
 [data-storefront="true"] {
     overflow-x: clip;
