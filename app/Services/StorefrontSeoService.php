@@ -410,9 +410,14 @@ class StorefrontSeoService
     protected function storeCurrencyCode(Store $store): string
     {
         try {
-            $settings = $store->user
-                ? \App\Models\Setting::getUserSettings($store->user->id, $store->id)
-                : [];
+            // Canonical storefront pricing currency source (store → user →
+            // superadmin cascade with the platform default). This is the same
+            // resolver OrderService/CurrencyService use for product pricing,
+            // so the Offer priceCurrency always matches what a customer pays.
+            $settings = \App\Services\Currency\CurrencyService::getCurrencySettings(
+                $store->user ? $store->user->id : null,
+                $store->id
+            );
             $code = $settings['defaultCurrency'] ?? null;
         } catch (\Throwable $e) {
             $code = null;
