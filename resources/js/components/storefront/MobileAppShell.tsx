@@ -51,6 +51,7 @@ export const MobileAppShell: React.FC = () => {
   const isGrocerySouq = String(store?.theme || '').toLowerCase() === 'grocery-souq';
   const isElectronicsHub = String(store?.theme || '').toLowerCase() === 'electronics-hub';
   const isHayah = String(store?.theme || '').toLowerCase() === 'restaurant-menu';
+  const isBazaar = String(store?.theme || '').toLowerCase() === 'bazaar-market';
   const loginEnabled = customerAccountsEnabled && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const { t } = useStorefrontLocale();
 
@@ -188,7 +189,7 @@ export const MobileAppShell: React.FC = () => {
       )}
 
       {/* Bottom tab bar â€” native app navigation â€” hidden for fashion-atelier (uses hamburger drawer), grocery-souq, electronics-hub and restaurant-menu/Ø§Ù„Ù‡ÙŠØ¦Ø© (no bottom nav per reference reference) */}
-      {!isFashionAtelier && !isGrocerySouq && !isElectronicsHub && !isHayah && (
+      {!isFashionAtelier && !isGrocerySouq && !isElectronicsHub && !isHayah && !isBazaar && (
       <nav data-app-shell="tabs" className={`fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:hidden ${anyOverlayOpen ? 'hidden' : ''}`}>
         <div className="flex items-stretch">
           <TabButton

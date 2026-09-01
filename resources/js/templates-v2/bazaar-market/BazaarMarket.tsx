@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
-import { ChevronLeft, Heart, Package, PackageSearch, Plus, ShoppingBag, User } from 'lucide-react';
+import { BadgeCheck, ChevronDown, ChevronLeft, Facebook, Globe, Heart, Home, Instagram, LayoutGrid, LogIn, LogOut, Menu, MessageCircle, Music, Package, PackageSearch, Plus, Search, Send, ShoppingBag, ShoppingCart, Twitter, User, X, Youtube } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { Gift } from 'lucide-react';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
@@ -25,6 +26,82 @@ import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_B
 /* circles, balanced product grid and a trust stack under every section.  */
 /* ===================================================================== */
 
+/* -------------------------------------------------------------- */
+/*  Bazaar WhatsApp + Social helpers (merchant-scoped)               */
+/* -------------------------------------------------------------- */
+export function cleanBazaarWhatsAppNumber(input: string): string {
+  return String(input || '').replace(/[^0-9]/g, '');
+}
+export function isSafeExternalUrl(url: string): boolean {
+  try { const u = new URL(String(url).trim()); return ['https:','http:'].includes(u.protocol) && u.hostname.includes('.'); } catch { return false; }
+}
+export function resolveBazaarWhatsAppHref(config: any, content: any, store: any): string | null {
+  const rawContent: any = content ?? {};
+  const waCfg: any = rawContent.bazaar_whatsapp ?? rawContent.bazaar_wa ?? {};
+  const enabledRaw = waCfg.enabled ?? waCfg.show ?? rawContent.bazaar_whatsapp_enabled ?? rawContent.bazaar_wa_enabled;
+  let enabled: boolean | null = null;
+  if (enabledRaw !== undefined) enabled = !!enabledRaw;
+  else {
+    if (config?.whatsapp_widget_enabled) enabled = true;
+    else enabled = false;
+  }
+  if (!enabled) return null;
+  const rawNumber = String(waCfg.number ?? waCfg.phone ?? rawContent.bazaar_whatsapp_number ?? rawContent.bazaar_wa_number ?? config?.whatsapp_widget_phone ?? config?.socialMedia?.whatsapp ?? (store as any)?.phone ?? '');
+  const cleaned = cleanBazaarWhatsAppNumber(rawNumber);
+  if (!cleaned || cleaned.length < 7) return null;
+  const rawMessage = String(waCfg.message ?? rawContent.bazaar_whatsapp_message ?? config?.whatsapp_widget_message ?? 'مرحباً، لدي استفسار بخصوص المتجر');
+  return `https://wa.me/${cleaned}?text=${encodeURIComponent(rawMessage)}`;
+}
+const BAZAAR_SOCIAL_PLATFORMS = [
+  { value: 'facebook', label: 'Facebook', icon: Facebook },
+  { value: 'instagram', label: 'Instagram', icon: Instagram },
+  { value: 'tiktok', label: 'TikTok', icon: Music },
+  { value: 'youtube', label: 'YouTube', icon: Youtube },
+  { value: 'snapchat', label: 'Snapchat', icon: MessageCircle },
+  { value: 'telegram', label: 'Telegram', icon: Send },
+  { value: 'x', label: 'X / Twitter', icon: Twitter },
+  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+  { value: 'website', label: 'Website', icon: Globe },
+] as const;
+export function getBazaarSocialIcon(platform: string) {
+  const f = BAZAAR_SOCIAL_PLATFORMS.find((pl) => pl.value === String(platform).toLowerCase());
+  return f ? f.icon : Globe;
+}
+export function getBazaarSocialSlots(content: any) {
+  const base = (content as any)?.bazaar_mobile_nav ?? {};
+  return [1,2,3,4,5,6].map((idx) => {
+    const enabled = !!base[`social_${idx}_enabled`];
+    const platform = String(base[`social_${idx}_platform`] ?? 'instagram').toLowerCase();
+    const url = String(base[`social_${idx}_url`] ?? '').trim();
+    const altEnabled = (content as any)[`bazaar_social_${idx}_enabled`];
+    const altPlatform = (content as any)[`bazaar_social_${idx}_platform`];
+    const altUrl = (content as any)[`bazaar_social_${idx}_url`];
+    const finalEnabled = altEnabled !== undefined ? !!altEnabled : enabled;
+    const finalPlatform = altPlatform ? String(altPlatform).toLowerCase() : platform;
+    const finalUrl = altUrl !== undefined ? String(altUrl).trim() : url;
+    const safe = finalEnabled && !!finalUrl && isSafeExternalUrl(finalUrl);
+    return { idx, platform: finalPlatform, url: finalUrl, safe, enabled: finalEnabled };
+  });
+}
+export function BazaarWhatsAppFloating() {
+  const { config, content, store } = useStorefrontCore() as any;
+  const href = resolveBazaarWhatsAppHref(config, content, store);
+  if (!href) return null;
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="تواصل واتساب"
+      data-testid="bazaar-floating-whatsapp"
+      className="fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.10)] ring-1 ring-black/5 transition hover:scale-[1.04] active:scale-[0.97] md:hidden"
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' } as any}
+    >
+      <MessageCircle className="h-[22px] w-[22px]" fill="white" />
+    </a>
+  );
+}
+
 /* ------------------------------ Header ------------------------------ */
 
 export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
@@ -33,16 +110,15 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
   const canShowAuth = accountsOn && (auth?.isLoggedIn || loginEnabled);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
   const categories = (product?.categories || []).slice(0, 8);
-
   const handleMyOrders = () => {
     if (auth?.isLoggedIn) {
       order?.loadUserOrders?.();
@@ -51,11 +127,56 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
       auth.setShowLoginModal(true);
     }
   };
-
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [mobileNavOpen]);
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileNavOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileNavOpen]);
   return (
+    <>
     <header className={`sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
-      {/* Masthead */}
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="flex items-center gap-2 px-2.5 py-2.5 lg:hidden" dir="ltr">
+        <button
+          type="button"
+          onClick={() => setMobileNavOpen(true)}
+          aria-label="القائمة"
+          data-testid="bazaar-hamburger"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-700 transition hover:bg-teal-50 hover:text-teal-700"
+          style={{ minWidth: 44, minHeight: 44 } as any}
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <a href={homeHref} className="flex flex-1 items-center justify-center gap-2 overflow-hidden" aria-label={config?.storeName || store?.name}>
+          {(config?.logo || store?.logo) ? (
+            <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[42vw] object-contain" />
+          ) : (
+            <>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-sm font-black text-white shadow-md">س</span>
+              <span className="max-w-[36vw] truncate text-[15px] font-black text-slate-900">{config?.storeName || store?.name}</span>
+            </>
+          )}
+        </a>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-teal-50 hover:text-teal-700" style={{ minWidth: 44, minHeight: 44 } as any}>
+            <Search className="h-5 w-5" strokeWidth={1.8} />
+          </button>
+          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 transition hover:bg-teal-50" style={{ minWidth: 44, minHeight: 44 } as any}>
+            <ShoppingBag className="h-5 w-5" />
+            {count > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-black text-white">{count > 99 ? '99+' : count}</span>
+            )}
+          </button>
+        </div>
+      </div>
+      <div className="mx-auto hidden max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex lg:px-8">
         <a href={homeHref} className="flex items-center gap-2.5">
           {(config?.logo || store?.logo) ? (
             <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-11 w-auto object-contain" />
@@ -66,7 +187,6 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             </>
           )}
         </a>
-
         <div className="flex items-center gap-1">
           <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700">
             🔍
@@ -105,8 +225,6 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           </button>
         </div>
       </div>
-
-      {/* Category nav — hidden by default; enable via settings.show_categories_bar */}
       {showCategoriesBar && categories.length > 0 && (
         <nav className="border-t border-slate-100">
           <div className="scrollbar-none mx-auto flex max-w-7xl items-center justify-start gap-0.5 overflow-x-auto px-4 sm:px-6 lg:justify-center lg:px-8">
@@ -120,6 +238,236 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
         </nav>
       )}
     </header>
+    {typeof document !== 'undefined' && mobileNavOpen && createPortal(
+      <BazaarMobileDrawer
+        drawerRef={drawerRef as any}
+        config={config}
+        store={store}
+        content={content}
+        categories={product?.categories || []}
+        auth={auth}
+        order={order}
+        behavior={behavior}
+        ui={ui}
+        cartCount={count}
+        onClose={() => setMobileNavOpen(false)}
+      />,
+      document.body
+    )}
+    </>
+  );
+}
+
+
+
+/* ================================================================== */
+/*  Bazaar Mobile Drawer — portal, grouped architecture               */
+/* ================================================================== */
+function BazaarMobileDrawer({ drawerRef, config, store, content, categories, auth, order, behavior, ui, cartCount, onClose }: any) {
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [expandedCatId, setExpandedCatId] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { try { closeRef.current?.focus(); } catch {} }, []);
+  const isLoggedIn: boolean = !!auth?.isLoggedIn;
+  const accountsOn = behavior?.customer_accounts_enabled !== false;
+  const loginEnabled = accountsOn && behavior?.enable_customer_login !== false && behavior?.show_auth_button !== false;
+  const canShowAccount = accountsOn && (isLoggedIn || loginEnabled);
+  const registrationEnabled = accountsOn && (behavior?.enable_customer_registration ?? behavior?.customer_registration_enabled ?? true) !== false;
+  const customerName = [auth?.customer?.first_name, auth?.customer?.last_name].filter(Boolean).join(' ').trim() || auth?.customer?.email || '';
+  const customerEmail = auth?.customer?.email || auth?.userProfile?.email || '';
+  const customerPhone = auth?.customer?.phone || auth?.userProfile?.phone || '';
+  const socialSlots = getBazaarSocialSlots(content);
+  const hasSocial = socialSlots.some((s: any) => s.safe);
+  const whatsappHref = resolveBazaarWhatsAppHref(config, content, store);
+  const handleHome = () => { onClose(); window.location.href = '/'; };
+  const handleCategory = (cat: any) => { onClose(); window.location.href = `/category/${cat.slug || cat.id}`; };
+  const handleSubCategory = (cat: any) => handleCategory(cat);
+  const handleLogin = () => { onClose(); auth?.setShowLoginModal?.(true); };
+  const handleProfile = () => { onClose(); auth?.setShowProfileModal?.(true); };
+  const handleOrders = () => { onClose(); if (auth?.isLoggedIn) { order?.loadUserOrders?.(); auth.setShowOrdersModal(true); } else auth.setShowLoginModal(true); };
+  const handleLogout = () => { onClose(); auth?.logout?.(); };
+  const handleCart = () => { onClose(); ui?.setShowCart?.(true); };
+  const handleWishlist = () => { onClose(); auth?.setShowWishlistModal?.(true); };
+  const getCatImage = (c: any): string => {
+    const raw = c?.image || c?.image_url || c?.cover || '';
+    if (!raw) return '';
+    try { return getImageUrl(String(raw)); } catch { return String(raw); }
+  };
+  return (
+    <div ref={drawerRef} className="fixed inset-0 z-[70]" dir="rtl" role="dialog" aria-modal="true" data-testid="bazaar-drawer" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
+      <div className="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]" onClick={onClose} data-testid="bazaar-drawer-backdrop" />
+      <nav className="absolute inset-y-0 right-0 flex max-h-[100dvh] w-[320px] max-w-[85vw] flex-col overflow-hidden bg-white shadow-2xl" style={{ animation: 'bazaarSlideIn 220ms cubic-bezier(0.22,1,0.36,1) both' } as any} data-testid="bazaar-drawer-nav">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3.5">
+          <div className="flex items-center gap-2">
+            {config?.logo || store?.logo ? (
+              <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto max-w-[90px] object-contain" />
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600 text-white text-xs font-black">س</span>
+                <span className="text-sm font-extrabold text-slate-900">{config?.storeName || store?.name}</span>
+              </span>
+            )}
+          </div>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="إغلاق القائمة" data-testid="bazaar-drawer-close"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3">
+          <button type="button" onClick={handleHome} data-testid="bazaar-drawer-home"
+            className="flex w-full items-center gap-3 rounded-xl bg-teal-600 px-3 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-teal-700 active:scale-[0.98]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white"><Home className="h-5 w-5" /></span>
+            الرئيسية
+            <ChevronLeft className="ms-auto h-4 w-4 text-white/60" />
+          </button>
+          <button type="button" onClick={handleCart} data-testid="bazaar-drawer-cart"
+            className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 active:scale-[0.98]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><ShoppingCart className="h-5 w-5" /></span>
+            <span className="flex-1 text-start">السلة</span>
+            {cartCount > 0 && <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-teal-600 px-1.5 text-xs font-black text-white">{cartCount}</span>}
+            <ChevronLeft className="h-4 w-4 text-slate-300" />
+          </button>
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <button type="button" onClick={() => setCategoriesOpen((v) => !v)} aria-expanded={categoriesOpen} aria-controls="bazaar-cats" data-testid="bazaar-drawer-categories-toggle"
+              className="flex h-[56px] w-full items-center gap-3 px-3 text-start transition">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-teal-600 ring-1 ring-slate-200"><LayoutGrid className="h-5 w-5" /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-extrabold leading-none text-slate-900">الأقسام</span>
+                <span className="mt-1 block text-[11px] font-medium leading-none text-slate-400">{categories.length ? `${categories.length} أقسام` : 'استكشف الأقسام'}</span>
+              </span>
+              <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {categoriesOpen && (
+              <div id="bazaar-cats" className="border-t border-slate-200 bg-white px-2 py-2">
+                {categories.length === 0 ? (
+                  <p className="px-3 py-4 text-center text-sm text-slate-400">لا توجد أقسام حالياً</p>
+                ) : (
+                  <div className="space-y-1">
+                    {categories.slice(0, 30).map((cat: any) => {
+                      const img = getCatImage(cat);
+                      const subs: any[] = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+                      const hasSubs = subs.length > 0;
+                      const isExpanded = expandedCatId === String(cat.id);
+                      return (
+                        <div key={cat.id} className="rounded-lg">
+                          <div className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+                            <button type="button" onClick={() => handleCategory(cat)} className="flex flex-1 items-center gap-2.5 text-start" data-testid={`bazaar-cat-${cat.id}`}>
+                              {img ? (
+                                <img src={img} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" loading="lazy" />
+                              ) : (
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-600 ring-1 ring-slate-200"><LayoutGrid className="h-4 w-4" /></span>
+                              )}
+                              <span className="flex-1 truncate text-[13px] font-bold text-slate-900">{cat.name}</span>
+                            </button>
+                            {hasSubs ? (
+                              <button type="button" onClick={() => setExpandedCatId(isExpanded ? null : String(cat.id))} aria-label="عرض الأقسام الفرعية" data-testid={`bazaar-cat-toggle-${cat.id}`} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
+                                <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                              </button>
+                            ) : (
+                              <ChevronLeft className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                            )}
+                          </div>
+                          {hasSubs && isExpanded && (
+                            <div className="ms-6 mt-1 space-y-0.5 border-s-2 border-slate-100 ps-2">
+                              {subs.map((sub: any) => {
+                                const subImg = getCatImage(sub);
+                                return (
+                                  <button key={sub.id} type="button" onClick={() => handleSubCategory(sub)} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start hover:bg-slate-50" data-testid={`bazaar-subcat-${sub.id}`}>
+                                    {subImg ? <img src={subImg} alt="" className="h-6 w-6 shrink-0 rounded-md object-cover ring-1 ring-slate-200" loading="lazy" /> : <span className="h-6 w-6 shrink-0 rounded-md bg-slate-100" />}
+                                    <span className="flex-1 truncate text-[12px] font-semibold text-slate-700">{sub.name}</span>
+                                    <ChevronLeft className="h-3 w-3 text-slate-300" />
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {canShowAccount && (
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+              <button type="button" onClick={() => setAccountOpen((v) => !v)} aria-expanded={accountOpen} aria-controls="bazaar-account" data-testid="bazaar-drawer-account-toggle"
+                className="flex h-[56px] w-full items-center gap-3 px-3 text-start transition">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white"><User className="h-5 w-5" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-extrabold leading-none text-slate-900">الحساب</span>
+                  <span className="mt-1 block truncate text-[11px] font-medium leading-none text-slate-400">{isLoggedIn ? (customerName || 'إدارة الحساب') : 'تسجيل الدخول أو إنشاء حساب'}</span>
+                </span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {accountOpen && (
+                <div id="bazaar-account" className="border-t border-slate-200 bg-white px-2 py-2">
+                  {isLoggedIn ? (
+                    <>
+                      {(customerName || customerEmail) && (
+                        <div className="mx-1 mb-2 flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[12px] font-bold text-white">{(customerName || customerEmail || '؟').trim().charAt(0).toUpperCase()}</span>
+                          <span className="min-w-0 flex-1">
+                            {customerName && <span className="block truncate text-[12px] font-bold text-slate-900">{customerName}</span>}
+                            {(customerEmail || customerPhone) && <span className="block truncate text-[11px] text-slate-500">{customerEmail || customerPhone}</span>}
+                          </span>
+                        </div>
+                      )}
+                      <div className="space-y-0.5">
+                        <button type="button" onClick={handleProfile} data-testid="bazaar-account-profile" className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-slate-900 hover:bg-slate-50"><BadgeCheck className="h-4 w-4 text-slate-400" /> حسابي <ChevronLeft className="ms-auto h-3.5 w-3.5 text-slate-300" /></button>
+                        <button type="button" onClick={handleOrders} data-testid="bazaar-account-orders" className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-slate-900 hover:bg-slate-50"><Package className="h-4 w-4 text-slate-400" /> طلباتي <ChevronLeft className="ms-auto h-3.5 w-3.5 text-slate-300" /></button>
+                        <button type="button" onClick={handleWishlist} data-testid="bazaar-account-wishlist" className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-slate-900 hover:bg-slate-50"><Heart className="h-4 w-4 text-slate-400" /> المفضلة <ChevronLeft className="ms-auto h-3.5 w-3.5 text-slate-300" /></button>
+                        <div className="mx-3 my-1 h-px bg-slate-100" />
+                        <button type="button" onClick={handleLogout} data-testid="bazaar-account-logout" className="flex h-[44px] w-full items-center gap-3 rounded-lg px-3 text-start text-[13px] font-bold text-red-600 hover:bg-red-50"><LogOut className="h-4 w-4" /> تسجيل الخروج</button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="px-1 py-1">
+                      <p className="px-2 text-[11px] leading-relaxed text-slate-400">سجّل الدخول لمتابعة حسابك وطلباتك</p>
+                      <div className="mt-2 space-y-1.5">
+                        <button type="button" onClick={handleLogin} data-testid="bazaar-account-login" className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-[13px] font-extrabold text-white transition hover:bg-slate-800 active:scale-[0.98]"><LogIn className="h-4 w-4" /> تسجيل الدخول</button>
+                        {registrationEnabled && <button type="button" onClick={handleLogin} data-testid="bazaar-account-register" className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-[13px] font-bold text-slate-900 ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]"><User className="h-4 w-4" /> إنشاء حساب</button>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {whatsappHref && (
+            <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={onClose} data-testid="bazaar-drawer-whatsapp"
+              className="flex h-[52px] w-full items-center gap-3 rounded-xl bg-white px-3 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white"><MessageCircle className="h-5 w-5" fill="white" /></span>
+              <span className="flex-1 text-start">
+                <span className="block text-[13px] font-bold leading-none text-slate-900">تواصل معنا</span>
+                <span className="mt-1 block text-[11px] leading-none text-slate-400">تواصل عبر واتساب</span>
+              </span>
+              <ChevronLeft className="h-4 w-4 text-slate-300" />
+            </a>
+          )}
+          {hasSocial && (
+            <>
+              <div className="h-px bg-slate-100" />
+              <div data-testid="bazaar-drawer-social">
+                <p className="mb-2 text-[11px] font-extrabold tracking-wide text-slate-400">تابعنا</p>
+                <div className="flex flex-wrap gap-2">
+                  {socialSlots.filter((s: any) => s.safe).slice(0,6).map((slot: any) => {
+                    const Icon = getBazaarSocialIcon(slot.platform);
+                    return (
+                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} data-testid={`bazaar-social-${slot.platform}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm transition hover:bg-slate-800 active:scale-95">
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </nav>
+      <style>{`@media (prefers-reduced-motion: reduce) { [data-testid="bazaar-drawer-nav"] { animation: none !important; } } @keyframes bazaarSlideIn { from { transform: translateX(18px); opacity: 0; } to { transform: none; opacity: 1; } }`}</style>
+    </div>
   );
 }
 
@@ -349,6 +697,7 @@ export const BazaarMarketRoot: React.FC<TemplateRootProps> = ({ storeData, mode,
     return (
       <div dir="rtl" className="min-h-screen bg-slate-50 pb-16 md:pb-0">
         <BazaarHeader />
+        <BazaarWhatsAppFloating />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-black text-slate-900">{page?.title}</h1>
           <article dangerouslySetInnerHTML={createSafeHtml(page?.content || '')} />
@@ -395,6 +744,7 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   return (
     <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 antialiased">
       <BazaarHeader />
+      <BazaarWhatsAppFloating />
       <main className="space-y-12 pb-16">
         <BazaarHero banners={banners} />
 
@@ -498,6 +848,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
   return (
     <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 antialiased pb-16 md:pb-0">
       <BazaarHeader homeHref="/" />
+      <BazaarWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500" aria-label="مسار التنقل">
           <a href="/" className="font-bold hover:text-teal-700">الرئيسية</a>
