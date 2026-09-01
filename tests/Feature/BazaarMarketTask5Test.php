@@ -50,13 +50,29 @@ class BazaarMarketTask5Test extends TestCase
         return array_slice($out, 0, 20);
     }
 
+    private function coerceBoolean(mixed $v): bool
+    {
+        if ($v === true || $v === 1) return true;
+        if ($v === false || $v === 0) return false;
+        if ($v === null) return false;
+        if (is_string($v)) {
+            $s = strtolower(trim($v));
+            if ($s === '') return false;
+            if (in_array($s, ['true','1','yes','on','enabled'], true)) return true;
+            if (in_array($s, ['false','0','no','off','disabled'], true)) return false;
+            if (is_numeric($s)) return (int)$s !== 0;
+            return false;
+        }
+        if (is_numeric($v)) return (int)$v !== 0;
+        return (bool)$v;
+    }
     private function getBazaarAnnouncementConfig(?array $content): array
     {
         $raw = $content['bazaar_announcement'] ?? $content['bazaar_announcement_bar'] ?? [];
         if (!is_array($raw)) $raw = [];
         $enabledRaw = $raw['enabled'] ?? $raw['show'] ?? $content['bazaar_announcement_enabled'] ?? null;
-        $enabled = $enabledRaw !== null ? (bool)$enabledRaw : false;
-        $isEnabled = $enabled === true;
+        $hasExplicit = $enabledRaw !== null;
+        $isEnabled = $hasExplicit ? $this->coerceBoolean($enabledRaw) : false;
 
         $messages = [];
         if (!empty($raw['messages']) && is_array($raw['messages'])) $messages = $this->normalizeMessages($raw['messages']);
@@ -157,15 +173,18 @@ class BazaarMarketTask5Test extends TestCase
 
         $bazaar = file_get_contents(base_path('resources/js/templates-v2/bazaar-market/BazaarMarket.tsx'));
         $this->assertStringContainsString('BazaarAnnouncementBar', $bazaar);
-        // Must be below header and above hero: header string before announcement before hero
+        // Must be ABOVE header and above hero: announcement before header before hero (per spec: announcement normal top bar then sticky header)
         $posHeader = strpos($bazaar, '<BazaarHeader');
         $posAnn = strpos($bazaar, '<BazaarAnnouncementBar');
         $posHero = strpos($bazaar, '<BazaarHero');
         $this->assertNotFalse($posHeader);
         $this->assertNotFalse($posAnn);
         $this->assertNotFalse($posHero);
-        $this->assertLessThan($posAnn, $posHeader, 'Announcement must be after header');
-        $this->assertLessThan($posHero, $posAnn, 'Announcement must be before hero');
+        $this->assertLessThan($posHeader, $posAnn, 'Announcement must be before header (above header)');
+        $this->assertLessThan($posHero, $posHeader, 'Header must be before hero (announcement above header)');
+        // Ensure announcement appears in all modes (home, category, page) before header
+        $this->assertGreaterThan(0, substr_count($bazaar, '<BazaarAnnouncementBar'), 'Announcement must be mounted in all modes');
+        $this->assertStringContainsString('coerceBazaarBoolean', $src, 'Boolean normalizer required');
         // Style: compact (rounded-2xl, border)
         $this->assertStringContainsString('rounded-2xl', $src);
     }

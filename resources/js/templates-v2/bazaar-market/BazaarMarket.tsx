@@ -130,6 +130,22 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   const count = (cart?.cartItems || []).reduce((n: number, i: any) => n + (Number(i.quantity) || 0), 0);
+  const wishCount = Number(wishlist?.count ?? wishlist?.wishlistCount ?? wishlist?.items?.length ?? 0) || 0;
+  const headerWishRefMobile = useRef<HTMLButtonElement>(null);
+  const headerWishRefDesktop = useRef<HTMLButtonElement>(null);
+  const prevWishCountRef = useRef<number>(wishCount);
+  useEffect(() => {
+    if (prevWishCountRef.current !== wishCount) {
+      const added = wishCount > prevWishCountRef.current;
+      if (headerWishRefMobile.current) triggerBazaarWishlistPop(headerWishRefMobile.current, added);
+      if (headerWishRefDesktop.current) triggerBazaarWishlistPop(headerWishRefDesktop.current, added);
+    }
+    prevWishCountRef.current = wishCount;
+  }, [wishCount]);
+  const handleHeaderWishlist = () => {
+    if (auth?.isLoggedIn) auth.setShowWishlistModal(true);
+    else auth.setShowLoginModal(true);
+  };
   const categories = (product?.categories || []).slice(0, 8);
   const handleMyOrders = () => {
     if (auth?.isLoggedIn) {
@@ -182,6 +198,12 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="bazaar-header-action flex h-11 w-11 items-center justify-center rounded-full text-slate-500" style={{ minWidth: 44, minHeight: 44 } as any}>
             <Search className="h-5 w-5" strokeWidth={1.8} />
           </button>
+          <button ref={headerWishRefMobile} type="button" onClick={handleHeaderWishlist} aria-label="المفضلة" data-testid="bazaar-header-wishlist-mobile" className="bazaar-header-action relative flex h-11 w-11 items-center justify-center rounded-full text-slate-500" style={{ minWidth: 44, minHeight: 44 } as any}>
+            <Heart className="h-5 w-5" strokeWidth={1.8} fill={wishCount > 0 ? 'currentColor' : 'none'} />
+            {wishCount > 0 && (
+              <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-black text-white">{wishCount > 99 ? '99+' : wishCount}</span>
+            )}
+          </button>
           <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" data-bazaar-cart className="bazaar-header-action relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700" style={{ minWidth: 44, minHeight: 44 } as any}>
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
@@ -208,10 +230,10 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
-          <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="bazaar-header-action relative rounded-full p-2.5 text-slate-500">
-            <Heart className="h-5 w-5" strokeWidth={1.8} />
-            {!!wishlist?.count && (
-              <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishlist.count}</span>
+          <button ref={headerWishRefDesktop} type="button" onClick={handleHeaderWishlist} aria-label="المفضلة" data-testid="bazaar-header-wishlist-desktop" className="bazaar-header-action relative rounded-full p-2.5 text-slate-500">
+            <Heart className="h-5 w-5" strokeWidth={1.8} fill={wishCount > 0 ? 'currentColor' : 'none'} />
+            {wishCount > 0 && (
+              <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishCount > 99 ? '99+' : wishCount}</span>
             )}
           </button>
           {canShowAuth && (
@@ -303,7 +325,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
   const handleOrders = () => { onClose(); if (auth?.isLoggedIn) { order?.loadUserOrders?.(); auth.setShowOrdersModal(true); } else auth.setShowLoginModal(true); };
   const handleLogout = () => { onClose(); auth?.logout?.(); };
   const handleCart = () => { onClose(); ui?.setShowCart?.(true); };
-  const handleWishlist = () => { onClose(); auth?.setShowWishlistModal?.(true); };
+  const handleWishlist = () => { onClose(); if (auth?.isLoggedIn) auth?.setShowWishlistModal?.(true); else auth?.setShowLoginModal?.(true); };
   const getCatImage = (c: any): string => {
     const raw = c?.image || c?.image_url || c?.cover || '';
     if (!raw) return '';
@@ -743,6 +765,7 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
   };
 
   const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (!auth?.isLoggedIn) {
       // preserve auth gate — do not show fake success
@@ -781,7 +804,8 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
           ref={wishBtnRef}
           type="button"
           onClick={handleWishlist}
-          aria-label="المفضلة"
+          aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+          data-testid={`bazaar-wishlist-${String(product.id)}`}
           className={`bazaar-wishlist absolute top-2.5 left-2.5 rounded-full p-2 backdrop-blur ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
         >
           <Heart className="h-3.5 w-3.5" fill={wished ? 'currentColor' : 'none'} />
@@ -842,8 +866,8 @@ export const BazaarMarketRoot: React.FC<TemplateRootProps> = ({ storeData, mode,
   if (mode === 'page') {
     return (
       <div dir="rtl" className="min-h-screen bg-slate-50 pb-16 md:pb-0">
-        <BazaarHeader />
         <BazaarAnnouncementBar />
+        <BazaarHeader />
         <BazaarWhatsAppFloating />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-black text-slate-900">{page?.title}</h1>
@@ -893,8 +917,8 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
   return (
     <div dir="rtl" data-bazaar-root className="min-h-screen bg-slate-50 text-slate-800 antialiased">
-      <BazaarHeader />
       <BazaarAnnouncementBar />
+      <BazaarHeader />
       <BazaarWhatsAppFloating />
       <main className="space-y-12 pb-16">
         <BazaarHero banners={banners} />
@@ -1000,8 +1024,8 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
 
   return (
     <div dir="rtl" data-bazaar-root className="min-h-screen bg-slate-50 text-slate-800 antialiased pb-16 md:pb-0">
-      <BazaarHeader homeHref="/" />
       <BazaarAnnouncementBar />
+      <BazaarHeader homeHref="/" />
       <BazaarWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500" aria-label="مسار التنقل">

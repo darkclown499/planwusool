@@ -4,7 +4,7 @@ import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
-import { ensureBazaarInteractionsStyle } from './bazaarInteractions';
+import { ensureBazaarInteractionsStyle, triggerBazaarWishlistPop } from './bazaarInteractions';
 
 interface BazaarProductDetailProps {
   product: any;
@@ -195,9 +195,12 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
       if (ok !== false) handleClose();
     } finally { setAdding(false); }
   };
+  const wishBtnRef = useRef<HTMLButtonElement>(null);
   const handleWishlist = async () => {
     if (!auth?.isLoggedIn) { auth?.setShowLoginModal?.(true); return; }
-    await wishlist.toggle(product.id);
+    const res: 'added' | 'removed' | false = await wishlist.toggle(product.id);
+    if (res === false) return;
+    if (wishBtnRef.current) triggerBazaarWishlistPop(wishBtnRef.current, res === 'added');
   };
 
   const backdropOpacity = exiting ? 0 : Math.max(0, Math.min(1, 1 - dragY / 520));
@@ -349,7 +352,7 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
             <span className="w-8 text-center text-sm font-black text-slate-900">{qty}</span>
             <button type="button" onClick={() => setQty((q) => q + 1)} className="bazaar-qty-btn px-3 py-2.5 text-slate-700" aria-label="زيادة"><Plus className="h-4 w-4" /></button>
           </div>
-          <button type="button" onClick={handleWishlist} aria-label={wished ? 'في المفضلة' : 'أضف للمفضلة'} className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm transition ${wished ? 'border-rose-300 bg-rose-500 !text-white' : 'border-slate-200 text-slate-500 hover:border-rose-200 hover:text-rose-500'}`}>
+          <button ref={wishBtnRef} type="button" onClick={handleWishlist} aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'} data-testid={`bazaar-wishlist-detail-${String(product.id)}`} className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm transition ${wished ? 'border-rose-300 bg-rose-500 !text-white' : 'border-slate-200 text-slate-500 hover:border-rose-200 hover:text-rose-500'}`}>
             <Heart className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} />
           </button>
           <button type="button" onClick={handleAdd} disabled={missingGroups.length > 0 || outOfStock || isSelectedOOS} className="bazaar-btn flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-sm font-black text-white shadow disabled:bg-slate-200 disabled:text-slate-400" style={{ background: 'var(--store-primary, #0d9488)' } as any} data-testid="bazaar-add-to-cart">

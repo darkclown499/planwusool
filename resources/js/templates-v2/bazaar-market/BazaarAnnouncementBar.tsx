@@ -32,14 +32,32 @@ export function normalizeBazaarMessages(raw: any): string[] {
   return out;
 }
 
+export function coerceBazaarBoolean(value: any): boolean {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0) return false;
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') {
+    const s = String(value).trim().toLowerCase();
+    if (s === '' ) return false;
+    if (['true', '1', 'yes', 'on', 'enabled'].includes(s)) return true;
+    if (['false', '0', 'no', 'off', 'disabled'].includes(s)) return false;
+    const n = Number(s);
+    if (Number.isFinite(n)) return n !== 0;
+    // Fallback: treat non-empty unknown string as true only if it is not explicitly false
+    return s.length > 0 ? s !== 'false' && s !== '0' : false;
+  }
+  if (typeof value === 'number') return value !== 0;
+  return !!value;
+}
+
 export function getBazaarAnnouncementConfig(content: any) {
   // Canonical bazaar path
   const raw: any = content?.bazaar_announcement ?? content?.bazaar_announcement_bar ?? {};
   // Also accept legacy flat keys for robustness
   const enabledRaw = raw.enabled ?? raw.show ?? content?.bazaar_announcement_enabled;
-  const enabled = enabledRaw !== undefined ? !!enabledRaw : !!raw.enabled;
-  // Default disabled — merchant must opt-in
-  const isEnabled = enabled === true;
+  const hasExplicitEnabled = enabledRaw !== undefined && enabledRaw !== null;
+  // Use strict boolean normalizer — covers "true"/"false"/"1"/"0"/1/0
+  const isEnabled = hasExplicitEnabled ? coerceBazaarBoolean(enabledRaw) : false;
 
   let messages: string[] = [];
   if (Array.isArray(raw.messages) && raw.messages.length) {
@@ -55,7 +73,7 @@ export function getBazaarAnnouncementConfig(content: any) {
   messages = messages.map((s) => String(s).trim()).filter(Boolean).slice(0, 20);
 
   const autoplayRaw = raw.autoplay ?? raw.auto_play ?? raw.autoRotate ?? true;
-  const autoplay = !!autoplayRaw;
+  const autoplay = coerceBazaarBoolean(autoplayRaw);
 
   let speedRaw = String(raw.speed ?? raw.interval ?? 'medium').toLowerCase().trim();
   if (!['slow', 'medium', 'fast'].includes(speedRaw)) {
