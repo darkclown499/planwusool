@@ -81,6 +81,11 @@ class ServicesServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\CartCalculationService::class, function () {
             return new \App\Services\CartCalculationService();
         });
+
+        // Storefront SEO Service (shared by every template via app.blade.php)
+        $this->app->singleton(\App\Services\StorefrontSeoService::class, function () {
+            return new \App\Services\StorefrontSeoService();
+        });
     }
 
     public function boot(): void

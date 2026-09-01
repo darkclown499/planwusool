@@ -485,6 +485,9 @@ class ThemeController extends Controller
             abort(404);
         }
 
+        // Expose the resolved category to the shared storefront SEO layer.
+        $request?->attributes->set('seo_category', $category);
+
         $theme = $store['theme'] ?? \App\Models\Store::DEFAULT_TEMPLATE;
         $locale = $storeData['config']['locale'] ?? 'ar';
 
@@ -1024,26 +1027,55 @@ class ThemeController extends Controller
     /**
      * On-demand product details for the storefront detail modal. Keeps heavy
      * fields (description, customFields, tax) out of the initial page payload.
+     *
+     * When called WITHOUT the JSON Accept header (a normal browser deep-link,
+     * search-engine crawler, or custom-domain visitor), the SAME /product/{ref}
+     * URL serves a server-rendered, crawlable storefront page whose <head>
+     * carries real product title/meta/canonical/OpenGraph + Product JSON-LD.
+     * The SPA modal behavior is fully preserved for JSON requests.
      */
     public function productDetail($storeSlug, $product, ?Request $request = null)
     {
+        $request = $request ?: request();
         $store = $this->getStore($storeSlug, $request);
 
         $productModel = Product::where('store_id', $store['id'])
-            ->where('id', $product)
             ->where('is_active', true)
             ->with('category')
+            ->when(
+                ctype_digit((string) $product),
+                fn ($q) => $q->where(function ($qq) use ($product) {
+                    $qq->where('id', (int) $product)->orWhere('seo_url_slug', $product);
+                }),
+                fn ($q) => $q->where('seo_url_slug', $product)
+            )
             ->first();
 
         if (!$productModel) {
-            return response()->json(['error' => 'Product not found'], 404);
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
+            abort(404);
         }
         // Hide if category inactive
         if ($productModel->category && !$productModel->category->is_active) {
-            return response()->json(['error' => 'Product not found'], 404);
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
+            abort(404);
         }
 
-        return response()->json(['product' => $this->formatFullProduct($productModel)]);
+        if ($request->wantsJson()) {
+            return response()->json(['product' => $this->formatFullProduct($productModel)]);
+        }
+
+        // Server-rendered crawlable page: expose the product to the shared SEO
+        // layer (used by app.blade.php) and render the storefront SPA homepage.
+        $request->attributes->set('seo_product', $productModel);
+        $request->attributes->set('seo_context', 'product');
+        $request->merge(['action' => 'product', 'product_id' => $productModel->id]);
+
+        return $this->home($storeSlug, $request);
     }
 
     /**

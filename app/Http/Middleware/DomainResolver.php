@@ -208,8 +208,17 @@ class DomainResolver
             if ($request->wantsJson()) {
                 return app(\App\Http\Controllers\ThemeController::class)->productDetail($store->slug, $segments[1], $request);
             }
-            // Product detail page (single-page storefront: render the homepage)
+            // Product detail page (single-page storefront: render the homepage).
+            // Resolve the product so the shared SEO layer can emit real
+            // product meta + JSON-LD for crawlers/deep-links on custom domains.
+            $seoProduct = app(\App\Services\StorefrontSeoService::class)
+                ->setStore($store)
+                ->resolveProduct((string) $segments[1]);
             $request->merge(['action' => 'product', 'product_id' => $segments[1]]);
+            if ($seoProduct) {
+                $request->attributes->set('seo_product', $seoProduct);
+                $request->attributes->set('seo_context', 'product');
+            }
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         } elseif ($segments[0] === 'search') {
             // Dedicated storefront search results page — store-scoped, paginated, server-authoritative.

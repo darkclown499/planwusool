@@ -33,13 +33,34 @@
     $isSearchPage = ($page['component'] ?? '') === 'store/search';
     $isPrivateRoute = !$isLandingRoute && !$isStoreRoute && !$isStaticRoute && !$isSitemap;
     $isPreview = request()->has('preview');
+
+    // Centralized storefront SEO: every template shares this single layer.
+    // The service resolves store/product/category/search/private context from
+    // the request and the resolved store, producing title/meta/canonical/robots
+    // OpenGraph + JSON-LD. It only does real work on store routes.
+    $seo = app(\App\Services\StorefrontSeoService::class)->resolve(request());
+    $store = $request->attributes->get('resolved_store')
+        ?? session('currentStore')
+        ?? (request()->routeIs('store.*') ? request()->route('store') : null)
+        ?? $seo->getStore();
+    $seoStoreTitle = $seo->getTitle();
+    $seoStoreDesc = $seo->getDescription();
+    $seoStoreKeywords = $seo->getKeywords();
+    $seoStoreImage = $seo->getImage();
+    $seoStoreCanonical = $seo->getCanonical(request());
+    $seoJsonLd = $seo->getJsonLd();
+    // A store page is never indexed when the shared layer flags noindex, the
+    // page is a search-result page, or the merchant is previewing a template.
+    $storeIsSearch = $seo->getContext() === 'search';
+    $storeNoIndex = $seo->isNoindex() || $isPreview || $storeIsSearch;
+    $isStoreNoIndexed = $isStoreRoute && $storeNoIndex;
 @endphp
 <html lang="{{ $locale }}" dir="{{ $dir }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="robots" content="{{ ($isPrivateRoute || $isPreview || $isSearchPage) ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
+        <meta name="robots" content="{{ ($isPrivateRoute || $isPreview || $isSearchPage || $isStoreNoIndexed) ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' }}">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         @php
             $googleVerification = getSetting('googleVerification', '');
@@ -287,30 +308,14 @@
 
         @if($isStoreRoute)
             @php
-                $store = session('currentStore') ?? request()->attributes->get('resolved_store') ?? request()->route('store') ?? null;
-                $storeTitle = $store ? ($store->seo_title ?: $store->name) : config('app.name', 'Wusool');
-                $storeDesc = $store?->seo_description ?? '';
-                $storeKeywords = $store?->seo_keywords ?? '';
-                $storeImage = $store?->seo_image ?? '';
-                if ($store) {
-                    $storeConfig = \App\Models\StoreConfiguration::getConfiguration($store->id);
-                    if (!$store->seo_title && !empty($storeConfig['meta_title'])) {
-                        $storeTitle = $storeConfig['meta_title'];
-                    }
-                    if (empty($storeDesc) && !empty($storeConfig['meta_description'])) {
-                        $storeDesc = $storeConfig['meta_description'];
-                    }
-                    if (empty($storeKeywords) && !empty($storeConfig['meta_keywords'])) {
-                        $storeKeywords = $storeConfig['meta_keywords'];
-                    }
-                    if (empty($storeImage) && !empty($storeConfig['og_image'])) {
-                        $storeImage = $storeConfig['og_image'];
-                    }
-                }
-                if ($storeImage && !str_starts_with($storeImage, 'http')) {
-                    $storeImage = rtrim($appUrl, '/') . '/' . ltrim($storeImage, '/');
-                }
-                $storeCanonical = url()->current();
+                // Shared storefront SEO layer (see StorefrontSeoService). All
+                // templates render through this single source of truth.
+                $storeTitle = $seoStoreTitle ?: config('app.name', 'Wusool');
+                $storeDesc = $seoStoreDesc;
+                $storeKeywords = $seoStoreKeywords;
+                $storeImage = $seoStoreImage;
+                $storeCanonical = $seoStoreCanonical;
+                $storeSiteName = $store->name ?? config('app.name', 'Wusool');
             @endphp
             <title>{{ $storeTitle }}</title>
             @if($storeDesc)
@@ -320,7 +325,7 @@
                 <meta name="keywords" content="{{ $storeKeywords }}">
             @endif
             <link rel="canonical" href="{{ $storeCanonical }}">
-            <meta property="og:site_name" content="{{ $store->name ?? config('app.name', 'Wusool') }}">
+            <meta property="og:site_name" content="{{ $storeSiteName }}">
             <meta property="og:title" content="{{ $storeTitle }}">
             @if($storeDesc)
                 <meta property="og:description" content="{{ $storeDesc }}">
@@ -341,34 +346,11 @@
             @if($storeImage)
                 <meta name="twitter:image" content="{{ $storeImage }}">
             @endif
-            @if($store)
+            @if(count($seoJsonLd))
             <script type="application/ld+json">
             {!! json_encode([
                 '@' . 'context' => 'https://schema.org',
-                '@graph' => [
-                    [
-                        '@type' => 'Store',
-                        'name' => $store->name,
-                        'description' => $store->description ?? $storeDesc,
-                        'url' => $storeCanonical,
-                        'image' => $storeImage ?: null,
-                        'merchant' => [
-                            '@type' => 'Organization',
-                            'name' => config('app.name', 'Wusool'),
-                        ],
-                    ],
-                    [
-                        '@type' => 'BreadcrumbList',
-                        'itemListElement' => [
-                            [
-                                '@type' => 'ListItem',
-                                'position' => 1,
-                                'name' => $store->name,
-                                'item' => $storeCanonical,
-                            ],
-                        ],
-                    ],
-                ],
+                '@graph' => $seoJsonLd,
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
             </script>
             @endif
