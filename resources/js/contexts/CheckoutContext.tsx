@@ -599,26 +599,15 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        let methods = data.payment_methods || [];
-        // Ensure COD is always available as standard payment choice across all checkout flows
-        const hasCOD = methods.some((m: any) => ['cod', 'cash', 'cash_on_delivery', 'cash-on-delivery'].includes(String(m.name || m.code || '').toLowerCase()));
-        if (!hasCOD) {
-          methods = [
-            ...methods,
-            {
-              name: 'cod',
-              code: 'cod',
-              display_name: 'الدفع عند الاستلام',
-              description: 'ادفع نقداً عند توصيل الطلب',
-              enabled: true,
-            },
-          ];
-        }
+        // Payment methods come from the store configuration — never inject
+        // methods (e.g. forced COD) that the merchant has disabled.
+        const methods = data.payment_methods || [];
         setPaymentMethods(methods);
-        // Auto-select COD if no selection and COD is enabled
-        if (!selectedPayment) {
-          const cod = methods.find((m: any) => String(m.name).toLowerCase() === 'cod');
-          if (cod) setSelectedPayment('cod');
+        // Pre-select a method only when none chosen yet: prefer COD when it is
+        // enabled (standard first choice), otherwise the first available method.
+        if (!selectedPayment && methods.length > 0) {
+          const cod = methods.find((m: any) => ['cod', 'cash', 'cash_on_delivery'].includes(String(m.name || m.code || '').toLowerCase()));
+          setSelectedPayment(cod ? String(cod.name || cod.code) : String(methods[0].name || methods[0].code));
         }
       } else {
         // Fallback: at least expose COD when API fails

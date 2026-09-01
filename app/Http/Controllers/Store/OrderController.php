@@ -156,14 +156,33 @@ class OrderController extends Controller
                 }
             }
 
-            // Store isolation: payment method must be enabled for this store (COD always allowed as fallback)
+            // Store isolation: payment method must be enabled for this store.
+            // COD stays default-on for stores that never configured it, but an
+            // explicit merchant disable (is_cod_enabled = 0) is respected server-side.
             if ($request->payment_method) {
+                $storeModel = \App\Models\Store::find($request->store_id);
                 $enabledMethods = getEnabledPaymentMethods(
-                    \App\Models\Store::find($request->store_id)?->user_id,
+                    $storeModel?->user_id,
                     $request->store_id
                 );
-                $allowedAlways = ['cod','cash','cash_on_delivery'];
-                if (!isset($enabledMethods[$request->payment_method]) && !in_array($request->payment_method, $allowedAlways, true)) {
+                $selectedMethod = $request->payment_method;
+                // Normalize legacy aliases to the canonical 'cod' identifier so the
+                // same enable/disable rule applies to every spelling.
+                if (in_array($selectedMethod, ['cash','cash_on_delivery','cash-on-delivery'], true)) {
+                    $selectedMethod = 'cod';
+                }
+
+                $methodBlocked = false;
+                if ($selectedMethod === 'cod') {
+                    $codSettings = \App\Models\PaymentSetting::getUserSettings($storeModel?->user_id, $request->store_id);
+                    $codExplicitlyDisabled = array_key_exists('is_cod_enabled', $codSettings) && !$codSettings['is_cod_enabled'];
+                    $methodBlocked = $codExplicitlyDisabled;
+                } else {
+                    // Non-COD providers must be enabled in the store configuration.
+                    $methodBlocked = !isset($enabledMethods[$selectedMethod]);
+                }
+
+                if ($methodBlocked) {
                     return response()->json([
                         'success' => false,
                         'message' => 'طريقة الدفع المحددة غير مفعلة لهذا المتجر.',
