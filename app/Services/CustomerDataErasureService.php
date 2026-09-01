@@ -77,6 +77,12 @@ class CustomerDataErasureService
             // 2. Delete addresses (PII)
             CustomerAddress::where('customer_id', $customerId)->delete();
 
+            // 2b. Purge merchant CRM rows keyed to this customer identity so a
+            // deletion cannot leave internal notes/tags about a deleted person.
+            $ref = app(\App\Services\CustomerIdentityService::class)->refForCanonical($customerId);
+            \App\Models\CustomerNote::where('store_id', $storeId)->where('customer_ref', $ref)->delete();
+            \App\Models\CustomerTag::where('store_id', $storeId)->where('customer_ref', $ref)->delete();
+
             // 3. Remove abandoned cart PII where customer matches
             try {
                 AbandonedCart::where('customer_id', $customerId)

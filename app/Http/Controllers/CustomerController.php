@@ -4,48 +4,57 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\CustomerAddress;
+use App\Models\CustomerNote;
+use App\Models\CustomerTag;
+use App\Services\CustomerDirectoryService;
+use App\Services\CustomerIdentityService;
+use App\Services\CustomerProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the merchant customer directory (search + filters + pagination).
+     * Returns BOTH canonical registered customers and aggregated guest identities.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
-        $customers = Customer::where('store_id', $currentStoreId)
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn ($customer) => sanitizeModelUtf8($customer));
-            
-        // Get statistics
-        $totalCustomers = Customer::where('store_id', $currentStoreId)->count();
-        $activeCustomers = Customer::where('store_id', $currentStoreId)->where('is_active', true)->count();
-        $newThisMonth = Customer::where('store_id', $currentStoreId)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->count();
-        $totalSpent = Customer::where('store_id', $currentStoreId)
-            ->where('total_orders', '>', 0)
-            ->sum('total_spent');
-        $totalOrders = Customer::where('store_id', $currentStoreId)
-            ->where('total_orders', '>', 0)
-            ->sum('total_orders');
-        $avgOrderValue = $totalOrders > 0 ? $totalSpent / $totalOrders : 0;
 
-        return Inertia::render('customers/index', [
-            'customers' => $customers,
-            'stats' => [
-                'totalCustomers' => $totalCustomers,
-                'activeCustomers' => $activeCustomers,
-                'newThisMonth' => $newThisMonth,
-                'avgOrderValue' => round($avgOrderValue, 2)
-            ]
+        $directory = app(CustomerDirectoryService::class)->directory(
+            (int) $currentStoreId,
+            $request->only(['search', 'filter', 'per_page', 'page', 'dormant_days'])
+        );
+
+        return Inertia::render('customers/index', $directory);
+    }
+
+    /**
+     * Customer 360 profile — resolved by a signed URL-safe token so raw
+     * phone/email never appear in the address bar. Works for both canonical
+     * and guest identities, and is always tenant-scoped by store.
+     *
+     * Keeps the legacy canonical ``customers.show`` (by numeric id) working via
+     * a redirect. Direct id substitution across stores is rejected (404).
+     */
+    public function profile(string $token)
+    {
+        $user = Auth::user();
+        $storeId = (int) getCurrentStoreId($user);
+
+        $ref = app(CustomerIdentityService::class)->refFromToken($token);
+        if ($ref === null) {
+            abort(404);
+        }
+
+        $profile = app(CustomerProfileService::class)->profileForRef($storeId, $ref);
+
+        return Inertia::render('customers/show', [
+            'profile' => $profile,
         ]);
     }
 
@@ -89,16 +98,14 @@ class CustomerController extends Controller
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
 
-        // Check if email is already in use for this store
         $existingCustomer = Customer::where('store_id', $currentStoreId)
             ->where('email', $request->email)
             ->first();
-            
+
         if ($existingCustomer) {
             return back()->with('error', __('A customer with this email already exists.'));
         }
 
-        // Create customer
         $customer = Customer::create([
             'store_id' => $currentStoreId,
             'first_name' => $request->first_name,
@@ -117,7 +124,6 @@ class CustomerController extends Controller
             'order_updates' => $request->order_updates
         ]);
 
-        // Create billing address if provided
         if ($request->billing_address) {
             $billingAddress = $request->billing_address;
             CustomerAddress::create([
@@ -132,7 +138,6 @@ class CustomerController extends Controller
             ]);
         }
 
-        // Create shipping address if provided
         if ($request->shipping_address && !$request->same_as_billing) {
             $shippingAddress = $request->shipping_address;
             CustomerAddress::create([
@@ -146,7 +151,6 @@ class CustomerController extends Controller
                 'is_default' => true
             ]);
         } elseif ($request->same_as_billing && $request->billing_address) {
-            // Use billing address as shipping address
             $billingAddress = $request->billing_address;
             CustomerAddress::create([
                 'customer_id' => $customer->id,
@@ -165,55 +169,24 @@ class CustomerController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Legacy canonical customer detail by numeric id — kept for backward
+     * compatibility. Redirects to the token-based CRM profile so the UI always
+     * uses one canonical 360 route. Tenant-scoped with 404 on cross-store id.
      */
     public function show($id)
     {
         $user = Auth::user();
-        $currentStoreId = getCurrentStoreId($user);
-        
-        $customer = Customer::where('store_id', $currentStoreId)
-            ->with(['addresses'])
-            ->findOrFail($id);
-        
-        // Sanitize text fields before sending to the frontend to avoid JSON encoding failures.
-        $customer = sanitizeModelUtf8($customer);
-        
-        // Calculate dynamic customer statistics from actual orders
-        $orders = \App\Models\Order::where('customer_id', $customer->id)
-                                  ->where('store_id', $currentStoreId)
-                                  ->get();
-        
-        $totalOrders = $orders->count();
-        $totalSpent = $orders->where('payment_status', 'paid')->sum('total_amount');
-        $avgOrderValue = $totalOrders > 0 ? $totalSpent / $totalOrders : 0;
-        $lastOrderDate = $orders->max('created_at');
-        $pendingOrders = $orders->where('status', 'pending')->count();
-        
-        // Add calculated stats to customer data
-        $customer->total_orders = $totalOrders;
-        $customer->total_spent = $totalSpent;
-        $customer->avg_order_value = $avgOrderValue;
-        $customer->last_order_date = $lastOrderDate;
-        $customer->pending_orders = $pendingOrders;
-        
-        $billingAddress = $customer->addresses->where('type', 'billing')->first();
-        $shippingAddress = $customer->addresses->where('type', 'shipping')->first();
-        
-        return Inertia::render('customers/show', [
-            'customer' => $customer,
-            'billingAddress' => $billingAddress ? sanitizeModelUtf8($billingAddress) : null,
-            'shippingAddress' => $shippingAddress ? sanitizeModelUtf8($shippingAddress) : null,
-            'recentOrders' => $orders->take(5)->map(function($order) {
-                return [
-                    'id' => $order->id,
-                    'order_number' => $order->order_number,
-                    'total' => $order->total_amount,
-                    'status' => $order->status,
-                    'date' => $order->created_at->format('M j, Y')
-                ];
-            })
-        ]);
+        $currentStoreId = (int) getCurrentStoreId($user);
+
+        $customer = Customer::where('store_id', $currentStoreId)->find((int) $id);
+        if (! $customer) {
+            abort(404);
+        }
+
+        $ref = app(CustomerIdentityService::class)->refForCanonical($customer->id);
+        $token = app(CustomerIdentityService::class)->tokenForRef($ref);
+
+        return redirect()->route('customers.profile', $token);
     }
 
     /**
@@ -223,22 +196,21 @@ class CustomerController extends Controller
     {
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
+
         $customer = Customer::where('store_id', $currentStoreId)
             ->with(['addresses'])
             ->findOrFail($id);
-        
-        // Sanitize text fields before sending to the frontend to avoid JSON encoding failures.
+
         $customer = sanitizeModelUtf8($customer);
-        
+
         $billingAddress = $customer->addresses->where('type', 'billing')->first();
         $shippingAddress = $customer->addresses->where('type', 'shipping')->first();
-        
+
         return Inertia::render('customers/edit', [
             'customer' => $customer,
             'billingAddress' => $billingAddress ? sanitizeModelUtf8($billingAddress) : null,
             'shippingAddress' => $shippingAddress ? sanitizeModelUtf8($shippingAddress) : null,
-            'sameAsBilling' => $billingAddress && $shippingAddress && 
+            'sameAsBilling' => $billingAddress && $shippingAddress &&
                 $billingAddress->address === $shippingAddress->address &&
                 $billingAddress->city === $shippingAddress->city &&
                 $billingAddress->postal_code === $shippingAddress->postal_code
@@ -276,20 +248,18 @@ class CustomerController extends Controller
 
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
+
         $customer = Customer::where('store_id', $currentStoreId)->findOrFail($id);
-        
-        // Check if email is already in use by another customer
+
         $existingCustomer = Customer::where('store_id', $currentStoreId)
             ->where('email', $request->email)
             ->where('id', '!=', $id)
             ->first();
-            
+
         if ($existingCustomer) {
             return back()->with('error', __('A customer with this email already exists.'));
         }
 
-        // Update customer
         $customer->update([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -307,7 +277,6 @@ class CustomerController extends Controller
             'order_updates' => $request->order_updates
         ]);
 
-        // Update or create billing address
         if ($request->billing_address) {
             $billingAddress = $request->billing_address;
             CustomerAddress::updateOrCreate(
@@ -326,7 +295,6 @@ class CustomerController extends Controller
             );
         }
 
-        // Update or create shipping address
         if ($request->shipping_address && !$request->same_as_billing) {
             $shippingAddress = $request->shipping_address;
             CustomerAddress::updateOrCreate(
@@ -344,7 +312,6 @@ class CustomerController extends Controller
                 ]
             );
         } elseif ($request->same_as_billing && $request->billing_address) {
-            // Use billing address as shipping address
             $billingAddress = $request->billing_address;
             CustomerAddress::updateOrCreate(
                 [
@@ -374,61 +341,223 @@ class CustomerController extends Controller
     {
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
+
         $customer = Customer::where('store_id', $currentStoreId)->findOrFail($id);
         app(\App\Services\CustomerDataErasureService::class)->erase($customer);
 
         return redirect()->route('customers.index')
             ->with('success', __('Customer deleted successfully!'));
     }
-    
+
     /**
-     * Export customers data as CSV.
+     * Add an INTERNAL merchant note to a customer identity.
+     * Notes are merchant-only and scoped by store — never storefront-facing.
      */
-    public function export()
+    public function storeNote(Request $request, string $token)
     {
         $user = Auth::user();
-        $currentStoreId = getCurrentStoreId($user);
-        
-        $customers = Customer::where('store_id', $currentStoreId)
-            ->with(['addresses'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
+        $storeId = (int) getCurrentStoreId($user);
+
+        $ref = $this->resolveRefOrFail($token);
+        // Validate the ref actually belongs to this store before writing.
+        $this->assertRefExistsInStore($storeId, $ref);
+
+        $request->validate([
+            'note' => 'required|string|max:4000',
+        ]);
+
+        CustomerNote::create([
+            'store_id' => $storeId,
+            'customer_ref' => $ref,
+            'note' => trim($request->note),
+            'created_by' => $user->id,
+        ]);
+
+        return back();
+    }
+
+    /**
+     * Delete a merchant note (only the owning store's notes).
+     */
+    public function destroyNote(Request $request, string $token, int $noteId)
+    {
+        $user = Auth::user();
+        $storeId = (int) getCurrentStoreId($user);
+
+        $ref = $this->resolveRefOrFail($token);
+        $deleted = CustomerNote::where('store_id', $storeId)
+            ->where('customer_ref', $ref)
+            ->where('id', $noteId)
+            ->delete();
+
+        if (! $deleted) {
+            throw ValidationException::withMessages(['note' => ['الملاحظة غير موجودة']]);
+        }
+
+        return back();
+    }
+
+    /**
+     * Add a lightweight per-store merchant tag.
+     */
+    public function storeTag(Request $request, string $token)
+    {
+        $user = Auth::user();
+        $storeId = (int) getCurrentStoreId($user);
+
+        $ref = $this->resolveRefOrFail($token);
+        $this->assertRefExistsInStore($storeId, $ref);
+
+        $request->validate([
+            'name' => 'required|string|max:60',
+        ]);
+
+        $name = trim($request->name);
+        if ($name === '') {
+            throw ValidationException::withMessages(['name' => ['الوسم مطلوب']]);
+        }
+
+        CustomerTag::firstOrCreate([
+            'store_id' => $storeId,
+            'customer_ref' => $ref,
+            'name' => $name,
+        ]);
+
+        return back();
+    }
+
+    /**
+     * Remove a merchant tag.
+     */
+    public function destroyTag(Request $request, string $token, int $tagId)
+    {
+        $user = Auth::user();
+        $storeId = (int) getCurrentStoreId($user);
+
+        $ref = $this->resolveRefOrFail($token);
+        $deleted = CustomerTag::where('store_id', $storeId)
+            ->where('customer_ref', $ref)
+            ->where('id', $tagId)
+            ->delete();
+
+        if (! $deleted) {
+            throw ValidationException::withMessages(['tag' => ['الوسم غير موجود']]);
+        }
+
+        return back();
+    }
+
+    private function resolveRefOrFail(string $token): string
+    {
+        $ref = app(CustomerIdentityService::class)->refFromToken($token);
+        if ($ref === null) {
+            abort(404);
+        }
+
+        return $ref;
+    }
+
+    /**
+     * Ensure the identity keyed by ref exists within THIS store before any
+     * note/tag write, so a forged/hostile token cannot create rows keyed to a
+     * ref that belongs to another tenant (even though the note row itself is
+     * store-scoped and unreachable, we still refuse to write ghost rows).
+     */
+    private function assertRefExistsInStore(int $storeId, string $ref): void
+    {
+        $identity = app(CustomerIdentityService::class);
+        if ($identity->isCanonicalRef($ref)) {
+            $id = $identity->canonicalIdFromRef($ref);
+            if ($id && Customer::where('store_id', $storeId)->where('id', $id)->exists()) {
+                return;
+            }
+        }
+
+        $exists = \App\Models\Order::where('store_id', $storeId)
+            ->whereNull('customer_id')
+            ->limit(1)
+            ->get(['customer_id','customer_phone','customer_email','id'])
+            ->contains(function ($order) use ($identity, $ref) {
+                return $identity->refForOrder([
+                    'customer_id' => null,
+                    'customer_phone' => $order->customer_phone,
+                    'customer_email' => $order->customer_email,
+                    'id' => $order->id,
+                ]) === $ref;
+            });
+
+        if ($exists) {
+            return;
+        }
+
+        abort(404);
+    }
+
+    /**
+     * Export the merchant customer directory as CSV.
+     *
+     * Tenant-scoped (only the current store), and every free-text cell is
+     * guarded against CSV formula injection. Totals are emitted as raw numbers
+     * (no leading '=' etc.), one column per currency — never a combined value.
+     */
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+        $storeId = (int) getCurrentStoreId($user);
+        $identity = app(CustomerIdentityService::class);
+
+        $data = app(CustomerDirectoryService::class)->all($storeId, []);
+        $identities = $data['identities'];
+
         $csvData = [];
-        $csvData[] = ['First Name', 'Last Name', 'Email', 'Phone', 'Gender', 'Customer Group', 'Total Orders', 'Total Spent', 'Status', 'Email Marketing', 'Registration Date'];
-        
-        foreach ($customers as $customer) {
+        $csvData[] = [
+            'Name', 'Phone', 'Email', 'Orders Count',
+            'Order Value ILS', 'Order Value JOD', 'Order Value USD', 'Other Currencies',
+            'Cancelled Orders', 'Repeat Buyer', 'Customer Type',
+            'First Order', 'Last Order', 'Tags',
+        ];
+
+        $currencyCols = ['ILS', 'JOD', 'USD'];
+        foreach ($identities as $row) {
+            $totalsByCurrency = collect($row['totals'])->keyBy('currency');
+            $other = collect($row['totals'])
+                ->filter(fn ($g) => ! in_array($g['currency'], $currencyCols, true))
+                ->map(fn ($g) => $g['currency'] . ':' . number_format((float) $g['total'], 2))
+                ->implode('; ');
+
             $csvData[] = [
-                $customer->first_name,
-                $customer->last_name,
-                $customer->email,
-                $customer->phone ?: 'Not provided',
-                $customer->gender ? ucfirst($customer->gender) : 'Not specified',
-                $customer->customer_group ?: 'Regular',
-                $customer->total_orders ?: 0,
-                formatStoreCurrency($customer->total_spent ?: 0, $user->id, $currentStoreId),
-                $customer->is_active ? 'Active' : 'Inactive',
-                $customer->email_marketing ? 'Yes' : 'No',
-                $customer->created_at->format('Y-m-d H:i:s')
+                $identity->csvSafe($row['full_name']),
+                $identity->csvSafe($row['phone'] ?? ''),
+                $identity->csvSafe($row['email'] ?? ''),
+                (string) $row['orders_count'],
+                number_format((float) ($totalsByCurrency['ILS']['total'] ?? 0), 2),
+                number_format((float) ($totalsByCurrency['JOD']['total'] ?? 0), 2),
+                number_format((float) ($totalsByCurrency['USD']['total'] ?? 0), 2),
+                $identity->csvSafe($other),
+                (string) $row['cancelled_count'],
+                (bool) $row['is_repeat'] ? 'Yes' : 'No',
+                $row['kind'] === 'registered' ? 'Registered' : 'Guest',
+                $row['first_order_at'] ?? '',
+                $row['last_order_at'] ?? '',
+                $identity->csvSafe(implode(', ', $row['tags'] ?? [])),
             ];
         }
-        
+
         $filename = 'customers-export-' . now()->format('Y-m-d') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
-        
-        $callback = function() use ($csvData) {
+
+        $callback = function () use ($csvData) {
             $file = fopen('php://output', 'w');
             foreach ($csvData as $row) {
                 fputcsv($file, $row);
             }
             fclose($file);
         };
-        
+
         return response()->stream($callback, 200, $headers);
     }
 }

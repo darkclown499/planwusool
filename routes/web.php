@@ -913,6 +913,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('customers/{id}/edit', [\App\Http\Controllers\CustomerController::class, 'edit'])->middleware('permission:edit-customers')->name('customers.edit');
             Route::put('customers/{id}', [\App\Http\Controllers\CustomerController::class, 'update'])->middleware('permission:edit-customers')->name('customers.update');
             Route::delete('customers/{id}', [\App\Http\Controllers\CustomerController::class, 'destroy'])->middleware('permission:delete-customers')->name('customers.destroy');
+
+            // CRM Customer 360 + internal notes + merchant tags (all token-based, tenant-scoped)
+            Route::get('customers/profile/{token}', [\App\Http\Controllers\CustomerController::class, 'profile'])->middleware('permission:view-customers')->name('customers.profile');
+            Route::post('customers/profile/{token}/notes', [\App\Http\Controllers\CustomerController::class, 'storeNote'])->middleware('permission:edit-customers')->name('customers.notes.store');
+            Route::delete('customers/profile/{token}/notes/{noteId}', [\App\Http\Controllers\CustomerController::class, 'destroyNote'])->middleware('permission:edit-customers')->name('customers.notes.destroy');
+            Route::post('customers/profile/{token}/tags', [\App\Http\Controllers\CustomerController::class, 'storeTag'])->middleware('permission:edit-customers')->name('customers.tags.store');
+            Route::delete('customers/profile/{token}/tags/{tagId}', [\App\Http\Controllers\CustomerController::class, 'destroyTag'])->middleware('permission:edit-customers')->name('customers.tags.destroy');
+
             Route::get('customers/{id}', [\App\Http\Controllers\CustomerController::class, 'show'])->middleware('permission:view-customers')->name('customers.show');
         
         // Order Management routes with permissions
