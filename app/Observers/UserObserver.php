@@ -53,6 +53,7 @@ class UserObserver
                         'theme' => \App\Models\Store::DEFAULT_TEMPLATE,
                         'email' => $user->email,
                         'user_id' => $user->id,
+                        'partner_id' => $user->partner_id,
                     ]);
 
                     $user->forceFill(['current_store' => $store->id])->save();

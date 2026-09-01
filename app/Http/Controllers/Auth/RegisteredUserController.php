@@ -122,6 +122,17 @@ class RegisteredUserController extends Controller
             if ($referrer) {
                 $userData['used_referral_code'] = $request->referral_code;
             }
+
+            // Partner / agency attribution: only an APPROVED partner's public
+            // code may attribute a new merchant. Any other value is ignored
+            // safely and never persisted (no tampering possible from the client).
+            $partner = \App\Models\Partner::where('referral_code', $request->referral_code)
+                ->where('status', \App\Models\Partner::STATUS_APPROVED)
+                ->first();
+
+            if ($partner) {
+                $userData['partner_id'] = $partner->id;
+            }
         }
         
         $user = User::forceCreate($userData);

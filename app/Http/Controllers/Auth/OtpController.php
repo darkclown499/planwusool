@@ -180,6 +180,16 @@ class OtpController extends Controller
             if ($referrer) {
                 $userData['used_referral_code'] = $pending['referral_code'];
             }
+
+            // Partner / agency attribution: only an APPROVED partner's public
+            // code may attribute a new merchant (mirrors the fallback
+            // registration route). Any other value is ignored safely.
+            $partner = \App\Models\Partner::where('referral_code', $pending['referral_code'])
+                ->where('status', \App\Models\Partner::STATUS_APPROVED)
+                ->first();
+            if ($partner) {
+                $userData['partner_id'] = $partner->id;
+            }
         }
 
         // Prevent self-referral: pending referral code must not belong to same email's future account

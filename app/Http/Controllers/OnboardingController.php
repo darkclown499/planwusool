@@ -326,6 +326,7 @@ class OnboardingController extends Controller
             'theme' => \App\Models\Store::DEFAULT_TEMPLATE,
             'email' => $user->email,
             'user_id' => $user->id,
+            'partner_id' => $user->partner_id,
         ]);
 
         $user->current_store = $store->id;

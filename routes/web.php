@@ -8,6 +8,7 @@ use App\Http\Controllers\PlanRequestController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CompanyController;
 
@@ -1161,6 +1162,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('referral/payout-request', [ReferralController::class, 'createPayoutRequest'])->middleware('permission:manage-payout-referral')->name('referral.payout-request.create');
         Route::post('referral/payout-request/{payoutRequest}/approve', [ReferralController::class, 'approvePayoutRequest'])->middleware('permission:approve-payout-referral')->name('referral.payout-request.approve');
         Route::post('referral/payout-request/{payoutRequest}/reject', [ReferralController::class, 'rejectPayoutRequest'])->middleware('permission:reject-payout-referral')->name('referral.payout-request.reject');
+    });
+
+    // Partner / Agency program routes
+    // - apply / dashboard are for the partner's own account (company user with a
+    //   Partner profile). They are constrained to that account's own partner
+    //   record, so a partner can never see another partner's data.
+    // - admin/management routes are superadmin-only.
+    Route::get('partner/apply', [PartnerController::class, 'apply'])->name('partner.apply');
+    Route::post('partner/apply', [PartnerController::class, 'storeApplication'])->name('partner.apply.store');
+    Route::get('partner/dashboard', [PartnerController::class, 'dashboard'])->name('partner.dashboard');
+
+    Route::middleware('App\Http\Middleware\SuperAdminMiddleware')->group(function () {
+        Route::get('partner/admin', [PartnerController::class, 'adminIndex'])->name('partner.admin');
+        Route::post('partner/admin/{partner}/approve', [PartnerController::class, 'approve'])->name('partner.approve');
+        Route::post('partner/admin/{partner}/reject', [PartnerController::class, 'reject'])->name('partner.reject');
+        Route::post('partner/admin/{partner}/suspend', [PartnerController::class, 'suspend'])->name('partner.suspend');
+        Route::post('partner/admin/{partner}/reinstate', [PartnerController::class, 'reinstate'])->name('partner.reinstate');
     });
 
 

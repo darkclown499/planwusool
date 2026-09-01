@@ -9,7 +9,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { LayoutGrid, Store, CreditCard, Briefcase, Ticket, Gift, Image, Palette, Globe2, DollarSign, Mail, MessageSquare, Settings, Bell, Building2, ChevronDown, Zap } from 'lucide-react';
+import { LayoutGrid, Store, CreditCard, Briefcase, Ticket, Gift, Image, Palette, Globe2, DollarSign, Mail, MessageSquare, Settings, Bell, Building2, ChevronDown, Zap, Handshake } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState, useMemo } from 'react';
@@ -65,6 +65,7 @@ export function AppSidebar() {
         },
         { title: t('Coupons'), href: route('coupons.index'), icon: Ticket, groupLabel: t('Administration') },
         { title: t('Referral Program'), href: route('referral.index'), icon: Gift, groupLabel: t('Administration') },
+        { title: t('Partners'), href: route('partner.admin'), icon: Handshake, groupLabel: t('Administration') },
         { title: t('Media Library'), href: route('media-library'), icon: Image, groupLabel: t('Content') },
         {
             title: t('Landing Page'), icon: Palette, groupLabel: t('Content'),
@@ -119,6 +120,7 @@ export function AppSidebar() {
             hasPermission,
             routeExists,
             safeRoute,
+            isPartner: Boolean(auth?.user?.has_partner),
         });
     }, [isMerchant, activePrimary, currentStoreId, t, auth?.permissions, pageUrl]);
 

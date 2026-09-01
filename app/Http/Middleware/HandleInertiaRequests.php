@@ -239,6 +239,7 @@ class HandleInertiaRequests extends Middleware
                     'user'        => $user,
                     'roles'       => $request->user()?->roles->pluck('name'),
                     'permissions' => $request->user()?->getAllPermissions()->pluck('name'),
+                    'has_partner' => $request->user() ? (bool) $request->user()->partner : false,
                     'lang' => $locale,
                     'stores' => $stores
                 ];

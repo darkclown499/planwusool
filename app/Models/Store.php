@@ -107,6 +107,15 @@ protected $fillable = [
     }
 
     /**
+     * The partner attributed to this store (via merchant referral), if any.
+     * Referral does NOT grant the partner any access to this store.
+     */
+    public function partner()
+    {
+        return $this->belongsTo(\App\Models\Partner::class);
+    }
+
+    /**
      * Get the store configurations.
      */
     public function configurations()

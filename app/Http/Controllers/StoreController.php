@@ -337,6 +337,7 @@ class StoreController extends Controller
         $store->description = $request->description;
         $store->theme = $theme;
         $store->user_id = Auth::id();
+        $store->partner_id = Auth::user()->partner_id ?? null;
         $store->email = $request->email ?? null;
         $store->enable_custom_domain = $request->enable_custom_domain ?? false;
         $store->enable_custom_subdomain = $request->enable_custom_subdomain ?? false;

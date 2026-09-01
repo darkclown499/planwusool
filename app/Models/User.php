@@ -58,6 +58,7 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
         'google2fa_enable',
         'referral_code',
         'used_referral_code',
+        'partner_id',
         'password',
         'remember_token',
         'current_store',
@@ -303,6 +304,22 @@ class User extends BaseAuthenticatable implements MustVerifyEmail
     public function stores()
     {
         return $this->hasMany(Store::class);
+    }
+
+    /**
+     * The partner profile attached to this user, if any.
+     */
+    public function partner(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Partner::class);
+    }
+
+    /**
+     * Whether this user carries an approved partner profile.
+     */
+    public function isApprovedPartner(): bool
+    {
+        return $this->partner && $this->partner->isApproved();
     }
 
     /**

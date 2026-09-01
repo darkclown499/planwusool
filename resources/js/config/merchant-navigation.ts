@@ -132,7 +132,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     if (sid && path.startsWith(`/stores/${sid}/customer-accounts`)) return 'customers';
 
     // Marketing area — must be checked BEFORE store/settings because abandoned-carts lives under /stores/{id}/abandoned-carts but belongs to marketing
-    if (path.startsWith('/coupon-system') || path.startsWith('/advanced-coupons') || path.startsWith('/express-checkout') || path.startsWith('/referral')) {
+    if (path.startsWith('/coupon-system') || path.startsWith('/advanced-coupons') || path.startsWith('/express-checkout') || path.startsWith('/referral') || path.startsWith('/partner')) {
         return 'marketing';
     }
     if (path.startsWith('/abandoned-carts')) return 'marketing';
@@ -214,9 +214,10 @@ export function getMerchantContextNav(
         hasPermission: (p: string) => boolean;
         routeExists: (name: string) => boolean;
         safeRoute: (name: string, params: any, fallback: string) => string;
+        isPartner?: boolean;
     }
 ): { title: string; items: ContextNavItem[] } | null {
-    const { storeId, t, hasPermission, routeExists, safeRoute } = opts;
+    const { storeId, t, hasPermission, routeExists, safeRoute, isPartner } = opts;
     const sid = storeId ? String(storeId) : null;
 
     const titleFor = (id: PrimaryId): string => {
@@ -300,6 +301,9 @@ export function getMerchantContextNav(
             }
             if (hasPermission('manage-referral')) {
                 items.push({ title: t('Referral Program'), href: tryRoute('referral.index', '/referral') });
+            }
+            if (isPartner) {
+                items.push({ title: t('Partner Program') !== 'Partner Program' ? t('Partner Program') : 'برنامج الشركاء', href: tryRoute('partner.dashboard', '/partner/dashboard') });
             }
             return { title: titleFor('marketing'), items };
         }
