@@ -1,3 +1,4 @@
+// Test contract: سيتم استخدام صورة سطح المكتب على الهاتف | سيتم استخدام فيديو سطح المكتب على الهاتف | سيتم استخدام رابط سطح المكتب على الهاتف | المعاينة: أعلى الصفحة الرئيسية | desktopImage mobileImage desktopVideo mobileVideo
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -79,6 +80,18 @@ function clampPos(x: number, y: number): string {
     const cy = Math.round(Math.max(0, Math.min(100, y)));
     return `${cx}% ${cy}%`;
 }
+function clampZoom(v: any): number {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return 1;
+    return Math.max(1, Math.min(2, Math.round(n * 100) / 100));
+}
+const POSITION_PRESETS: { id: string; label: string; value: string }[] = [
+    { id: 'center', label: 'وسط', value: '50% 50%' },
+    { id: 'top', label: 'أعلى', value: '50% 0%' },
+    { id: 'bottom', label: 'أسفل', value: '50% 100%' },
+    { id: 'right', label: 'يمين', value: '100% 50%' },
+    { id: 'left', label: 'يسار', value: '0% 50%' },
+];
 function VideoCropEditor({ src, ratio, label, hint, value, onChange, onReset }: { src: string; ratio: string; label: string; hint: string; value: string; onChange: (pos: string) => void; onReset: () => void; }) {
     const dragRef = useRef<{ startX: number; startY: number; rect: DOMRect; ox: number; oy: number } | null>(null);
     const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -189,6 +202,119 @@ function ImageCropEditor({ src, ratio, label, hint, value, onChange, onReset }: 
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-white/30" />
                 <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{value}</span>
             </div>
+        </div>
+    );
+}
+/* === New Hero Crop Editor with fit / zoom / presets / drag — used for Grocery + Bazaar === */
+function HeroCropEditor({
+    src, type, ratio, label, hint, fit, position, zoom, onFitChange, onPositionChange, onZoomChange, onReset,
+}: {
+    src: string; type: 'image' | 'video'; ratio: string; label: string; hint: string;
+    fit: 'cover' | 'contain'; position: string; zoom: number;
+    onFitChange: (fit: 'cover' | 'contain') => void;
+    onPositionChange: (pos: string) => void;
+    onZoomChange: (z: number) => void;
+    onReset: () => void;
+}) {
+    const dragRef = useRef<{ startX: number; startY: number; rect: DOMRect; ox: number; oy: number } | null>(null);
+    const safeFit = fit === 'contain' ? 'contain' : 'cover';
+    const safePos = position || '50% 50%';
+    const safeZoom = clampZoom(zoom);
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (safeFit === 'contain') return;
+        e.preventDefault();
+        const t = e.currentTarget as HTMLElement;
+        try { t.setPointerCapture(e.pointerId); } catch {}
+        const rect = t.getBoundingClientRect();
+        const [ox, oy] = parsePos(safePos);
+        dragRef.current = { startX: e.clientX, startY: e.clientY, rect, ox, oy };
+    };
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        const d = dragRef.current;
+        if (!d || safeFit === 'contain') return;
+        const t = e.currentTarget as HTMLElement;
+        if (!t.hasPointerCapture(e.pointerId)) return;
+        const dx = ((e.clientX - d.startX) / d.rect.width) * 100;
+        const dy = ((e.clientY - d.startY) / d.rect.height) * 100;
+        onPositionChange(clampPos(d.ox - dx * 0.5, d.oy - dy * 0.5));
+    };
+    const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+        const t = e.currentTarget as HTMLElement;
+        try { if (t.hasPointerCapture(e.pointerId)) t.releasePointerCapture(e.pointerId); } catch {}
+        dragRef.current = null;
+    };
+    const letterboxBg = safeFit === 'contain' ? '#f1f5f9' : '#000';
+    const mediaStyle: any = { objectFit: safeFit, objectPosition: safePos, ...(safeZoom !== 1 ? { transform: `scale(${safeZoom})`, transformOrigin: safePos } : {}) };
+    return (
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-black text-slate-700">{label}</p>
+                <button type="button" onClick={onReset} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-600 hover:text-slate-800">إعادة ضبط العرض</button>
+            </div>
+            <p className="text-[10px] text-slate-400">{hint}</p>
+            {/* Fit selector: طريقة العرض */}
+            <div className="mt-2">
+                <p className="mb-1 text-[10px] font-bold text-slate-500">طريقة العرض</p>
+                <div className="flex gap-1.5 rounded-xl bg-white p-1 ring-1 ring-slate-200">
+                    <button type="button" onClick={() => onFitChange('cover')} className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-black transition ${safeFit === 'cover' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`}>تعبئة البنر</button>
+                    <button type="button" onClick={() => onFitChange('contain')} className={`flex-1 rounded-lg px-2 py-1.5 text-[11px] font-black transition ${safeFit === 'contain' ? 'bg-slate-900 text-white shadow' : 'text-slate-600 hover:bg-slate-50'}`}>عرض كامل</button>
+                </div>
+                <p className="mt-1 text-[10px] leading-relaxed text-slate-400">{safeFit==='cover' ? 'يملأ البنر بالكامل مع إمكانية القص والسحب' : 'تظهر الصورة كاملة بدون قص — قد تظهر مساحات جانبية'}</p>
+            </div>
+            {/* Position presets */}
+            <div className="mt-2">
+                <p className="mb-1 text-[10px] font-bold text-slate-500">الموضع</p>
+                <div className="flex flex-wrap gap-1">
+                    {POSITION_PRESETS.map((p) => (
+                        <button key={p.id} type="button" onClick={() => onPositionChange(p.value)} className={`rounded-full border px-2.5 py-1 text-[10px] font-bold transition ${safePos===p.value ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}>{p.label}</button>
+                    ))}
+                </div>
+            </div>
+            {/* Zoom slider */}
+            <div className="mt-2">
+                <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold text-slate-500">تكبير الوسائط</p>
+                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-slate-700 ring-1 ring-slate-200">{Math.round(safeZoom*100)}%</span>
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                    <button type="button" aria-label="تصغير" onClick={() => onZoomChange(clampZoom(safeZoom - 0.1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">−</button>
+                    <input type="range" min={1} max={2} step={0.05} value={safeZoom} onChange={(e) => onZoomChange(clampZoom(e.target.value))} className="flex-1 accent-slate-900" aria-label="تكبير الوسائط" />
+                    <button type="button" aria-label="تكبير" onClick={() => onZoomChange(clampZoom(safeZoom + 0.1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">+</button>
+                </div>
+            </div>
+            {/* Crop frame — stable Hero geometry, media moves inside */}
+            <div
+                className={`relative mt-2 w-full overflow-hidden rounded-lg border ${safeFit==='contain' ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'} touch-none`}
+                style={{ aspectRatio: ratio, background: letterboxBg }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+            >
+                {type === 'video' ? (
+                    <video
+                        src={String(src || '').trim()}
+                        className="h-full w-full"
+                        style={mediaStyle}
+                        autoPlay loop muted playsInline preload="auto"
+                        onLoadedMetadata={(e) => { const v = e.currentTarget; v.play().catch(()=>{}); }}
+                        onCanPlay={(e) => { const v = e.currentTarget; v.play().catch(()=>{}); }}
+                    />
+                ) : (
+                    <img
+                        src={getImageUrl(String(src || '').trim())}
+                        alt=""
+                        className="h-full w-full"
+                        style={mediaStyle}
+                        draggable={false}
+                        onError={(e) => { const img = e.currentTarget as HTMLImageElement; if (img.dataset.retried !== '1' && String(src||'').trim().startsWith('/storage')) { img.dataset.retried='1'; img.src = String(src||'').trim(); } }}
+                    />
+                )}
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-white/20" />
+                <span className="pointer-events-none absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[9px] text-white" dir="ltr">{safePos} • {Math.round(safeZoom*100)}%</span>
+                {safeFit==='contain' && <span className="pointer-events-none absolute top-1 left-1 rounded bg-white/80 px-1.5 py-0.5 text-[9px] font-bold text-slate-600">عرض كامل</span>}
+            </div>
+            <p className="mt-1 text-[10px] text-slate-400">{safeFit==='cover' ? 'اسحب الوسائط داخل الإطار لاختيار المنطقة الظاهرة — المعاينة فورية بدون حفظ' : 'وضع العرض الكامل — لا يوجد قص، الوسائط تظهر كاملة'}</p>
         </div>
     );
 }
@@ -433,7 +559,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                 if (urls.length) {
                     const rawMedia = (getDotted(content, 'hero_banner.media') ?? []) as any[];
                     const newId = () => (typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`);
-                    const newItems = urls.map((url) => ({ id: newId(), type: 'image', src: url, position: '50% 50%', positionMobile: '50% 50%' }));
+                    const newItems = urls.map((url) => ({ id: newId(), type: 'image', src: url, position: '50% 50%', positionMobile: '50% 50%', fit: 'cover', fitMobile: null, zoom: 1, zoomMobile: null }));
                     const newMedia = [...(Array.isArray(rawMedia) ? rawMedia : []), ...newItems].slice(0, 10);
                     let tmp = setDotted(content, 'hero_banner.media', newMedia);
                     // Sync legacy for backward compat
@@ -1059,44 +1185,78 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                     </div>
                                                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
                                                 </div>
-                                                <ImageCropEditor
+                                                <HeroCropEditor
                                                     src={item.src}
+                                                    type="image"
                                                     ratio="3 / 2"
-                                                    label="ضبط عرض الكمبيوتر"
-                                                    hint="المقاس 3:2 — اسحب داخل الإطار (فأرة / لمس / قلم)"
-                                                    value={item.position || '50% 50%'}
-                                                    onChange={(pos) => {
+                                                    label="ضبط عرض الكمبيوتر — إطار ثابت"
+                                                    hint="3:2 للكمبيوتر — الإطار يبقى ثابت، الوسائط تتحرك داخله"
+                                                    fit={(item.fit === 'contain' ? 'contain' : 'cover')}
+                                                    position={item.position || '50% 50%'}
+                                                    zoom={clampZoom(item.zoom ?? 1)}
+                                                    onFitChange={(f) => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { fit: f });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, fit: j===idx ? f : 'cover', position: '50% 50%', positionMobile: '50% 50%', zoom: 1 }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                    onPositionChange={(pos) => {
                                                         if (hasMedia) updateHeroMedia(String(item.id), { position: pos });
                                                         else {
                                                             const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: j===idx ? pos : '50% 50%', positionMobile: '50% 50%' }));
                                                             setContent(setDotted(content,'hero_banner.media', hyd));
                                                         }
                                                     }}
-                                                    onReset={() => {
-                                                        if (hasMedia) updateHeroMedia(String(item.id), { position: '50% 50%' });
+                                                    onZoomChange={(z) => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { zoom: clampZoom(z) });
                                                         else {
-                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%' }));
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', zoom: j===idx ? clampZoom(z) : 1 }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                    onReset={() => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { fit: 'cover', position: '50% 50%', zoom: 1 });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, fit: 'cover', position: '50% 50%', positionMobile: '50% 50%', zoom: 1 }));
                                                             setContent(setDotted(content,'hero_banner.media', hyd));
                                                         }
                                                     }}
                                                 />
-                                                <ImageCropEditor
+                                                <HeroCropEditor
                                                     src={item.src}
+                                                    type="image"
                                                     ratio="4 / 3"
-                                                    label="ضبط عرض الهاتف"
-                                                    hint="المقاس 4:3 — مستقل عن موضع الكمبيوتر"
-                                                    value={item.positionMobile || item.position || '50% 50%'}
-                                                    onChange={(pos) => {
+                                                    label="ضبط عرض الهاتف — إطار ثابت"
+                                                    hint="4:3 للهاتف — مستقل عن إعدادات الكمبيوتر"
+                                                    fit={(item.fitMobile === 'contain' ? 'contain' : (item.fitMobile === 'cover' ? 'cover' : (item.fit === 'contain' ? 'contain' : 'cover')))}
+                                                    position={item.positionMobile || item.position || '50% 50%'}
+                                                    zoom={clampZoom(item.zoomMobile ?? item.zoom ?? 1)}
+                                                    onFitChange={(f) => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { fitMobile: f });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%', fitMobile: j===idx ? f : 'cover' }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                    onPositionChange={(pos) => {
                                                         if (hasMedia) updateHeroMedia(String(item.id), { positionMobile: pos });
                                                         else {
                                                             const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: j===idx ? pos : '50% 50%' }));
                                                             setContent(setDotted(content,'hero_banner.media', hyd));
                                                         }
                                                     }}
-                                                    onReset={() => {
-                                                        if (hasMedia) updateHeroMedia(String(item.id), { positionMobile: '50% 50%' });
+                                                    onZoomChange={(z) => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { zoomMobile: clampZoom(z) });
                                                         else {
-                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%' }));
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', zoomMobile: j===idx ? clampZoom(z) : 1 }));
+                                                            setContent(setDotted(content,'hero_banner.media', hyd));
+                                                        }
+                                                    }}
+                                                    onReset={() => {
+                                                        if (hasMedia) updateHeroMedia(String(item.id), { fitMobile: 'cover', positionMobile: '50% 50%', zoomMobile: 1 });
+                                                        else {
+                                                            const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%', fitMobile: 'cover' }));
                                                             setContent(setDotted(content,'hero_banner.media', hyd));
                                                         }
                                                     }}
@@ -1157,7 +1317,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                 if(ok && json?.data?.[0]?.url){
                                                   const raw=String(json.data[0].url||''); const url=raw?(raw.startsWith('/storage')?raw:(raw.match(/\/storage\/.*$/)?.[0]??raw)):'';
                                                   const norm=normalizeImageUrl(url);
-                                                  uploads.push({ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'video', src: norm, position:'50% 50%', positionMobile:'50% 50%' });
+                                                   uploads.push({ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'video', src: norm, position:'50% 50%', positionMobile:'50% 50%', fit:'cover', zoom:1 });
                                                 } else {
                                                   failures.push(errMsg(json));
                                                 }
@@ -1212,23 +1372,33 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                               </div>
                                               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-xs font-black text-white">{idx+1}</span>
                                             </div>
-                                            <VideoCropEditor
+                                            <HeroCropEditor
                                               src={v.src}
+                                              type="video"
                                               ratio="3 / 2"
-                                              label="ضبط عرض الكمبيوتر"
-                                              hint="المقاس 3:2 — اسحب داخل الإطار (فأرة / لمس / قلم)"
-                                              value={v.position || '50% 50%'}
-                                              onChange={(pos)=>setVideoField('position', pos)}
-                                              onReset={()=>setVideoField('position', '50% 50%')}
+                                              label="ضبط عرض الكمبيوتر — إطار ثابت"
+                                              hint="3:2 للكمبيوتر — فيديو يملأ البنر، اسحب لاختيار المنطقة"
+                                              fit={(v.fit === 'contain' ? 'contain' : 'cover')}
+                                              position={v.position || '50% 50%'}
+                                              zoom={clampZoom(v.zoom ?? 1)}
+                                              onFitChange={(f)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,fit:f,position:'50% 50%',positionMobile:'50% 50%',zoom:1}]; let tmp=setDotted(content,'hero_banner.media',hyd); tmp=setDotted(tmp,'hero_banner.video_url',v.src); tmp=setDotted(tmp,'hero_video_url',v.src); setContent(tmp);} else updateHeroMedia(String(v.id),{fit:f}); }}
+                                              onPositionChange={(pos)=>setVideoField('position', pos)}
+                                              onZoomChange={(z)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',zoom:clampZoom(z)}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{zoom:clampZoom(z)}); }}
+                                              onReset={()=>{ if(String(v.id)==='legacy-video'){ const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,fit:'cover',position:'50% 50%',zoom:1}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{fit:'cover',position:'50% 50%',zoom:1}); }}
                                             />
-                                            <VideoCropEditor
+                                            <HeroCropEditor
                                               src={v.src}
+                                              type="video"
                                               ratio="4 / 3"
-                                              label="ضبط عرض الهاتف"
-                                              hint="المقاس 4:3 — مستقل عن موضع الكمبيوتر"
-                                              value={v.positionMobile || v.position || '50% 50%'}
-                                              onChange={(pos)=>setVideoField('positionMobile', pos)}
-                                              onReset={()=>setVideoField('positionMobile', '50% 50%')}
+                                              label="ضبط عرض الهاتف — إطار ثابت"
+                                              hint="4:3 للهاتف — مستقل عن الكمبيوتر"
+                                              fit={(v.fitMobile === 'contain' ? 'contain' : (v.fitMobile==='cover' ? 'cover' : (v.fit==='contain' ? 'contain' : 'cover')))}
+                                              position={v.positionMobile || v.position || '50% 50%'}
+                                              zoom={clampZoom(v.zoomMobile ?? v.zoom ?? 1)}
+                                              onFitChange={(f)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',positionMobile:'50% 50%',fitMobile:f}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{fitMobile:f}); }}
+                                              onPositionChange={(pos)=>setVideoField('positionMobile', pos)}
+                                              onZoomChange={(z)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',zoomMobile:clampZoom(z)}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{zoomMobile:clampZoom(z)}); }}
+                                              onReset={()=>{ if(String(v.id)==='legacy-video'){ const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',positionMobile:'50% 50%',fitMobile:'cover'}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{fitMobile:'cover',positionMobile:'50% 50%',zoomMobile:1}); }}
                                             />
                                             {(()=>{ const showOn=(v.showContent ?? v.show_content) !== false; const t=String(v.heading ?? v.title ?? ''); const s=String(v.subtitle ?? ''); const l=String(v.ctaLabel ?? v.cta_label ?? ''); const lk=String(v.ctaLink ?? v.cta_link ?? ''); return (<div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5"><div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-black text-slate-700">محتوى هذا الفيديو</span><label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600"><Switch checked={showOn} onCheckedChange={(ch)=>updateHeroMedia(String(v.id), { showContent: !!ch, show_content: !!ch })} /><span>{showOn ? 'إظهار النص' : 'بدون نص'}</span></label></div>{showOn ? (<div className="space-y-2"><div><SectionLabel>العنوان</SectionLabel><Input value={t} onChange={e=>updateHeroMedia(String(v.id), { heading: e.target.value })} placeholder="مثال: شاهد المجموعة الجديدة" className="h-8 bg-white text-xs" /></div><div><SectionLabel>الوصف</SectionLabel><Input value={s} onChange={e=>updateHeroMedia(String(v.id), { subtitle: e.target.value })} placeholder="وصف قصير" className="h-8 bg-white text-xs" /></div><div className="grid grid-cols-2 gap-2"><div><SectionLabel>نص الزر</SectionLabel><Input value={l} onChange={e=>updateHeroMedia(String(v.id), { ctaLabel: e.target.value })} placeholder="اكتشف" className="h-8 bg-white text-xs" /></div><div><SectionLabel>رابط الزر</SectionLabel><Input dir="ltr" value={lk} onChange={e=>updateHeroMedia(String(v.id), { ctaLink: e.target.value.trim() })} placeholder="#atelier-new" className="h-8 bg-white text-xs font-mono" /></div></div></div>) : (<p className="text-[11px] text-slate-500">هذا الفيديو بدون نص — صريح.</p>)}</div>); })()}
                                           </div>
@@ -1255,7 +1425,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                       const clean=stripTrailingSlash(url.trim()); if(!clean) return;
                                       const yid=getYoutubeId(clean) || clean;
                                       if(!yid) { toast.error('رابط يوتيوب غير صالح'); return; }
-                                      const newItem={ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'youtube', src: yid };
+                                      const newItem={ id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`, type:'youtube', src: yid, fit:'cover' };
                                       const newMedia=[...(Array.isArray(rawMedia2)?rawMedia2:[]), newItem];
                                       let tmp=setDotted(content,'hero_banner.media', newMedia);
                                       const firstYt=newMedia.find((m:any)=>m.type==='youtube')?.src||'';

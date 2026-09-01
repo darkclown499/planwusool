@@ -40,7 +40,11 @@ export interface HeroMediaItem {
   poster?: string | null;
   position?: string | null;
   positionMobile?: string | null;
-  // Per-banner optional content â€” when showContent===false the banner explicitly shows NO TEXT.
+  fit?: 'cover' | 'contain' | null;
+  fitMobile?: 'cover' | 'contain' | null;
+  zoom?: number | null;
+  zoomMobile?: number | null;
+  // Per-banner optional content — when showContent===false the banner explicitly shows NO TEXT.
   // When showContent is undefined/null and all text fields empty -> legacy fallback to global hero fields.
   heading?: string | null;
   title?: string | null; // alias for heading
@@ -195,6 +199,10 @@ export function useResolvedHero(): ResolvedHero {
         const pos = item.position ?? item.object_position ?? item.focal ?? null;
         const posMob = item.positionMobile ?? item.position_mobile ?? item.mobile_position ?? null;
         const poster = item.poster ?? null;
+        const rawFit = item.fit ?? item.fit_mode ?? item.object_fit ?? null;
+        const rawFitMob = item.fitMobile ?? item.fit_mobile ?? item.mobile_fit ?? null;
+        const rawZoom = item.zoom ?? item.scale ?? null;
+        const rawZoomMob = item.zoomMobile ?? item.zoom_mobile ?? item.mobile_zoom ?? null;
         // Normalize youtube src to id
         const finalSrc = type === 'youtube' ? (extractYouTubeId(src) || src) : src;
         // Per-banner content â€” reuse canonical hero field names with multiple aliases
@@ -216,6 +224,21 @@ export function useResolvedHero(): ResolvedHero {
         // Also accept explicit boolean without string conversion
         if (typeof item.showContent === 'boolean') showContent = item.showContent;
         if (typeof item.show_content === 'boolean') showContent = item.show_content;
+        // Normalize fit: only cover/contain accepted, else null (fallback to hero default)
+        const normFit = rawFit !== null && rawFit !== undefined && String(rawFit).trim() !== '' ? (String(rawFit).toLowerCase().trim() === 'contain' ? 'contain' as const : 'cover' as const) : null;
+        const normFitMob = rawFitMob !== null && rawFitMob !== undefined && String(rawFitMob).trim() !== '' ? (String(rawFitMob).toLowerCase().trim() === 'contain' ? 'contain' as const : 'cover' as const) : null;
+        const normZoom = (() => {
+          if (rawZoom === null || rawZoom === undefined || String(rawZoom).trim() === '') return null;
+          const n = Number(rawZoom);
+          if (!Number.isFinite(n)) return null;
+          return Math.max(1, Math.min(2, Math.round(n * 100) / 100));
+        })();
+        const normZoomMob = (() => {
+          if (rawZoomMob === null || rawZoomMob === undefined || String(rawZoomMob).trim() === '') return null;
+          const n = Number(rawZoomMob);
+          if (!Number.isFinite(n)) return null;
+          return Math.max(1, Math.min(2, Math.round(n * 100) / 100));
+        })();
         norm.push({
           id,
           type,
@@ -224,6 +247,10 @@ export function useResolvedHero(): ResolvedHero {
           poster: poster ? String(poster).trim() : null,
           position: pos ? String(pos).trim() : null,
           positionMobile: posMob ? String(posMob).trim() : null,
+          fit: normFit,
+          fitMobile: normFitMob,
+          zoom: normZoom,
+          zoomMobile: normZoomMob,
           heading: rawHeading !== null && rawHeading !== undefined ? String(rawHeading) : null,
           title: rawHeading !== null && rawHeading !== undefined ? String(rawHeading) : null,
           subtitle: rawSubtitle !== null && rawSubtitle !== undefined ? String(rawSubtitle) : null,
@@ -476,6 +503,74 @@ export function heroFitFor(hero: ResolvedHero, isMobile: boolean): 'cover' | 'co
 export function heroPositionFor(hero: ResolvedHero, isMobile: boolean): string {
   if (isMobile && hero.positionMobile) return hero.positionMobile;
   return hero.position;
+}
+
+/**
+ * Per-media fit/position/zoom with fallback chain:
+ *   mobile per-media -> desktop per-media -> global hero -> default
+ * Zoom defaults to 1 when absent.
+ */
+export function heroFitForMedia(m: HeroMediaItem, hero: ResolvedHero, isMobile: boolean): 'cover' | 'contain' {
+  if (isMobile && m.fitMobile) return m.fitMobile;
+  if (isMobile && m.fit && !m.fitMobile) return m.fit;
+  if (m.fit) return m.fit;
+  return heroFitFor(hero, isMobile);
+}
+export function heroPositionForMedia(m: HeroMediaItem, hero: ResolvedHero, isMobile: boolean): string {
+  if (isMobile && m.positionMobile) return m.positionMobile;
+  if (isMobile && m.position && !m.positionMobile) return m.position;
+  if (m.position) return m.position;
+  return heroPositionFor(hero, isMobile);
+}
+export function heroZoomForMedia(m: HeroMediaItem, hero: ResolvedHero, isMobile: boolean): number {
+  const raw = isMobile ? (m.zoomMobile ?? m.zoom) : m.zoom;
+  if (raw !== null && raw !== undefined && Number.isFinite(Number(raw))) {
+    const n = Number(raw);
+    if (n >= 1 && n <= 2) return Math.round(n * 100) / 100;
+    return Math.max(1, Math.min(2, n));
+  }
+  // No per-media zoom -> default 1 (no scale). Global hero has no zoom concept so not used here.
+  return 1;
+}
+export function clampZoom(v: any): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 1;
+  return Math.max(1, Math.min(2, Math.round(n * 100) / 100));
+}
+export function sanitizePosition(pos: string | null | undefined): string {
+  const raw = String(pos ?? '50% 50%').trim();
+  if (!raw) return '50% 50%';
+  // Accept common keywords and map to percentages
+  const map: Record<string, string> = { center: '50% 50%', top: '50% 0%', bottom: '50% 100%', left: '0% 50%', right: '100% 50%', 'top left': '0% 0%', 'top right': '100% 0%', 'bottom left': '0% 100%', 'bottom right': '100% 100%' };
+  if (map[raw.toLowerCase()]) return map[raw.toLowerCase()];
+  const m = raw.match(/^(\d{1,3})%\s+(\d{1,3})%$/);
+  if (m) {
+    const x = Math.max(0, Math.min(100, parseInt(m[1], 10)));
+    const y = Math.max(0, Math.min(100, parseInt(m[2], 10)));
+    return `${x}% ${y}%`;
+  }
+  return '50% 50%';
+}
+
+/**
+ * CSS for hero media element with fit/position/zoom.
+ * Uses object-fit / object-position + scale transform anchored at focal point.
+ * For cover, scale is centered at focal point so zoom keeps product in view.
+ * For contain, zoom still works but is centered at focal.
+ */
+export function heroMediaStyleForMedia(m: HeroMediaItem, hero: ResolvedHero, isMobile: boolean): React.CSSProperties {
+  const fit = heroFitForMedia(m, hero, isMobile);
+  const pos = sanitizePosition(heroPositionForMedia(m, hero, isMobile));
+  const zoom = heroZoomForMedia(m, hero, isMobile);
+  const style: React.CSSProperties = {
+    objectFit: fit as any,
+    objectPosition: pos,
+  } as any;
+  if (zoom !== 1) {
+    (style as any).transform = `scale(${zoom})`;
+    (style as any).transformOrigin = pos;
+  }
+  return style;
 }
 
 /**

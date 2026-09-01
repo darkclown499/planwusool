@@ -370,6 +370,7 @@ export function SouqProductSheet({ product, onClose }: any) {
 }
 
 /* --------------------------- Search overlay — grocery dense/fast-shopping --------------------------- */
+// grocery search overlay delegates to shared SearchSheet which uses useServerSearch (api/storefront/search) contract
 export function SouqSearchOverlay({ onClose, onProductClick }: any) {
   return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="var(--store-primary, #FFC20E)" placeholder="شنو تدور عليه؟" variant="grocery" />;
 }

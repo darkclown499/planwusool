@@ -15,7 +15,7 @@ import {
 } from '../shared/hooks';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import { AuthContext } from '@/contexts/AuthContext';
-import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS, heroContentForMedia } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS, heroContentForMedia, heroFitForMedia, heroPositionForMedia, heroZoomForMedia, heroMediaStyleForMedia, sanitizePosition } from '../shared/heroMedia';
 import { useServerSearch, submitStorefrontSearch } from '@/hooks/useServerSearch';
 
 /* ===================================================================== */
@@ -417,26 +417,34 @@ export function SouqHero({ banners }: { banners: any[] }) {
           if (isMediaMode) {
             const m: any = item;
             const c = heroContentForMedia(m, hero);
-            const perFit = (m as any).fit ? (String((m as any).fit).toLowerCase()==='contain' ? 'object-contain':'object-cover') : souqFit;
-            const perFitMobile = (m as any).fitMobile ? (String((m as any).fitMobile).toLowerCase()==='contain' ? 'object-contain':'object-cover') : souqFitMobile;
-            const perPos = m.position ? String(m.position) : souqPos;
-            const perPosMobile = m.positionMobile ? String(m.positionMobile) : souqPosMobile;
+            const fitDesktop = heroFitForMedia(m, hero, false);
+            const fitMobile = heroFitForMedia(m, hero, true);
+            const perFit = fitDesktop === 'contain' ? 'object-contain' : 'object-cover';
+            const perFitMobile = fitMobile === 'contain' ? 'object-contain' : 'object-cover';
+            const posDesktop = sanitizePosition(heroPositionForMedia(m, hero, false));
+            const posMobile = sanitizePosition(heroPositionForMedia(m, hero, true));
+            const zoomDesktop = heroZoomForMedia(m, hero, false);
+            const zoomMobile = heroZoomForMedia(m, hero, true);
+            const styleDesktop: any = { objectPosition: posDesktop, ...(zoomDesktop !== 1 ? { transform: `scale(${zoomDesktop})`, transformOrigin: posDesktop } : {}) };
+            const styleMobile: any = { objectPosition: posMobile, ...(zoomMobile !== 1 ? { transform: `scale(${zoomMobile})`, transformOrigin: posMobile } : {}) };
+            const isContainDesktop = fitDesktop === 'contain';
+            const isContainMobile = fitMobile === 'contain';
             if (m.type === 'video') {
               const src = getHeroImageUrl(String(m.src||''));
               const srcMobile = m.srcMobile ? getHeroImageUrl(String(m.srcMobile)) : null;
               const poster = m.poster ? getHeroImageUrl(String(m.poster)) : undefined;
               return (
-                <div key={m.id || sIdx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                <div key={m.id || sIdx} className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${isContainDesktop ? 'bg-[#FDF9F1]' : 'bg-black'}`} style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
                   <video
                     ref={(el) => { if (el) videoRefs.current.set(sIdx, el); else videoRefs.current.delete(sIdx); }}
                     muted playsInline preload="metadata"
                     loop={false}
                     onEnded={() => goNext()}
                     className={`absolute inset-0 h-full w-full ${perFit} ${srcMobile?'hidden md:block':'block'}`}
-                    style={{ objectPosition: perPos }}
+                    style={styleDesktop}
                     src={src} poster={poster}
                   />
-                  {srcMobile && <video muted playsInline preload="metadata" loop={false} onEnded={() => goNext()} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={{ objectPosition: perPosMobile }} src={srcMobile} poster={poster} />}
+                  {srcMobile && <video muted playsInline preload="metadata" loop={false} onEnded={() => goNext()} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden ${isContainMobile ? 'bg-[#FDF9F1]' : 'bg-black'}`} style={styleMobile} src={srcMobile} poster={poster} />}
                   {!c.isExplicitOff && c.hasContent && (
                     <>
                       <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
@@ -455,9 +463,12 @@ export function SouqHero({ banners }: { banners: any[] }) {
               const yid = String(m.src||'').trim();
               const yidMobile = m.srcMobile ? String(m.srcMobile).trim() : yid;
               const hasYtMobile = !!m.srcMobile;
+              // Youtube cover zoom via wrapper scale, contain shows letterbox
+              const ytZoomDesktop = zoomDesktop !== 1 ? { transform: `scale(${zoomDesktop})`, transformOrigin: posDesktop } as any : {};
+              const ytZoomMobile = zoomMobile !== 1 ? { transform: `scale(${zoomMobile})`, transformOrigin: posMobile } as any : {};
               return (
-                <div key={m.id || sIdx} className="absolute inset-0 transition-opacity duration-700 bg-black" style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
-                  <div className={`absolute inset-0 overflow-hidden bg-black ${hasYtMobile?'hidden md:block':'block'}`}>
+                <div key={m.id || sIdx} className={`absolute inset-0 transition-opacity duration-700 overflow-hidden ${isContainDesktop ? 'bg-[#FDF9F1]' : 'bg-black'}`} style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                  <div className={`absolute inset-0 overflow-hidden ${isContainDesktop ? 'bg-[#FDF9F1]' : 'bg-black'} ${hasYtMobile?'hidden md:block':'block'}`} style={ytZoomDesktop}>
                     {perFit==='object-contain' ? (
                       <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${yid}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yid}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
                     ) : (
@@ -465,7 +476,7 @@ export function SouqHero({ banners }: { banners: any[] }) {
                     )}
                   </div>
                   {hasYtMobile && (
-                    <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">
+                    <div className={`absolute inset-0 overflow-hidden block md:hidden ${isContainMobile ? 'bg-[#FDF9F1]' : 'bg-black'}`} style={ytZoomMobile}>
                       {(perFitMobile==='object-contain') ? (
                         <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${yidMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yidMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
                       ) : (
@@ -489,11 +500,11 @@ export function SouqHero({ banners }: { banners: any[] }) {
             const mobileSrc = m.srcMobile ? getOptimizedImageUrl(String(m.srcMobile), 'medium') : desktopSrc;
             const hasMob = !!m.srcMobile;
             return (
-              <div key={m.id || sIdx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+              <div key={m.id || sIdx} className={`absolute inset-0 overflow-hidden transition-opacity duration-700 ${isContainDesktop ? 'bg-[#FDF9F1]' : 'bg-black'}`} style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
                 {desktopSrc ? (
                   <>
-                    <img src={desktopSrc} alt={c.heading || ''} className={`absolute inset-0 h-full w-full ${perFit} ${hasMob?'hidden md:block':'block'}`} style={{ objectPosition: perPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.src||'')))}} width={1200} height={400} />
-                    {hasMob && mobileSrc && <img src={mobileSrc} alt={c.heading || ''} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={{ objectPosition: perPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.srcMobile||'')))}} width={1200} height={1350} />}
+                    <img src={desktopSrc} alt={c.heading || ''} className={`absolute inset-0 h-full w-full ${perFit} ${hasMob?'hidden md:block':'block'}`} style={styleDesktop} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.src||'')))}} width={1200} height={400} />
+                    {hasMob && mobileSrc && <img src={mobileSrc} alt={c.heading || ''} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={styleMobile} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.srcMobile||'')))}} width={1200} height={1350} />}
                   </>
                 ) : null}
                 {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}

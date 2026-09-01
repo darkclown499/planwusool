@@ -171,6 +171,32 @@ class DesignerController extends Controller
                     $posMob = isset($item['positionMobile']) ? trim((string)$item['positionMobile']) : (isset($item['position_mobile']) ? trim((string)$item['position_mobile']) : null);
                     if ($posMob !== null && $posMob !== '' && !preg_match('/^\d{1,3}% \d{1,3}%$/', $posMob)) $posMob='50% 50%';
                     elseif ($posMob !== null && $posMob !== '') { [$xm,$ym]=explode(' ', $posMob); $xm=max(0,min(100,(int)rtrim($xm,'%'))); $ym=max(0,min(100,(int)rtrim($ym,'%'))); $posMob=$xm.'% '.$ym.'%'; }
+                    // Per-media fit: cover (default) or contain
+                    $fitRaw = $item['fit'] ?? $item['fit_mode'] ?? null;
+                    $fit = null;
+                    if ($fitRaw !== null && trim((string)$fitRaw) !== '') {
+                        $fitNorm = strtolower(trim((string)$fitRaw));
+                        $fit = $fitNorm === 'contain' ? 'contain' : 'cover';
+                    }
+                    $fitMobRaw = $item['fitMobile'] ?? $item['fit_mobile'] ?? $item['mobile_fit'] ?? null;
+                    $fitMob = null;
+                    if ($fitMobRaw !== null && trim((string)$fitMobRaw) !== '') {
+                        $fitMobNorm = strtolower(trim((string)$fitMobRaw));
+                        $fitMob = $fitMobNorm === 'contain' ? 'contain' : 'cover';
+                    }
+                    // Per-media zoom: 1.0 – 2.0, defaults to 1 when absent
+                    $zoomRaw = $item['zoom'] ?? $item['scale'] ?? null;
+                    $zoom = null;
+                    if ($zoomRaw !== null && $zoomRaw !== '' && is_numeric($zoomRaw)) {
+                        $z = (float)$zoomRaw;
+                        if (is_finite($z)) $zoom = max(1.0, min(2.0, round($z, 2)));
+                    }
+                    $zoomMobRaw = $item['zoomMobile'] ?? $item['zoom_mobile'] ?? $item['mobile_zoom'] ?? null;
+                    $zoomMob = null;
+                    if ($zoomMobRaw !== null && $zoomMobRaw !== '' && is_numeric($zoomMobRaw)) {
+                        $zm = (float)$zoomMobRaw;
+                        if (is_finite($zm)) $zoomMob = max(1.0, min(2.0, round($zm, 2)));
+                    }
                     // Per-banner optional content — canonical keys: heading/subtitle/cta_label/cta_link/show_content
                     $rawHeading = $item['heading'] ?? $item['title'] ?? null;
                     $rawSubtitle = $item['subtitle'] ?? null;
@@ -199,6 +225,10 @@ class DesignerController extends Controller
                         'poster' => isset($item['poster']) ? trim((string)$item['poster']) : null,
                         'position' => $pos,
                         'positionMobile' => $posMob,
+                        'fit' => $fit,
+                        'fitMobile' => $fitMob,
+                        'zoom' => $zoom,
+                        'zoomMobile' => $zoomMob,
                         'heading' => $heading,
                         'subtitle' => $subtitle,
                         'cta_label' => $ctaLabel,
