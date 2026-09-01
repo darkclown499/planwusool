@@ -802,13 +802,13 @@ const sortList = (list: any[], sort?: string) => {
 };
 
 const SectionTitle: React.FC<{ children: React.ReactNode; moreHref?: string }> = ({ children, moreHref }) => (
-  <div className="mb-4 flex items-center justify-between">
-    <h2 className="flex items-center gap-2.5 text-xl font-black text-slate-900">
-      <span className="h-6 w-1.5 rounded-full bg-gradient-to-b from-teal-500 to-emerald-600" />
-      {children}
+  <div className="mb-4 flex items-center justify-between" data-bazaar-reveal>
+    <h2 className="bazaar-section-title flex items-center gap-2.5 text-xl font-black text-slate-900">
+      <span className="bazaar-section-accent h-6 w-1.5 rounded-full bg-gradient-to-b from-teal-500 to-emerald-600" style={{ background: 'var(--store-primary, #0d9488)' } as any} />
+      <span className="bazaar-section-title">{children}</span>
     </h2>
     {moreHref && (
-      <a href={moreHref} className="text-sm font-bold text-teal-700 transition hover:text-teal-600">عرض الكل ←</a>
+      <a href={moreHref} className="bazaar-btn text-sm font-bold text-teal-700 hover:text-teal-600">عرض الكل ←</a>
     )}
   </div>
 );
@@ -824,8 +824,11 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   const newest = useMemo(() => [...products].reverse().slice(0, 12), [products]);
   const popular = useMemo(() => sortList(products, 'price_desc').slice(0, 6), [products]);
 
+  useEffect(() => { ensureBazaarInteractionsStyle(); }, []);
+  useEffect(() => { initBazaarReveals(document); }, [products.length, categories.length, showLatest, showBest, homepageCategories.length]);
+
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 antialiased">
+    <div dir="rtl" data-bazaar-root className="min-h-screen bg-slate-50 text-slate-800 antialiased">
       <BazaarHeader />
       <BazaarWhatsAppFloating />
       <main className="space-y-12 pb-16">
@@ -833,12 +836,12 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Category circles */}
         {categories.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
             <SectionTitle>تسوّق الأقسام</SectionTitle>
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
-              {categories.slice(0, 8).map((c: any) => (
-                <a key={c.id} href={`/category/${c.slug || c.id}`} className="group flex flex-col items-center gap-2">
-                  <span className="h-16 w-16 overflow-hidden rounded-2xl bg-white p-1 shadow-sm ring-1 ring-slate-100 transition group-hover:shadow-md group-hover:ring-teal-200 sm:h-20 sm:w-20">
+              {categories.slice(0, 8).map((c: any, idx: number) => (
+                <a key={c.id} href={`/category/${c.slug || c.id}`} data-bazaar-reveal data-bazaar-stagger className="bazaar-cat group flex flex-col items-center gap-2" style={{ ['--bazaar-idx' as any]: Math.min(idx, 5) } as any}>
+                  <span className="bazaar-cat-ring h-16 w-16 overflow-hidden rounded-2xl bg-white p-1 shadow-sm ring-1 ring-slate-100 sm:h-20 sm:w-20">
                     {c.image ? (
                       <img src={getOptimizedImageUrl(c.image||'', 'thumb')} alt="" loading="lazy" decoding="async" sizes="80px" onError={(e)=>{(e.currentTarget.src=getImageUrl(c.image||''))}} className="h-full w-full rounded-xl object-cover" width={80} height={80} />
                     ) : (
@@ -854,11 +857,11 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Newest — toggle show_latest_products */}
         {showLatest && newest.length > 0 && (
-          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
             <SectionTitle moreHref="#newest">وصل حديثاً</SectionTitle>
             <div id="newest" className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-              {newest.map((p) => (
-                <BazaarCard key={p.id} product={p} />
+              {newest.map((p, idx) => (
+                <BazaarCard key={p.id} product={p} index={idx} />
               ))}
             </div>
           </section>
@@ -866,12 +869,12 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Promo band — truthful: only shown when real discounted products exist, no fake 40% claim */}
         {(() => { const dealsCount = products.filter((p:any)=> p.originalPrice && Number(p.originalPrice) > Number(p.price)).length; if (dealsCount===0) return null; return (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-l from-emerald-600 to-teal-700 p-7 text-white sm:p-10">
             <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
             <p className="text-sm font-black tracking-wide text-emerald-100">عروض الأسبوع</p>
             <h2 className="mt-1.5 max-w-md text-2xl font-black leading-snug sm:text-3xl">عروض مميزة على منتجات مختارة</h2>
-            <a href="#popular" className="mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">
+            <a href="#popular" className="bazaar-btn mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg hover:bg-emerald-50">
               اكتشف العروض
             </a>
           </div>
@@ -879,11 +882,11 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
         {/* Popular picks — toggle show_best_sellers */}
         {showBest && popular.length > 0 && (
-          <section id="popular" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <section id="popular" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
             <SectionTitle>الأكثر رواجاً</SectionTitle>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-              {popular.map((p) => (
-                <BazaarCard key={p.id} product={p} />
+              {popular.map((p, idx) => (
+                <BazaarCard key={p.id} product={p} index={idx} />
               ))}
             </div>
           </section>
@@ -898,15 +901,15 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
               const catProducts = products.filter((p: any) => String(p.categoryId ?? p.category_id) === String(cat.id)).slice(0, productsPerCategory);
               if (catProducts.length === 0) return null;
               return (
-                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <section key={cat.id} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
                   <SectionTitle moreHref={`/category/${cat.slug || cat.id}`}>{cat.name}</SectionTitle>
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-                    {catProducts.map((p: any) => (
-                      <BazaarCard key={p.id} product={p} />
+                    {catProducts.map((p: any, idx: number) => (
+                      <BazaarCard key={p.id} product={p} index={idx} />
                     ))}
                   </div>
                   <div className="mt-4 text-center">
-                    <a href={`/category/${cat.slug || cat.id}`} className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-white px-5 py-2 text-sm font-bold text-teal-700 hover:bg-teal-50">
+                    <a href={`/category/${cat.slug || cat.id}`} className="bazaar-btn inline-flex items-center gap-1 rounded-full border border-teal-200 bg-white px-5 py-2 text-sm font-bold text-teal-700 hover:bg-teal-50">
                       عرض الكل ←
                     </a>
                   </div>
@@ -927,27 +930,29 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
   const navigate = (next: Record<string, any>) => {
     router.get(window.location.pathname, next, { preserveScroll: true, preserveState: true });
   };
+  useEffect(() => { ensureBazaarInteractionsStyle(); }, []);
+  useEffect(() => { initBazaarReveals(document); }, [products.length]);
 
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-50 text-slate-800 antialiased pb-16 md:pb-0">
+    <div dir="rtl" data-bazaar-root className="min-h-screen bg-slate-50 text-slate-800 antialiased pb-16 md:pb-0">
       <BazaarHeader homeHref="/" />
       <BazaarWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500" aria-label="مسار التنقل">
-          <a href="/" className="font-bold hover:text-teal-700">الرئيسية</a>
+          <a href="/" className="bazaar-btn font-bold hover:text-teal-700">الرئيسية</a>
           <ChevronLeft className="h-4 w-4" />
           <span className="font-black text-slate-900">{cat?.name}</span>
         </nav>
 
-        <header className="mb-6 flex items-end justify-between gap-3">
+        <header className="mb-6 flex items-end justify-between gap-3" data-bazaar-reveal>
           <div>
-            <h1 className="text-2xl font-black text-slate-900">{cat?.name}</h1>
+            <h1 className="bazaar-section-title text-2xl font-black text-slate-900">{cat?.name}</h1>
             {!!cat?.description && <p className="mt-1 max-w-xl text-sm text-slate-500">{cat.description}</p>}
           </div>
           <select
             value={categoryData?.sort}
             onChange={(e) => navigate({ sort: e.target.value })}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 focus:border-teal-600 focus:outline-none"
+            className="bazaar-search-ring rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 focus:border-teal-600 focus:outline-none"
           >
             {SORTS.map((s) => (
               <option key={s} value={s}>{SORT_LABELS[s]}</option>
@@ -964,8 +969,8 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
         ) : (
           <>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-5">
-              {products.map((p: any) => (
-                <BazaarCard key={p.id} product={p} />
+              {products.map((p: any, idx: number) => (
+                <BazaarCard key={p.id} product={p} index={idx} />
               ))}
             </div>
             {categoryData && categoryData.lastPage > 1 && (
@@ -975,7 +980,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
                     key={n}
                     type="button"
                     onClick={() => navigate({ page: n })}
-                    className={`h-9 min-w-9 rounded-xl px-2 text-sm font-black transition ${
+                    className={`bazaar-btn h-9 min-w-9 rounded-xl px-2 text-sm font-black ${
                       n === categoryData.currentPage ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-700'
                     }`}
                   >
