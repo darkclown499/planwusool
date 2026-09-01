@@ -18,6 +18,15 @@ import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import type { TemplateRootProps } from '../types';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
+import {
+  ensureBazaarInteractionsStyle,
+  prefersReducedMotion,
+  pulseBazaarCartBadge,
+  flyToCartBazaar,
+  triggerBazaarWishlistPop,
+  initBazaarReveals,
+  mountBazaarMotion,
+} from './bazaarInteractions';
 
 /* ===================================================================== */
 /* البازار — Bazaar Market                                                */
@@ -86,6 +95,7 @@ export function getBazaarSocialSlots(content: any) {
 export function BazaarWhatsAppFloating() {
   const { config, content, store } = useStorefrontCore() as any;
   const href = resolveBazaarWhatsAppHref(config, content, store);
+  useEffect(() => { ensureBazaarInteractionsStyle(); }, []);
   if (!href) return null;
   return (
     <a
@@ -94,7 +104,7 @@ export function BazaarWhatsAppFloating() {
       rel="noreferrer"
       aria-label="تواصل واتساب"
       data-testid="bazaar-floating-whatsapp"
-      className="fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.10)] ring-1 ring-black/5 transition hover:scale-[1.04] active:scale-[0.97] md:hidden"
+      className="bazaar-wa-entrance bazaar-wa-btn fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.10)] ring-1 ring-black/5 md:hidden"
       style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' } as any}
     >
       <MessageCircle className="h-[22px] w-[22px]" fill="white" />
@@ -112,6 +122,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const showCategoriesBar = ((store as any)?.settings?.show_categories_bar ?? (content as any)?.settings?.show_categories_bar ?? (content as any)?.homepage?.show_categories_bar ?? false) as boolean;
+  useEffect(() => { ensureBazaarInteractionsStyle(); mountBazaarMotion(); }, []);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -149,10 +160,12 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           onClick={() => setMobileNavOpen(true)}
           aria-label="القائمة"
           data-testid="bazaar-hamburger"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-700 transition hover:bg-teal-50 hover:text-teal-700"
+          className="bazaar-header-action flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-700"
           style={{ minWidth: 44, minHeight: 44 } as any}
         >
-          <Menu className="h-5 w-5" />
+          <span className="transition-transform duration-150" style={{ display: 'inline-flex', transform: mobileNavOpen ? 'rotate(90deg)' : 'none' } as any}>
+            {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </span>
         </button>
         <a href={homeHref} className="flex flex-1 items-center justify-center gap-2 overflow-hidden" aria-label={config?.storeName || store?.name}>
           {(config?.logo || store?.logo) ? (
@@ -165,13 +178,13 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           )}
         </a>
         <div className="flex shrink-0 items-center gap-0.5">
-          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition hover:bg-teal-50 hover:text-teal-700" style={{ minWidth: 44, minHeight: 44 } as any}>
+          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="bazaar-header-action flex h-11 w-11 items-center justify-center rounded-full text-slate-500" style={{ minWidth: 44, minHeight: 44 } as any}>
             <Search className="h-5 w-5" strokeWidth={1.8} />
           </button>
-          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" className="relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 transition hover:bg-teal-50" style={{ minWidth: 44, minHeight: 44 } as any}>
+          <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" data-bazaar-cart className="bazaar-header-action relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700" style={{ minWidth: 44, minHeight: 44 } as any}>
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
-              <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-black text-white">{count > 99 ? '99+' : count}</span>
+              <span data-bazaar-cart-badge className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-black text-white">{count > 99 ? '99+' : count}</span>
             )}
           </button>
         </div>
@@ -188,20 +201,20 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           )}
         </a>
         <div className="flex items-center gap-1">
-          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700">
+          <button type="button" onClick={() => ui.setShowSearch(true)} aria-label="بحث" className="bazaar-header-action rounded-full p-2.5 text-slate-500">
             🔍
           </button>
           <div className="hidden sm:block">
             <HeaderLoyaltyBadge />
           </div>
-          <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="relative rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700">
+          <button type="button" onClick={() => auth.setShowWishlistModal(true)} aria-label="المفضلة" className="bazaar-header-action relative rounded-full p-2.5 text-slate-500">
             <Heart className="h-5 w-5" strokeWidth={1.8} />
             {!!wishlist?.count && (
               <span className="absolute top-0 -right-1 flex h-4 min-w-4 translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">{wishlist.count}</span>
             )}
           </button>
           {canShowAuth && (
-          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="hidden rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 sm:block">
+          <button type="button" onClick={handleMyOrders} aria-label="طلباتي" className="bazaar-header-action hidden rounded-full p-2.5 text-slate-500 sm:block">
             <Package className="h-5 w-5" strokeWidth={1.8} />
           </button>
           )}
@@ -210,17 +223,17 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             type="button"
             onClick={() => (auth?.isLoggedIn ? auth.setShowProfileModal(true) : (loginEnabled && auth.setShowLoginModal(true)))}
             aria-label="حسابي"
-            className="hidden rounded-full p-2.5 text-slate-500 transition hover:bg-teal-50 hover:text-teal-700 sm:block"
+            className="bazaar-header-action hidden rounded-full p-2.5 text-slate-500 sm:block"
           >
             <User className="h-5 w-5" strokeWidth={1.8} />
           </button>
           )}
-          <button type="button" onClick={() => ui.setShowCart(true)}
-            className="relative mr-1 flex items-center gap-2 rounded-full bg-gradient-to-l from-teal-600 to-emerald-600 py-2 pl-4 pr-3 text-sm font-black text-white shadow-md shadow-teal-600/25 transition hover:brightness-110">
+          <button type="button" onClick={() => ui.setShowCart(true)} data-bazaar-cart
+            className="bazaar-btn relative mr-1 flex items-center gap-2 rounded-full bg-gradient-to-l from-teal-600 to-emerald-600 py-2 pl-4 pr-3 text-sm font-black text-white shadow-md shadow-teal-600/25">
             <ShoppingBag className="h-4 w-4" />
             السلة
             {count > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-black text-teal-700">{count}</span>
+              <span data-bazaar-cart-badge className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-black text-teal-700">{count}</span>
             )}
           </button>
         </div>
@@ -294,10 +307,11 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
     if (!raw) return '';
     try { return getImageUrl(String(raw)); } catch { return String(raw); }
   };
+  useEffect(() => { ensureBazaarInteractionsStyle(); }, []);
   return (
     <div ref={drawerRef} className="fixed inset-0 z-[70]" dir="rtl" role="dialog" aria-modal="true" data-testid="bazaar-drawer" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
-      <div className="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]" onClick={onClose} data-testid="bazaar-drawer-backdrop" />
-      <nav className="absolute inset-y-0 right-0 flex max-h-[100dvh] w-[320px] max-w-[85vw] flex-col overflow-hidden bg-white shadow-2xl" style={{ animation: 'bazaarSlideIn 220ms cubic-bezier(0.22,1,0.36,1) both' } as any} data-testid="bazaar-drawer-nav">
+      <div className="bazaar-drawer-backdrop absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]" onClick={onClose} data-testid="bazaar-drawer-backdrop" />
+      <nav className="bazaar-drawer-panel absolute inset-y-0 right-0 flex max-h-[100dvh] w-[320px] max-w-[85vw] flex-col overflow-hidden bg-white shadow-2xl" data-testid="bazaar-drawer-nav">
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3.5">
           <div className="flex items-center gap-2">
             {config?.logo || store?.logo ? (
@@ -336,10 +350,10 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                 <span className="block text-[13px] font-extrabold leading-none text-slate-900">الأقسام</span>
                 <span className="mt-1 block text-[11px] font-medium leading-none text-slate-400">{categories.length ? `${categories.length} أقسام` : 'استكشف الأقسام'}</span>
               </span>
-              <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`bazaar-drawer-chevron h-4 w-4 shrink-0 text-slate-400 ${categoriesOpen ? 'rotate-180' : ''}`} />
             </button>
             {categoriesOpen && (
-              <div id="bazaar-cats" className="border-t border-slate-200 bg-white px-2 py-2">
+              <div id="bazaar-cats" className="bazaar-drawer-children border-t border-slate-200 bg-white px-2 py-2">
                 {categories.length === 0 ? (
                   <p className="px-3 py-4 text-center text-sm text-slate-400">لا توجد أقسام حالياً</p>
                 ) : (
@@ -362,14 +376,14 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                             </button>
                             {hasSubs ? (
                               <button type="button" onClick={() => setExpandedCatId(isExpanded ? null : String(cat.id))} aria-label="عرض الأقسام الفرعية" data-testid={`bazaar-cat-toggle-${cat.id}`} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100">
-                                <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`bazaar-drawer-chevron h-4 w-4 ${isExpanded ? 'rotate-180' : ''}`} />
                               </button>
                             ) : (
                               <ChevronLeft className="h-3.5 w-3.5 shrink-0 text-slate-300" />
                             )}
                           </div>
                           {hasSubs && isExpanded && (
-                            <div className="ms-6 mt-1 space-y-0.5 border-s-2 border-slate-100 ps-2">
+                            <div className="bazaar-drawer-children ms-6 mt-1 space-y-0.5 border-s-2 border-slate-100 ps-2">
                               {subs.map((sub: any) => {
                                 const subImg = getCatImage(sub);
                                 return (
@@ -399,10 +413,10 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                   <span className="block text-[13px] font-extrabold leading-none text-slate-900">الحساب</span>
                   <span className="mt-1 block truncate text-[11px] font-medium leading-none text-slate-400">{isLoggedIn ? (customerName || 'إدارة الحساب') : 'تسجيل الدخول أو إنشاء حساب'}</span>
                 </span>
-                <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${accountOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`bazaar-drawer-chevron h-4 w-4 shrink-0 text-slate-400 ${accountOpen ? 'rotate-180' : ''}`} />
               </button>
               {accountOpen && (
-                <div id="bazaar-account" className="border-t border-slate-200 bg-white px-2 py-2">
+                <div id="bazaar-account" className="bazaar-drawer-children border-t border-slate-200 bg-white px-2 py-2">
                   {isLoggedIn ? (
                     <>
                       {(customerName || customerEmail) && (
@@ -455,7 +469,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                   {socialSlots.filter((s: any) => s.safe).slice(0,6).map((slot: any) => {
                     const Icon = getBazaarSocialIcon(slot.platform);
                     return (
-                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} data-testid={`bazaar-social-${slot.platform}`} className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm transition hover:bg-slate-800 active:scale-95">
+                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} data-testid={`bazaar-social-${slot.platform}`} className="bazaar-social flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm active:scale-95">
                         <Icon className="h-4 w-4" />
                       </a>
                     );
@@ -466,7 +480,6 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
           )}
         </div>
       </nav>
-      <style>{`@media (prefers-reduced-motion: reduce) { [data-testid="bazaar-drawer-nav"] { animation: none !important; } } @keyframes bazaarSlideIn { from { transform: translateX(18px); opacity: 0; } to { transform: none; opacity: 1; } }`}</style>
     </div>
   );
 }
@@ -497,6 +510,8 @@ export function BazaarHero({ banners }: { banners: any[] }) {
   const isVideo = hero.hasDynamicHero && hero.type === 'video' && hero.videoUrl;
   const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hero.youtubeId;
   const [i, setI] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  useEffect(() => { ensureBazaarInteractionsStyle(); }, []);
   useEffect(() => {
     if (isVideo || isYoutube || slides.length <= 1) return;
     const t = setInterval(() => setI((v) => (v + 1) % slides.length), 5500);
@@ -573,15 +588,29 @@ export function BazaarHero({ banners }: { banners: any[] }) {
   }
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
+    <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl" data-bazaar-reveal>
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
-      <div className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
+      <div
+        className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl"
+        style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}
+        onTouchStart={(e) => { touchStartX.current = e.touches[0]?.clientX ?? null; }}
+        onTouchEnd={(e) => {
+          if (touchStartX.current === null || slides.length <= 1) return;
+          const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
+          if (Math.abs(dx) > 48) {
+            if (dx < 0) setI((v) => (v + 1) % slides.length);
+            else setI((v) => (v - 1 + slides.length) % slides.length);
+          }
+          touchStartX.current = null;
+        }}
+      >
         {slides.map((b: any, idx: number) => {
           const m = (slidesMobile[idx] || b);
           const desktopSrc = b.image ? getOptimizedImageUrl(b.image||'', 'medium') : '';
           const mobileSrc = m.image ? getOptimizedImageUrl(m.image||'', 'medium') : desktopSrc;
+          const active = idx === i;
           return (
-          <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
+          <div key={idx} className="bazaar-hero-slide absolute inset-0" style={{ opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(1.01)', pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
             {desktopSrc ? (
               <>
                 <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFit} opacity-75 ${hasMobileImages?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
@@ -602,12 +631,18 @@ export function BazaarHero({ banners }: { banners: any[] }) {
           </div>
         )})}
         {slides.length > 1 && (
-          <div className="absolute bottom-4 right-1/2 flex translate-x-1/2 gap-1.5">
-            {slides.map((_, idx: number) => (
-              <button key={idx} type="button" onClick={() => setI(idx)} aria-label={`شريحة ${idx + 1}`}
-                className={`h-2 rounded-full transition-all ${idx === i ? 'w-6 bg-white' : 'w-2 bg-white/40'}`} />
-            ))}
-          </div>
+          <>
+            <button type="button" onClick={() => setI((v) => (v - 1 + slides.length) % slides.length)} aria-label="السابق" className="bazaar-hero-arrow absolute left-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md backdrop-blur md:flex">‹</button>
+            <button type="button" onClick={() => setI((v) => (v + 1) % slides.length)} aria-label="التالي" className="bazaar-hero-arrow absolute right-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md backdrop-blur md:flex">›</button>
+            <div className="absolute bottom-4 right-1/2 flex translate-x-1/2 gap-1.5">
+              {slides.map((_, idx: number) => (
+                <button key={idx} type="button" onClick={() => setI(idx)} aria-label={`شريحة ${idx + 1}`}
+                  className={`bazaar-hero-dot h-2 rounded-full ${idx === i ? 'is-active bg-white' : 'w-2 bg-white/40'}`}
+                  style={idx === i ? { width: 22 } as any : undefined}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </section>
@@ -616,24 +651,62 @@ export function BazaarHero({ banners }: { banners: any[] }) {
 
 /* --------------------------- Product card --------------------------- */
 
-export function BazaarCard({ product }: { product: V2Product }) {
-  const { cart, product: productCtx, wishlist } = useStorefrontCore();
+export function BazaarCard({ product, index = 0 }: { product: V2Product; index?: number }) {
+  const { cart, product: productCtx, wishlist, auth } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
   const discount = discountPercent(product);
   const out = product.availability === 'out_of_stock';
   const remaining = lowStockRemaining(product);
   const variable = isVariableProduct(product);
   const wished = wishlist?.isInWishlist ? wishlist.isInWishlist(product.id) : false;
+  const [added, setAdded] = useState(false);
+  const addBtnRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const wishBtnRef = useRef<HTMLButtonElement>(null);
 
-  const add = async () => {
+  const add = async (e?: React.MouseEvent) => {
     if (variable) return productCtx.handleProductClick(product);
-    await cart.addToCart(product as any);
+    const ok = await cart.addToCart(product as any);
+    if (!ok) return;
+    // success micro-interaction only after REAL success
+    setAdded(true);
+    pulseBazaarCartBadge();
+    try {
+      const origin = (e?.currentTarget as HTMLElement) || cardRef.current;
+      const imgUrl = getOptimizedImageUrl(product.image || '', 'small') || getImageUrl(product.image || '');
+      flyToCartBazaar(imgUrl, origin as HTMLElement);
+    } catch {}
+    window.setTimeout(() => setAdded(false), 720);
+  };
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!auth?.isLoggedIn) {
+      // preserve auth gate — do not show fake success
+      auth?.setShowLoginModal?.(true);
+      return;
+    }
+    const prev = !!wished;
+    const res: 'added' | 'removed' | false = await wishlist.toggle(product.id);
+    if (res === false) return;
+    const addedNow = res === 'added';
+    // only animate after real result
+    if (wishBtnRef.current) triggerBazaarWishlistPop(wishBtnRef.current, addedNow);
+    // keep prev logic for UI: wishlist state already updated via context refresh
+    void prev;
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-100 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-950/5" dir="rtl">
+    <div
+      ref={cardRef}
+      data-bazaar-reveal
+      data-bazaar-stagger
+      style={{ ['--bazaar-idx' as any]: Math.min(index % 8, 6) } as any}
+      className="bazaar-card group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-100"
+      dir="rtl"
+    >
       <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-[4/5] w-full overflow-hidden bg-slate-50" aria-label={product.name}>
-        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" width={400} height={400} />
+        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="bazaar-card-img bazaar-img-fade h-full w-full object-cover" width={400} height={400} />
         {discount > 0 && !out && (
           <span className="absolute top-2.5 right-2.5 rounded-lg bg-rose-500 px-2 py-0.5 text-[11px] font-black text-white">-{discount}%</span>
         )}
@@ -642,17 +715,18 @@ export function BazaarCard({ product }: { product: V2Product }) {
         )}
         {out && <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-black text-slate-500">نفذت الكمية</span>}
         <button
+          ref={wishBtnRef}
           type="button"
-          onClick={(e) => { e.stopPropagation(); wishlist.toggle(product.id); }}
+          onClick={handleWishlist}
           aria-label="المفضلة"
-          className={`absolute top-2.5 left-2.5 rounded-full p-2 shadow-sm backdrop-blur transition ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
+          className={`absolute top-2.5 left-2.5 rounded-full p-2 shadow-sm backdrop-blur ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
         >
           <Heart className="h-3.5 w-3.5" fill={wished ? 'currentColor' : 'none'} />
         </button>
       </button>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
-        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="line-clamp-2 min-h-10 text-start text-sm font-bold leading-snug text-slate-800 hover:text-teal-700">
+        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="bazaar-card-title line-clamp-2 min-h-10 text-start text-sm font-bold leading-snug text-slate-800">
           {product.name}
         </button>
         {(() => {
@@ -669,9 +743,18 @@ export function BazaarCard({ product }: { product: V2Product }) {
             )}
           </div>
           {!out && (
-            <button type="button" onClick={add} aria-label="أضف للسلة"
-              className="flex h-9 items-center gap-1.5 rounded-xl bg-teal-600 px-3.5 text-xs font-black text-white shadow-md shadow-teal-600/20 transition hover:bg-teal-500 active:scale-95">
-              <Plus className="h-3.5 w-3.5" strokeWidth={3} /> أضف
+            <button
+              ref={addBtnRef}
+              type="button"
+              onClick={add}
+              aria-label={added ? 'تمت الإضافة' : 'أضف للسلة'}
+              className={`bazaar-btn flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-xs font-black text-white shadow-md shadow-teal-600/20 ${added ? 'bazaar-add-success' : 'bg-teal-600'}`}
+            >
+              {added ? (
+                <span className="bazaar-check-pop inline-flex items-center gap-1"><span>✓</span> تمت الإضافة</span>
+              ) : (
+                <><Plus className="h-3.5 w-3.5" strokeWidth={3} /> أضف</>
+              )}
             </button>
           )}
         </div>
