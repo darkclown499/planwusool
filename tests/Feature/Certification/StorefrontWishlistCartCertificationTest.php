@@ -21,8 +21,9 @@ use Tests\TestCase;
  *  - multiple favorites listed
  *  - guest toggle persists a wishlist row for the session
  *  - storefront surfaces wishlist state via the shared accessor
- *  - KNOWLEDGE-PIN: WishlistController (unlike CartController) does NOT enforce
- *    product->store ownership (see report FINDING).
+ *  - store isolation: a product of store B cannot be added/toggled under store A;
+ *    the request is rejected (422) and no cross-store row is persisted (add/toggle,
+ *    logged-in + guest).
  *
  * Cart:
  *  - simple product add / read / quantity update / remove
@@ -164,19 +165,56 @@ class StorefrontWishlistCartCertificationTest extends TestCase
         $this->assertStringContainsString('wishlist', $result, 'search result must surface wishlist state');
     }
 
-    public function test_wishlist_cross_store_ownership_not_enforced(): void
+    public function test_wishlist_cross_store_product_is_rejected(): void
     {
-        // KNOWLEDGE-PIN (see report FINDING): WishlistController does not perform the
-        // product->store ownership check that CartController.add performs (422). Today a
-        // product of store B can be wishlisted under store A. If the ownership guard is
-        // added later, this test will signal it by failing and must be updated.
+        // Logged-in customer of store A mutating a store B product must be rejected;
+        // no cross-store row may be persisted (add() and toggle()).
+        [, $storeA] = $this->makeStore();
+        [, $storeB] = $this->makeStore();
+        $customer = $this->customerFor($storeA);
+        $this->actingAs($customer, 'customer');
+        $pB = $this->product($storeB);
+
+        $res = $this->postJson('/api/wishlist/toggle', ['store_id' => $storeA->id, 'product_id' => $pB->id]);
+        $res->assertStatus(422);
+        $this->assertSame(0, WishlistItem::where('store_id', $storeA->id)->count());
+
+        $resAdd = $this->postJson('/api/wishlist/add', ['store_id' => $storeA->id, 'product_id' => $pB->id]);
+        $resAdd->assertStatus(422);
+        $this->assertSame(0, WishlistItem::where('product_id', $pB->id)->where('store_id', $storeA->id)->count());
+    }
+
+    public function test_wishlist_guest_cross_store_product_is_rejected(): void
+    {
         [, $storeA] = $this->makeStore();
         [, $storeB] = $this->makeStore();
         $pB = $this->product($storeB);
 
         $res = $this->postJson('/api/wishlist/toggle', ['store_id' => $storeA->id, 'product_id' => $pB->id]);
-        $res->assertStatus(200);
-        $this->assertDatabaseHas('wishlist_items', ['store_id' => $storeA->id, 'product_id' => $pB->id]);
+        $res->assertStatus(422);
+        $this->assertSame(0, WishlistItem::where('store_id', $storeA->id)->count());
+        $this->assertSame(0, WishlistItem::where('product_id', $pB->id)->where('store_id', $storeA->id)->count());
+    }
+
+    public function test_wishlist_cross_store_rejection_leaves_own_store_state_intact(): void
+    {
+        [, $storeA] = $this->makeStore();
+        [, $storeB] = $this->makeStore();
+        $customer = $this->customerFor($storeA);
+        $this->actingAs($customer, 'customer');
+        $pB = $this->product($storeB);
+        $own = $this->product($storeA);
+
+        $this->postJson('/api/wishlist/toggle', ['store_id' => $storeA->id, 'product_id' => $own->id])->assertOk();
+
+        $this->postJson('/api/wishlist/toggle', ['store_id' => $storeA->id, 'product_id' => $pB->id])->assertStatus(422);
+        $this->postJson('/api/wishlist/add', ['store_id' => $storeA->id, 'product_id' => $pB->id])->assertStatus(422);
+
+        $this->assertSame(1, WishlistItem::where('store_id', $storeA->id)->count());
+        $this->assertSame((string) $own->id, (string) WishlistItem::where('store_id', $storeA->id)->first()->product_id);
+
+        $this->postJson('/api/wishlist/toggle', ['store_id' => $storeA->id, 'product_id' => $own->id])->assertOk();
+        $this->assertSame(0, WishlistItem::where('store_id', $storeA->id)->count());
     }
 
     // ---------------- CART ----------------

@@ -13,6 +13,16 @@ use Illuminate\Support\Facades\Log;
 
 class WishlistController extends Controller
 {
+    /**
+     * Reject a wishlist mutation whose product does not belong to the requested store.
+     * Mirrors CartController ownership validation (422) without leaking the foreign
+     * product's details.
+     */
+    private function rejectForeignProduct()
+    {
+        return response()->json(['message' => __('Product does not belong to this store.')], 422);
+    }
+
     public function index(Request $request)
     {
         $storeId = $request->store_id;
@@ -54,6 +64,12 @@ class WishlistController extends Controller
 
     public function add(WishlistRequest $request)
     {
+        $product = Product::find($request->product_id);
+
+        if (! $product || (int) $product->store_id !== (int) $request->store_id) {
+            return $this->rejectForeignProduct();
+        }
+
         $whereConditions = [
             'store_id' => $request->store_id,
             'product_id' => $request->product_id
@@ -111,6 +127,12 @@ class WishlistController extends Controller
 
     public function toggle(WishlistRequest $request)
     {
+        $product = Product::find($request->product_id);
+
+        if (! $product || (int) $product->store_id !== (int) $request->store_id) {
+            return $this->rejectForeignProduct();
+        }
+
         $whereConditions = [
             'store_id' => $request->store_id,
             'product_id' => $request->product_id
