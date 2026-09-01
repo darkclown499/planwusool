@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductImportBatch;
+use App\Services\ProductImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -679,5 +681,179 @@ class ProductController extends Controller
         };
         
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Bulk product import wizard (upload -> mapping -> preview -> confirm).
+     */
+    public function importPage()
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $categories = Category::where('store_id', $currentStoreId)
+            ->where('is_active', true)
+            ->select('id', 'name', 'parent_id', 'sort_order')
+            ->ordered()
+            ->get();
+
+        $history = ProductImportBatch::forStore($currentStoreId)
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'original_filename', 'file_type', 'status', 'total_rows', 'valid_rows', 'warning_rows', 'error_rows', 'created_count', 'updated_count', 'failed_count', 'strategy', 'created_at', 'completed_at']);
+
+        $planLimits = null;
+        $plan = $user->getCurrentPlan();
+        if ($plan) {
+            $currentProducts = Product::where('store_id', $currentStoreId)->count();
+            $maxProducts = $plan->max_products_per_store ?? 0;
+            $planLimits = [
+                'can_create' => $maxProducts <= 0 || $currentProducts < $maxProducts,
+                'current_products' => $currentProducts,
+                'max_products' => $maxProducts,
+            ];
+        }
+
+        $service = new ProductImportService();
+
+        return Inertia::render('products/import', [
+            'categories' => $categories,
+            'history' => $history,
+            'planLimits' => $planLimits,
+            'limits' => [
+                'max_rows' => $service->maximumRows(),
+                'max_bytes' => $service->maximumBytes(),
+                'max_mb' => (int) ($service->maximumBytes() / 1024 / 1024),
+            ],
+        ]);
+    }
+
+    public function importTemplate()
+    {
+        $service = new ProductImportService();
+
+        $filename = 'wusool-products-template.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        return response()->stream($service->templateCsv(), 200, $headers);
+    }
+
+    /**
+     * Read a file's headers + suggested mapping (mapping step). Creates nothing.
+     */
+    public function importParse(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file',
+        ], [], [
+            'file' => __('الملف'),
+        ]);
+
+        try {
+            $service = new ProductImportService();
+            $parsed = $service->parseForMapping($request->file('file'));
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        return response()->json($parsed);
+    }
+
+    /**
+     * Parse + validate the upload into a safe preview. Never writes the catalog.
+     */
+    public function importPreview(Request $request)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $request->validate([
+            'file' => 'required|file',
+            'mapping' => 'required|json',
+            'options' => 'nullable|json',
+        ], [], [
+            'file' => __('الملف'),
+            'mapping' => __('مطابقة الأعمدة'),
+        ]);
+
+        $file = $request->file('file');
+        $mapping = json_decode((string) $request->input('mapping'), true);
+        $options = json_decode((string) ($request->input('options') ?: '{}'), true);
+        $mapping = is_array($mapping) ? $mapping : [];
+        $options = is_array($options) ? $options : [];
+
+        // Only known canonical fields may be mapped.
+        $mapping = array_filter($mapping, fn ($field) => in_array($field, ProductImportService::FIELDS, true));
+
+        try {
+            $service = new ProductImportService();
+            [$batch, $summary, $report] = $service->buildPreview($user, $currentStoreId, $file, $mapping, $options);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'batch_id' => $batch->id,
+            'summary' => $summary,
+            'errors' => $report,
+        ]);
+    }
+
+    /**
+     * Confirm + execute a previewed import. Idempotent per batch.
+     */
+    public function importConfirm(Request $request)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $request->validate([
+            'batch_id' => 'required|integer',
+            'strategy' => 'required|string|in:create_only,update_by_sku',
+        ]);
+
+        $batch = ProductImportBatch::forStore($currentStoreId)->find($request->input('batch_id'));
+        if (!$batch) {
+            return response()->json(['error' => __('لم يتم العثور على دفعة الاستيراد.')], 404);
+        }
+
+        $strategy = (string) $request->input('strategy');
+        // Update-by-SKU modifies existing products: requires edit permission too.
+        if ($strategy === 'update_by_sku' && !$user->can('edit-products')) {
+            return response()->json(['error' => __('لا تملك صلاحية تحديث المنتجات من خلال الاستيراد.')], 403);
+        }
+
+        $service = new ProductImportService();
+        $result = $service->confirmImport($user, $currentStoreId, $batch, $strategy);
+
+        return response()->json($result);
+    }
+
+    /**
+     * Download a CSV error report for a store-scoped batch.
+     */
+    public function importErrorReport(string $id)
+    {
+        $user = Auth::user();
+        $currentStoreId = getCurrentStoreId($user);
+
+        $batch = ProductImportBatch::forStore($currentStoreId)->findOrFail((int) $id);
+
+        $filename = 'import-errors-' . $batch->id . '-' . now()->format('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $service = new ProductImportService();
+
+        return response()->stream($service->errorReport($batch), 200, $headers);
     }
 }

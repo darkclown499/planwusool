@@ -827,6 +827,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Product Management routes with permissions
         Route::get('products', [\App\Http\Controllers\ProductController::class, 'index'])->middleware('permission:manage-products')->name('products.index');
         Route::get('products/export', [\App\Http\Controllers\ProductController::class, 'export'])->middleware('permission:export-products')->name('products.export');
+        Route::get('products/import', [\App\Http\Controllers\ProductController::class, 'importPage'])->middleware('permission:create-products')->name('products.import');
+        Route::get('products/import/template', [\App\Http\Controllers\ProductController::class, 'importTemplate'])->middleware('permission:create-products')->name('products.import.template');
+        Route::post('products/import/parse', [\App\Http\Controllers\ProductController::class, 'importParse'])->middleware('permission:create-products')->name('products.import.parse');
+        Route::post('products/import/preview', [\App\Http\Controllers\ProductController::class, 'importPreview'])->middleware('permission:create-products')->name('products.import.preview');
+        Route::post('products/import', [\App\Http\Controllers\ProductController::class, 'importConfirm'])->middleware('permission:create-products')->name('products.import.confirm');
+        Route::get('products/import/{id}/errors', [\App\Http\Controllers\ProductController::class, 'importErrorReport'])->middleware('permission:create-products')->name('products.import.errors');
         Route::get('products/create', [\App\Http\Controllers\ProductController::class, 'create'])->middleware('permission:create-products')->name('products.create');
         Route::post('products', [\App\Http\Controllers\ProductController::class, 'store'])->middleware('permission:create-products')->name('products.store');
         Route::get('products/{id}/edit', [\App\Http\Controllers\ProductController::class, 'edit'])->middleware('permission:edit-products')->name('products.edit');
