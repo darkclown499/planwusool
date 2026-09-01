@@ -233,7 +233,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
             <img src={getImageUrl(config.logo || store.logo)} alt="" className="max-h-7 w-auto max-w-full object-contain" />
           ) : (
             <span className="flex items-center gap-1.5">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--store-primary,#0a1220)] text-white"><Zap className="h-3.5 w-3.5" /></span>
               <span className="truncate text-[13px] font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
             </span>
           )}
@@ -266,7 +266,7 @@ export function HubHeader({ homeHref = '/' }: { homeHref?: string }) {
               <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[148px] object-contain" />
             ) : (
               <>
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-4.5 w-4.5" /></span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--store-primary,#0a1220)] text-white"><Zap className="h-4.5 w-4.5" /></span>
                 <span className="max-w-[160px] truncate text-[15px] font-extrabold leading-none text-[#0a1220]">{config?.storeName || store?.name}</span>
               </>
             )}
@@ -398,7 +398,7 @@ function HubMobileDrawer({ mobileNavRef, config, store, content, categories, aut
               <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto max-w-[90px] object-contain" />
             ) : (
               <span className="flex items-center gap-1.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0a1220] text-white"><Zap className="h-3.5 w-3.5" /></span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--store-primary,#0a1220)] text-white"><Zap className="h-3.5 w-3.5" /></span>
                 <span className="text-sm font-extrabold text-[#0a1220]">{config?.storeName || store?.name}</span>
               </span>
             )}
@@ -412,7 +412,7 @@ function HubMobileDrawer({ mobileNavRef, config, store, content, categories, aut
         <div className="flex-1 overflow-y-auto overscroll-contain p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3">
           {/* HOME — distinct primary navigation action */}
           <button type="button" onClick={handleHome}
-            className="flex w-full items-center gap-3 rounded-xl bg-[#0a1220] px-3 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#141d2f] active:scale-[0.98]">
+            className="flex w-full items-center gap-3 rounded-xl bg-[var(--store-primary,#0a1220)] px-3 py-3 text-sm font-extrabold text-white shadow-sm transition hover:brightness-90 active:scale-[0.98]">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white"><Home className="h-5 w-5" /></span>
             الرئيسية
             <ChevronLeft className="ms-auto h-4 w-4 text-white/60" />
@@ -497,7 +497,7 @@ function HubMobileDrawer({ mobileNavRef, config, store, content, categories, aut
                 aria-controls="hub-account"
                 className="flex h-[56px] w-full items-center gap-3 px-3 text-start transition"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a1220] text-white"><User className="h-5 w-5" /></span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--store-primary,#0a1220)] text-white"><User className="h-5 w-5" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[13px] font-extrabold leading-none text-[#0a1220]">الحساب</span>
                   <span className="mt-1 block truncate text-[11px] font-medium leading-none text-[#8a93a2]">{isLoggedIn ? (customerName || 'إدارة الحساب') : 'تسجيل الدخول أو إنشاء حساب'}</span>
@@ -510,7 +510,7 @@ function HubMobileDrawer({ mobileNavRef, config, store, content, categories, aut
                     <>
                       {(customerName || customerEmail) && (
                         <div className="mx-1 mb-2 flex items-center gap-3 rounded-xl bg-[#f1f4f8] px-3 py-2.5 ring-1 ring-[#e6ebf1]">
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0a1220] text-[12px] font-bold text-white">{(customerName || customerEmail || '؟').trim().charAt(0).toUpperCase()}</span>
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--store-primary,#0a1220)] text-[12px] font-bold text-white">{(customerName || customerEmail || '؟').trim().charAt(0).toUpperCase()}</span>
                           <span className="min-w-0 flex-1">
                             {customerName && <span className="block truncate text-[12px] font-bold text-[#0a1220]">{customerName}</span>}
                             {(customerEmail || customerPhone) && <span className="block truncate text-[11px] text-[#64748b]">{customerEmail || customerPhone}</span>}
@@ -528,7 +528,7 @@ function HubMobileDrawer({ mobileNavRef, config, store, content, categories, aut
                     <div className="px-1 py-1">
                       <p className="px-2 text-[11px] leading-relaxed text-[#8a93a2]">سجّل الدخول لمتابعة حسابك وطلباتك</p>
                       <div className="mt-2 space-y-1.5">
-                        <button type="button" onClick={handleLogin} className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[#0a1220] px-4 text-[13px] font-extrabold text-white transition hover:bg-[#141d2f] active:scale-[0.98]"><LogIn className="h-4 w-4" /> تسجيل الدخول</button>
+                        <button type="button" onClick={handleLogin} className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--store-primary,#0a1220)] px-4 text-[13px] font-extrabold text-white transition hover:brightness-90 active:scale-[0.98]"><LogIn className="h-4 w-4" /> تسجيل الدخول</button>
                         {registrationEnabled && <button type="button" onClick={handleLogin} className="flex h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-[13px] font-bold text-[#0a1220] ring-1 ring-[#e6ebf1] transition hover:bg-[#f8fafc] active:scale-[0.98]"><User className="h-4 w-4" /> إنشاء حساب</button>}
                       </div>
                     </div>
@@ -560,7 +560,7 @@ function HubMobileDrawer({ mobileNavRef, config, store, content, categories, aut
                   {socialSlots.filter((s: any) => s.safe).slice(0,6).map((slot: any) => {
                     const Icon = getSocialIcon(slot.platform);
                     return (
-                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0a1220] text-white shadow-sm transition hover:bg-[#141d2f] active:scale-95">
+                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--store-primary,#0a1220)] text-white shadow-sm transition hover:brightness-90 active:scale-95">
                         <Icon className="h-4 w-4" />
                       </a>
                     );
@@ -674,7 +674,7 @@ function HubHero({ banner }: { banner?: any }) {
     return (
       <section className="bg-[#f3f5f8]" dir="rtl" data-hero>
         <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
-          <div className="relative overflow-hidden rounded-2xl bg-[#0a1220] text-white sm:rounded-3xl">
+          <div className="relative overflow-hidden rounded-2xl bg-[var(--store-primary,#0a1220)] text-white sm:rounded-3xl">
             <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '44px 44px' }} />
             <div className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#2563eb]/25 blur-[90px]" />
             <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-l from-transparent via-[#2563eb] to-transparent" />
@@ -874,7 +874,7 @@ export function HubCard({ product }: { product: V2Product }) {
           {!out && (
             <button type="button" onClick={handleAdd} aria-label={added ? 'تمت الإضافة' : 'أضف للسلة'} disabled={adding}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md transition-all active:scale-[0.92] disabled:opacity-60 ${
-                added ? 'bg-[#2563eb] text-white' : 'bg-[#0a1220] text-white hover:bg-[#2563eb]'
+                added ? 'bg-[#2563eb] text-white' : 'bg-[var(--store-primary,#0a1220)] text-white hover:brightness-90'
               }`}
               style={{ transitionDuration: `200ms`, transitionTimingFunction: EASE, ...reducedMotionStyle }}>
               <span className="relative flex items-center justify-center">
@@ -1148,7 +1148,7 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
             {SORTS.map((s) => (
               <button key={s} type="button" onClick={() => navigate({ sort: s })}
                 className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                  categoryData?.sort === s ? 'bg-[#0a1220] text-white shadow-sm' : 'bg-white text-[#5b6472] ring-1 ring-[#e3e8ee] hover:text-[#2563eb] hover:ring-[#2563eb]/40'
+                  categoryData?.sort === s ? 'bg-[var(--store-primary,#0a1220)] text-white shadow-sm' : 'bg-white text-[#5b6472] ring-1 ring-[#e3e8ee] hover:text-[#2563eb] hover:ring-[#2563eb]/40'
                 }`}
                 style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
                 {SORT_LABELS[s]}
@@ -1175,7 +1175,7 @@ const HubCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryData
                 {Array.from({ length: categoryData.lastPage }, (_, i) => i + 1).map((n) => (
                   <button key={n} type="button" onClick={() => navigate({ page: n })}
                     className={`h-9 min-w-9 rounded-lg px-2 text-sm font-bold transition-all ${
-                      n === categoryData.currentPage ? 'bg-[#0a1220] text-white shadow-sm' : 'bg-white text-[#5b6472] ring-1 ring-[#e3e8ee] hover:text-[#2563eb]'
+                      n === categoryData.currentPage ? 'bg-[var(--store-primary,#0a1220)] text-white shadow-sm' : 'bg-white text-[#5b6472] ring-1 ring-[#e3e8ee] hover:text-[#2563eb]'
                     }`}
                     style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}>
                     {n}

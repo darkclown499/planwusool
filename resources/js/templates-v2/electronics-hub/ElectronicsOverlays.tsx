@@ -342,7 +342,7 @@ export function HubProductModal({ product, onClose }: any) {
                   type="button"
                   onClick={add}
                   disabled={missing.length > 0 || product.availability === 'out_of_stock'}
-                  className="flex flex-1 items-center justify-center rounded-xl bg-[#0a1220] px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#0a1220]/15 transition-all hover:bg-[#141d2f] active:scale-[0.98] disabled:bg-[#e6ebf1] disabled:text-[#8a93a2] disabled:shadow-none"
+                  className="flex flex-1 items-center justify-center rounded-xl bg-[var(--store-primary,#0a1220)] px-4 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-[#0a1220]/15 transition-all hover:brightness-90 active:scale-[0.98] disabled:bg-[#e6ebf1] disabled:text-[#8a93a2] disabled:shadow-none"
                   style={{ transitionDuration: `${DUR.micro}ms`, transitionTimingFunction: EASE }}
                 >
                   {product.availability === 'out_of_stock' ? 'غير متوفر' : missing.length > 0 ? `اختار ${missing.map((g: any) => g.name).join(' و')}` : `أضف للسلة · ${formatPrice((Number(product.price) || 0) * qty)}`}

@@ -614,14 +614,12 @@ export function BazaarHero({ banners }: { banners: any[] }) {
             const zoomMobile = heroZoomForMedia(m, hero, true);
             const styleDesktop: any = { objectPosition: posDesktop, ...(zoomDesktop !== 1 ? { transform: `scale(${zoomDesktop})`, transformOrigin: posDesktop } : {}) };
             const styleMobile: any = { objectPosition: posMobile, ...(zoomMobile !== 1 ? { transform: `scale(${zoomMobile})`, transformOrigin: posMobile } : {}) };
-            const isContainDesktop = fitDesktop === 'contain';
-            const isContainMobile = fitMobile === 'contain';
             if (m.type === 'video') {
               const src = getHeroImageUrl(String(m.src||''));
               const srcMobile = m.srcMobile ? getHeroImageUrl(String(m.srcMobile)) : null;
               const poster = m.poster ? getHeroImageUrl(String(m.poster)) : undefined;
               return (
-                <div key={m.id || sIdx} className={`bazaar-hero-slide absolute inset-0 overflow-hidden ${isContainDesktop ? 'bg-slate-900' : 'bg-black'}`} style={{ opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(1.01)', pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                <div key={m.id || sIdx} className={`bazaar-hero-slide absolute inset-0 overflow-hidden bg-black`} style={{ opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(1.01)', pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
                   <video
                     ref={(el) => { if (el) videoRefs.current.set(sIdx, el); else videoRefs.current.delete(sIdx); }}
                     muted playsInline preload="metadata"
@@ -632,7 +630,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                     src={src} poster={poster}
                     aria-hidden={!active}
                   />
-                  {srcMobile && <video muted playsInline preload="metadata" loop={false} onEnded={() => goNext()} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden ${isContainMobile ? 'bg-slate-900' : 'bg-black'}`} style={styleMobile} src={srcMobile} poster={poster} />}
+                  {srcMobile && <video muted playsInline preload="metadata" loop={false} onEnded={() => goNext()} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden bg-black`} style={styleMobile} src={srcMobile} poster={poster} />}
                   {!c.isExplicitOff && c.hasContent && (
                     <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
                       {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
@@ -650,8 +648,8 @@ export function BazaarHero({ banners }: { banners: any[] }) {
               const ytZoomDesktop = zoomDesktop !== 1 ? { transform: `scale(${zoomDesktop})`, transformOrigin: posDesktop } as any : {};
               const ytZoomMobile = zoomMobile !== 1 ? { transform: `scale(${zoomMobile})`, transformOrigin: posMobile } as any : {};
               return (
-                <div key={m.id || sIdx} className={`bazaar-hero-slide absolute inset-0 overflow-hidden ${isContainDesktop ? 'bg-slate-900' : 'bg-black'}`} style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
-                  <div className={`absolute inset-0 overflow-hidden ${isContainDesktop ? 'bg-slate-900' : 'bg-black'} ${hasYtMobile?'hidden md:block':'block'}`} style={ytZoomDesktop}>
+                <div key={m.id || sIdx} className={`bazaar-hero-slide absolute inset-0 overflow-hidden bg-black`} style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                  <div className={`absolute inset-0 overflow-hidden bg-black ${hasYtMobile?'hidden md:block':'block'}`} style={ytZoomDesktop}>
                     {perFit==='object-contain' ? (
                       <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${yid}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yid}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
                     ) : (
@@ -659,7 +657,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                     )}
                   </div>
                   {hasYtMobile && (
-                    <div className={`absolute inset-0 overflow-hidden block md:hidden ${isContainMobile ? 'bg-slate-900' : 'bg-black'}`} style={ytZoomMobile}>
+                    <div className={`absolute inset-0 overflow-hidden block md:hidden bg-black`} style={ytZoomMobile}>
                       {(perFitMobile==='object-contain') ? (
                         <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${yidMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yidMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
                       ) : (
@@ -682,7 +680,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
             const mobileSrc = m.srcMobile ? getOptimizedImageUrl(String(m.srcMobile), 'medium') : desktopSrc;
             const hasMob = !!m.srcMobile;
             return (
-              <div key={m.id || sIdx} className={`bazaar-hero-slide absolute inset-0 overflow-hidden ${isContainDesktop ? 'bg-slate-900' : 'bg-black'}`} style={{ opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(1.01)', pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+              <div key={m.id || sIdx} className={`bazaar-hero-slide absolute inset-0 overflow-hidden bg-black`} style={{ opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(1.01)', pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
                 {desktopSrc ? (
                   <>
                     <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${perFit} ${hasMob?'hidden md:block':'block'}`} style={styleDesktop} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.src||'')))}} width={1200} height={400} />
