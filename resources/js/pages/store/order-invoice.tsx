@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StoreProvider } from '../../contexts/StoreContext';
 import { UnifiedInvoice } from '@/components/storefront/UnifiedInvoice';
+import { initCommerceTracking, trackPurchase } from '@/tracking';
 
 interface OrderInvoiceProps {
   orderNumber: string;
@@ -45,6 +46,26 @@ interface OrderInvoiceProps {
 }
 
 const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order, config, store }) => {
+  const bootedRef = useRef(false);
+
+  useEffect(() => {
+    if (bootedRef.current || !config || !store) return;
+    bootedRef.current = true;
+
+    // The invoice is a standalone page outside ThemeProvider, so initialize the
+    // tracking layer imperatively. Purchase dedup (sessionStorage) guarantees no
+    // double event when the customer reaches the invoice from the success modal.
+    initCommerceTracking({
+      metaPixelId: config.meta_pixel_id || '',
+      tiktokPixelId: config.tiktok_pixel_id || '',
+      googleAnalyticsId: config.google_analytics_id || '',
+      currencyCode: config.currency_code || 'ILS',
+      storeSlug: typeof store === 'string' ? store : store?.slug,
+    });
+    trackPurchase(orderNumber, Number(order?.total || 0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, store]);
+
   if (!config || !store) {
     // Fallback: render UnifiedInvoice without StoreProvider
     return <UnifiedInvoice orderNumber={orderNumber} order={order} />;

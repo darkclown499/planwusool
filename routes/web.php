@@ -796,6 +796,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/integrations', [\App\Http\Controllers\StoreIntegrationsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.integrations');
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');
+        Route::get('stores/{id}/marketing', [\App\Http\Controllers\StoreSettingsController::class, 'marketing'])->middleware('permission:settings-stores')->name('stores.marketing');
 
         // Merchant WhatsApp Order Notifications — per-store, encrypted, honest status, rate limited
         Route::get('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'index'])->middleware('auth')->name('stores.notifications.whatsapp');

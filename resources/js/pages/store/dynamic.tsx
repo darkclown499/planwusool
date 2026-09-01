@@ -170,6 +170,8 @@ const DynamicStore: React.FC<DynamicStoreProps> = ({
                 customerAddress={customer_address}
                 action={action}
                 behavior={behavior}
+                isPreview={isPreview}
+                isOwnerPreview={isOwnerPreview}
             >
                 <StoreBoundary>
                     <TemplateStorefrontV2 module={templateModule}>

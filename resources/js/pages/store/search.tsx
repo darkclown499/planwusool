@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/contexts/ThemeProvider';
 import { requireTemplateModule } from '@/templates-v2/registry';
 import { TemplateStorefrontV2 } from '@/templates-v2/TemplateStorefrontV2';
 import { SearchResultsView } from '@/templates-v2/shared/SearchResultsView';
+import { trackCommerceEvent } from '@/tracking';
 import React from 'react';
 import { Head } from '@inertiajs/react';
 
@@ -59,6 +60,7 @@ const SearchStore: React.FC<SearchStoreProps> = ({
   customer_address = [],
   action = null,
   searchPage,
+  isPreview = false,
 }) => {
   const templateModule = React.useMemo(() => requireTemplateModule(template), [template]);
   const accent = (templateModule as any)?.meta?.accent;
@@ -69,6 +71,12 @@ const SearchStore: React.FC<SearchStoreProps> = ({
   const seoTitle = searchPage.query
     ? `نتائج البحث عن "${searchPage.query}" — ${config?.storeName || store?.name || ''}`
     : `بحث — ${config?.storeName || store?.name || ''}`;
+
+  // Dedicated search page: canonical search event per executed query.
+  React.useEffect(() => {
+    if (isPreview || !searchPage.query) return;
+    trackCommerceEvent('search', { search_term: searchPage.query });
+  }, [isPreview, searchPage.query]);
 
   return (
     <>
@@ -95,6 +103,7 @@ const SearchStore: React.FC<SearchStoreProps> = ({
         customerAddress={customer_address}
         action={action}
         behavior={behavior}
+        isPreview={isPreview}
       >
         <StoreBoundary>
           <TemplateStorefrontV2 module={templateModule}>

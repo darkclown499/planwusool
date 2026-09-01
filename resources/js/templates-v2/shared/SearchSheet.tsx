@@ -3,6 +3,7 @@ import { Loader2, Search, X } from 'lucide-react';
 import { useServerSearch, submitStorefrontSearch } from '@/hooks/useServerSearch';
 import { SearchResultItem, SearchResultSkeleton } from './SearchResultItem';
 import { useStorefrontCore } from './hooks';
+import { trackCommerceEvent } from '@/tracking';
 
 /**
  * Shared mobile-first search sheet — replaces the narrow centered modal.
@@ -42,6 +43,11 @@ export const SearchSheet: React.FC<{
   }, [onClose]);
 
   const handleSubmit = () => {
+    // Canonical search event — shared by every template's in-page search sheet.
+    const term = query.trim();
+    if (term.length >= 2) {
+      trackCommerceEvent('search', { search_term: term });
+    }
     const ok = submitStorefrontSearch(query);
     if (ok) onClose();
   };

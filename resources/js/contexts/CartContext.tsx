@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { toast } from '@/components/custom-toast';
+import { trackCommerceEvent } from '@/tracking';
 import { route } from 'ziggy-js';
 import axios from 'axios';
 
@@ -134,6 +135,17 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
 
       await loadCart();
       toast.success('تمت الإضافة إلى السلة');
+
+      // Canonical add_to_cart event for social-commerce tracking (no-op unless
+      // the store configured a pixel and the tracking layer initialized).
+      const qty = product.quantity || 1;
+      trackCommerceEvent('add_to_cart', {
+        content_id: String(product.id),
+        content_name: product.name,
+        quantity: qty,
+        value: Number(product.price || 0) * qty,
+      });
+
       return true;
 
     } catch (error) {

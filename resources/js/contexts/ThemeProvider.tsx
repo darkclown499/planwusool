@@ -9,6 +9,7 @@ import { StoreProvider } from './StoreContext';
 import { StorefrontLocaleProvider } from './StorefrontLocaleContext';
 import { UIProvider } from './UIContext';
 import { WishlistProvider } from './WishlistContext';
+import { CommerceTrackingProvider } from '@/tracking/CommerceTrackingProvider';
 
 interface Product {
     id: string;
@@ -67,6 +68,11 @@ interface StoreConfig {
         whatsapp?: string;
         email?: string;
     };
+    google_analytics_id?: string;
+    meta_pixel_id?: string;
+    tiktok_pixel_id?: string;
+    gtm_id?: string;
+    currency_code?: string;
 }
 
 interface Store {
@@ -116,6 +122,8 @@ interface ThemeProviderProps {
     paymentStatus?: string;
     orderNumber?: string;
     action?: string | null;
+    isPreview?: boolean;
+    isOwnerPreview?: boolean;
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
@@ -134,38 +142,45 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     paymentStatus,
     orderNumber,
     action = null,
+    isPreview = false,
+    isOwnerPreview = false,
 }) => {
     return (
         <StorefrontLocaleProvider defaultLocale={config.locale}>
-            <StoreProvider config={config} store={store} content={content} behavior={behavior}>
-                <AuthProvider isLoggedIn={isLoggedIn} customer={customer} customerAddress={customerAddress}>
-                    <WishlistProvider storeId={store.id} isLoggedIn={isLoggedIn}>
-                        <CartProvider storeId={store.id}>
-                            <ProductProvider categories={categories} products={products}>
-                                <OrderProvider storeId={store.id} isLoggedIn={isLoggedIn} paymentStatus={paymentStatus} orderNumber={orderNumber}>
-                                    <UIProvider
-                                        showResetModal={showResetModal}
-                                        resetToken={resetToken}
-                                        paymentStatus={paymentStatus}
-                                        orderNumber={orderNumber}
-                                        action={action}
-                                    >
-                                        <MobileAppShell />
-                                        {children}
-                                        {/* Reserves space so the fixed mobile bottom tab bar never covers content — hidden for templates without bottom nav (fashion-atelier, grocery-souq, electronics-hub) */}
-                                        {(() => {
-                                            const t = String((store as any)?.theme || '').toLowerCase();
-                                            const hideSpacer = t === 'fashion-atelier' || t === 'grocery-souq' || t === 'electronics-hub' || t === 'restaurant-menu' || t === 'bazaar-market';
-                                            return hideSpacer ? null : <div aria-hidden className="h-[calc(54px_+_env(safe-area-inset-bottom))] md:hidden" />;
-                                        })()}
-                                        <AccountArea />
-                                    </UIProvider>
-                                </OrderProvider>
-                            </ProductProvider>
-                        </CartProvider>
-                    </WishlistProvider>
-                </AuthProvider>
-            </StoreProvider>
+            <CommerceTrackingProvider
+                config={{ ...config, store_slug: store.slug as string }}
+                isPreview={isPreview}
+                isOwnerPreview={isOwnerPreview}
+            >
+                <StoreProvider config={config} store={store} content={content} behavior={behavior}>
+                    <AuthProvider isLoggedIn={isLoggedIn} customer={customer} customerAddress={customerAddress}>
+                        <WishlistProvider storeId={store.id} isLoggedIn={isLoggedIn}>
+                            <CartProvider storeId={store.id}>
+                                <ProductProvider categories={categories} products={products}>
+                                    <OrderProvider storeId={store.id} isLoggedIn={isLoggedIn} paymentStatus={paymentStatus} orderNumber={orderNumber}>
+                                        <UIProvider
+                                            showResetModal={showResetModal}
+                                            resetToken={resetToken}
+                                            paymentStatus={paymentStatus}
+                                            orderNumber={orderNumber}
+                                            action={action}
+                                        >
+                                            <MobileAppShell />
+                                            {children}
+                                            {(() => {
+                                                const t = String((store as any)?.theme || '').toLowerCase();
+                                                const hideSpacer = t === 'fashion-atelier' || t === 'grocery-souq' || t === 'electronics-hub' || t === 'restaurant-menu' || t === 'bazaar-market';
+                                                return hideSpacer ? null : <div aria-hidden className="h-[calc(54px_+_env(safe-area-inset-bottom))] md:hidden" />;
+                                            })()}
+                                            <AccountArea />
+                                        </UIProvider>
+                                    </OrderProvider>
+                                </ProductProvider>
+                            </CartProvider>
+                        </WishlistProvider>
+                    </AuthProvider>
+                </StoreProvider>
+            </CommerceTrackingProvider>
         </StorefrontLocaleProvider>
     );
 };

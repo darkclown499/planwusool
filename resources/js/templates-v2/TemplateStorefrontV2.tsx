@@ -6,6 +6,7 @@ import { useOrder } from '@/contexts/OrderContext';
 import { useProduct } from '@/contexts/ProductContext';
 import { useStore } from '@/contexts/StoreContext';
 import { useUI } from '@/contexts/UIContext';
+import { trackCommerceEvent, trackPurchase } from '@/tracking';
 import type { TemplateModule } from './types';
 import React, { useEffect } from 'react';
 
@@ -195,6 +196,43 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
         // Success toast is now shown inside CheckoutContext's onSuccess callback only,
         // after server confirms the order — prevents premature toast on validation failure.
     };
+
+    // view_content — fired whenever the product detail modal opens for a product.
+    // This is the single canonical hook every template shares via ProductContext.
+    useEffect(() => {
+        if (product.showProductDetail && product.selectedProduct) {
+            const p = product.selectedProduct as any;
+            trackCommerceEvent('view_content', {
+                content_id: String(p.id ?? ''),
+                content_name: p.name,
+                value: Number(p.price || 0),
+                quantity: 1,
+                content_type: 'product',
+            });
+        }
+    }, [product.showProductDetail, product.selectedProduct]);
+
+    // begin_checkout — fired when the checkout modal opens (true-transition).
+    // Cart value/count are best-effort in case the session cart is still loading.
+    useEffect(() => {
+        if (ui.showCheckout) {
+            const items = Array.isArray(cart.cartItems) ? (cart.cartItems as any[]) : [];
+            const total = items.reduce(
+                (sum, it) => sum + Number(it.price ?? it.product?.price ?? 0) * Number(it.quantity ?? 1),
+                0,
+            );
+            trackCommerceEvent('begin_checkout', { value: total, num_items: items.length });
+        }
+    }, [ui.showCheckout]);
+
+    // purchase — canonical hook on the confirmed success modal. Covers both the
+    // in-app checkout success dispatch and the external-payment return path (both
+    // converge on showOrderSuccess). Dedup is handled inside trackPurchase.
+    useEffect(() => {
+        if (order.showOrderSuccess && order.orderNumber) {
+            trackPurchase(order.orderNumber);
+        }
+    }, [order.showOrderSuccess, order.orderNumber]);
 
     return (
         <div

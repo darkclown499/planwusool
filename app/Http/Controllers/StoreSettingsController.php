@@ -73,6 +73,7 @@ class StoreSettingsController extends Controller
                 'domains' => route('stores.domains', $storeId),
                 'features' => route('stores.features', $storeId),
                 'erp' => route('stores.integrations', $storeId),
+                'marketing' => route('stores.marketing', $storeId),
             ];
             if (isset($map[$tab])) {
                 return redirect()->to($map[$tab]);
@@ -139,6 +140,27 @@ class StoreSettingsController extends Controller
     }
 
     /**
+     * Renders the Social Commerce Hub page (Meta Pixel / TikTok Pixel / GA4)
+     * for a store. Values persist through the shared stores.settings.update /
+     * autosave endpoints and are exposed to the storefront via
+     * ThemeController::getStoreConfig under config.*_pixel_id.
+     */
+    public function marketing(Request $request, $storeId)
+    {
+        if (!Auth::user()->can('settings-stores')) {
+            return redirect()->back()->with('error', __('You do not have permission to access store tracking.'));
+        }
+
+        $store = $this->resolveStore($storeId);
+
+        return Inertia::render('stores/marketing', [
+            'store' => $store,
+            'settings' => StoreConfiguration::getConfiguration($storeId),
+            'planAllowsAdvancedFeatures' => $this->planAllowsAdvancedFeatures(),
+        ]);
+    }
+
+    /**
      * Update the store's selected theme/template slug.
      */
     public function updateTheme(Request $request, $storeId)
@@ -189,11 +211,39 @@ class StoreSettingsController extends Controller
             'settings.meta_description' => 'nullable|string|max:160',
             'settings.meta_keywords' => 'nullable|string|max:500',
             'settings.og_image' => 'nullable|string|max:1000',
-            'settings.google_analytics_id' => 'nullable|string|max:100',
-            'settings.meta_pixel_id' => 'nullable|string|max:100',
-            'settings.tiktok_pixel_id' => 'nullable|string|max:100',
-            'settings.snapchat_pixel_id' => 'nullable|string|max:100',
-            'settings.gtm_id' => 'nullable|string|max:100',
+            // Social Commerce tracking IDs — strict allow-lists. Merchant input can
+            // never become a raw <script>/HTML/URL: only the exact ID shapes below
+            // (or an empty string to clear) pass validation.
+            'settings.google_analytics_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                if ($value === null || trim((string) $value) === '') return;
+                if (!preg_match('/^(G-|GT-|UA-|AW-|DC-|YT-)[A-Za-z0-9-]{4,}$/', trim((string) $value))) {
+                    $fail(__('معرّف Google Analytics غير صالح. أدخل معرّفاً مثل G-XXXXXXX.'));
+                }
+            }],
+            'settings.meta_pixel_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                if ($value === null || trim((string) $value) === '') return;
+                if (!preg_match('/^\d{10,20}$/', trim((string) $value))) {
+                    $fail(__('معرّف Meta Pixel غير صالح. أدخل الأرقام فقط (10-20 رقماً).'));
+                }
+            }],
+            'settings.tiktok_pixel_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                if ($value === null || trim((string) $value) === '') return;
+                if (!preg_match('/^[A-Za-z0-9]{16,24}$/', trim((string) $value))) {
+                    $fail(__('معرّف TikTok Pixel غير صالح. أدخل 16-24 حرفاً/رقماً.'));
+                }
+            }],
+            'settings.snapchat_pixel_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                if ($value === null || trim((string) $value) === '') return;
+                if (!preg_match('/^[A-Za-z0-9-]{8,64}$/', trim((string) $value))) {
+                    $fail(__('معرّف Snapchat Pixel غير صالح.'));
+                }
+            }],
+            'settings.gtm_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                if ($value === null || trim((string) $value) === '') return;
+                if (!preg_match('/^(GTM|GT)-[A-Z0-9]{4,}$/i', trim((string) $value))) {
+                    $fail(__('معرّف Google Tag Manager غير صالح. أدخل معرّفاً مثل GTM-XXXXXXX.'));
+                }
+            }],
             'settings.logo' => 'nullable|string|max:1000',
             'settings.favicon' => 'nullable|string|max:1000',
             'settings.welcome_message' => 'nullable|string|max:500',
@@ -249,6 +299,22 @@ class StoreSettingsController extends Controller
         // Deliberately NOT merged with the raw request payload, so unknown /
         // plan-gated keys cannot reach store_configurations.
         $settingsToSave = $validated['settings'] ?? [];
+
+        // Normalize Social Commerce tracking IDs before persistence: strip
+        // surrounding whitespace, uppercase TikTok IDs (their SDK is
+        // case-sensitive), and drop any value that is only whitespace.
+        foreach (['google_analytics_id', 'meta_pixel_id', 'tiktok_pixel_id', 'snapchat_pixel_id', 'gtm_id'] as $trackingKey) {
+            if (!array_key_exists($trackingKey, $settingsToSave)) continue;
+            $value = trim((string) $settingsToSave[$trackingKey]);
+            if ($value === '') {
+                $settingsToSave[$trackingKey] = '';
+                continue;
+            }
+            if ($trackingKey === 'tiktok_pixel_id') {
+                $value = strtoupper($value);
+            }
+            $settingsToSave[$trackingKey] = $value;
+        }
 
         // Strip advanced (Growth/Pro) storefront features for plans that do
         // not explicitly include them. Skips the whole save for those keys.

@@ -29,7 +29,7 @@ export type PrimaryId =
 // Taxes, Email, Domains, Integrations under a given store. These pages drop the
 // heavy desktop secondary sidebar and surface their sub-nav as horizontal
 // in-page tabs instead.
-const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations)(\/|$)/;
+const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations|marketing)(\/|$)/;
 
 // Merchant store-shipping & tax settings land on the global /shipping and /tax
 // routes (the /stores/{id}/shipping and /stores/{id}/taxes canonical routes
@@ -98,6 +98,19 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     'Email & Notifications': 'البريد والإشعارات',
     Domain: 'الدومين',
     Integrations: 'التكاملات',
+    'Social Commerce': 'التسويق والتتبع',
+    'Meta Pixel': 'ميتا بيكسل',
+    'TikTok Pixel': 'تيك توك بيكسل',
+    'Google Analytics': 'جوجل أناليتكس',
+    'Your store sends conversion, page-view, product-view and search events to the connected advertising pixels. Events include the selected currency, product IDs and order numbers for accurate ad attribution.': 'يرسل متجرك أحداث التحويل ومشاهدة الصفحات والمنتجات والبحث إلى بكسلات الإعلانات المتصلة. تشمل الأحداث العملة المحددة ومعرّفات المنتجات وأرقام الطلبات لقياس دقيق لأداء الإعلانات.',
+    'Social Commerce improves when you connect your advertising pixels.': 'تحسين مركز التسويق عند ربط بكسلات الإعلانات.',
+    'Your plan does not include advanced tracking. Upgrade to Growth or Professional to connect Meta, TikTok and Google Analytics.': 'خطتك الحالية لا تتضمن التتبع المتقدم. قم بالترقية إلى خطة النمو أو الاحترافية لربط ميتا وتيك توك وجوجل أناليتكس.',
+    'Upgrade Plan': 'ترقية الخطة',
+    'Save Changes': 'حفظ التغييرات',
+    'Changes saved successfully': 'تم حفظ التغييرات بنجاح',
+    'not set': 'لم يتم الربط',
+    'connected': 'متصّل',
+    'Invalid ID': 'معرّف غير صالح',
     'Users & Roles': 'الفريق والصلاحيات',
     'My Plan': 'الخطة',
     'Platform Settings': 'إعدادات المنصة',
@@ -167,6 +180,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
         path.startsWith(`/stores/${sid}/domains`) ||
         path.startsWith(`/stores/${sid}/integrations`) ||
         path.startsWith(`/stores/${sid}/erp`) ||
+        path.startsWith(`/stores/${sid}/marketing`) ||
         path.startsWith(`/stores/${sid}/settings`)
     )) return 'settings';
 
@@ -185,7 +199,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
         return 'settings';
     }
     // Fallback for /stores/{id}/settings and /stores/{id}/domains etc already handled
-    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|notifications|settings)/)) {
+    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|marketing|notifications|settings)/)) {
         return 'settings';
     }
 
@@ -321,6 +335,7 @@ export function getMerchantContextNav(
                 items.push({ title: t('Email & Notifications') !== 'Email & Notifications' ? t('Email & Notifications') : 'البريد والإشعارات', href: `/stores/${sid}/email-settings`, activePaths: [`/stores/${sid}/email-settings`, `/stores/${sid}/notifications/email`, `/stores/${sid}/notifications/whatsapp`] });
                 items.push({ title: t('Domain') !== 'Domain' ? t('Domain') : 'الدومين', href: `/stores/${sid}/domains`, activePaths: [`/stores/${sid}/domains`] });
                 items.push({ title: t('Integrations'), href: `/stores/${sid}/integrations`, activePaths: [`/stores/${sid}/integrations`, `/stores/${sid}/integrations/erp`] });
+                items.push({ title: t('Social Commerce') !== 'Social Commerce' ? t('Social Commerce') : 'التسويق والتتبع', href: `/stores/${sid}/marketing`, activePaths: [`/stores/${sid}/marketing`] });
             }
             if (hasPermission('manage-users')) {
                 items.push({ title: t('Users & Roles') !== 'Users & Roles' ? t('Users & Roles') : 'الفريق والصلاحيات', href: tryRoute('users.index', '/users') });

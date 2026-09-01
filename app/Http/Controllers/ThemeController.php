@@ -369,6 +369,10 @@ class ThemeController extends Controller
                 'tiktok_pixel_id' => $configuration['tiktok_pixel_id'] ?? '',
                 'snapchat_pixel_id' => $configuration['snapchat_pixel_id'] ?? '',
                 'gtm_id' => $configuration['gtm_id'] ?? '',
+                // ISO 4217 currency code for social-commerce events (providers
+                // require a code, not the display symbol). Mirrors the order
+                // creation currency resolution in Store\OrderController.
+                'currency_code' => strtoupper($configuration['default_currency'] ?? ($storeSettings['defaultCurrency'] ?? 'ILS')),
             ],
             'storeSettings' => $storeSettings,
         ];
@@ -1247,6 +1251,14 @@ class ThemeController extends Controller
                 'vat_number' => $storeSettings['vat_number'] ?? null,
                 'tax_registration_number' => $storeSettings['tax_registration_number'] ?? null,
             ],
+            // Social-commerce tracking fidelity for the standalone invoice page:
+            // currency_code + pixel IDs let the tracking layer fire the canonical
+            // purchase event on direct-confirmation visits too.
+            'currency_code' => strtoupper($configuration['default_currency'] ?? ($storeSettings['defaultCurrency'] ?? 'ILS')),
+            'google_analytics_id' => $configuration['google_analytics_id'] ?? '',
+            'meta_pixel_id' => $configuration['meta_pixel_id'] ?? '',
+            'tiktok_pixel_id' => $configuration['tiktok_pixel_id'] ?? '',
+            'gtm_id' => $configuration['gtm_id'] ?? '',
         ];
 
         return Inertia::render('store/order-invoice', array_merge([

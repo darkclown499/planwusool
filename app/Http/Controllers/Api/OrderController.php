@@ -131,6 +131,7 @@ class OrderController extends Controller
                 'shipping' => (float) $order->shipping_amount,
                 'tax' => (float) $order->tax_amount,
                 'currency' => $storeSettings['currency_symbol'] ?? '$',
+                'currency_code' => strtoupper((string) ($order->currency ?? ($storeSettings['defaultCurrency'] ?? 'ILS'))),
                 'coupon' => $order->coupon_code,
                 'payment_method' => $order->payment_method === 'cod' ? 'الدفع عند الاستلام' : ucfirst(str_replace('_', ' ', $order->payment_method)),
                 'customer' => [
@@ -149,6 +150,7 @@ class OrderController extends Controller
                 'items' => $order->items->map(function ($item) {
                     $taxDetails = json_decode($item->tax_details, true) ?? [];
                     return [
+                        'id' => $item->product_id,
                         'name' => $item->product_name,
                         'price' => (float) $item->unit_price,
                         'quantity' => $item->quantity,
