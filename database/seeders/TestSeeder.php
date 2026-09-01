@@ -11,6 +11,7 @@ use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class TestSeeder extends Seeder
 {
@@ -33,7 +34,16 @@ class TestSeeder extends Seeder
 
         $this->command->info('Seeding E2E test environment: ' . $dbConnection . ' @ ' . $dbDatabase);
 
-        // Merchant
+        // Permissions + roles first so the E2E merchant can be granted the
+        // standard `company` role (idempotent — same as DatabaseSeeder).
+        $this->call([
+            PermissionSeeder::class,
+            RoleSeeder::class,
+        ]);
+
+        // Merchant — onboarded (skip onboarding wizard in E2E) and granted the
+        // standard company role so permission-gated areas (products, orders,
+        // customers, analytics, ...) are reachable during Playwright runs.
         $merchantEmail = env('E2E_MERCHANT_EMAIL', 'test.merchant@example.test');
         $merchantPassword = env('E2E_MERCHANT_PASSWORD', 'password');
 
@@ -46,8 +56,10 @@ class TestSeeder extends Seeder
                 'email_verified_at' => now(),
                 'plan_id' => Plan::first()?->id,
                 'is_enable_login' => 1,
+                'onboarded_at' => now(),
             ]
         );
+        $merchant->assignRole(Role::firstOrCreate(['name' => 'company', 'guard_name' => 'web']));
 
         // Store
         $store = Store::firstOrCreate(

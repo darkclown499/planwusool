@@ -1,5 +1,5 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { useLayout } from '@/contexts/LayoutContext';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import { ProfileMenu } from '@/components/profile-menu';
@@ -11,24 +11,36 @@ import { MerchantNotificationBell } from '@/components/merchant-notification-bel
 import { useTour } from '@/components/tour/tour-context';
 import { GlobalSearch } from '@/components/global-search';
 import { Search, RefreshCw, HelpCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     const { t } = useTranslation();
     const { position } = useLayout();
     const { start } = useTour();
     const [searchOpen, setSearchOpen] = useState(false);
+    const { setOpenMobile } = useSidebar();
+    const pageUrl = usePage().url;
+    const prevUrl = useRef(pageUrl);
+
+    // Close the mobile drawer whenever the route changes (Inertia navigation
+    // inside the drawer must dismiss it, matching desktop click-outside).
+    useEffect(() => {
+        if (prevUrl.current !== pageUrl) {
+            setOpenMobile(false);
+            prevUrl.current = pageUrl;
+        }
+    }, [pageUrl, setOpenMobile]);
 
     return (
         <>
             <header className="flex h-13 shrink-0 items-center gap-2 border-b border-gray-100 bg-white px-3 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4 overflow-x-clip">
             <div className="flex w-full min-w-0 items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                    {position === 'left' && <SidebarTrigger className="-ms-1 shrink-0" />}
+                    {position === 'left' && <SidebarTrigger className="-ms-1 shrink-0 relative z-10" />}
                     <div className="text-sm font-medium min-w-0 truncate">
                         <Breadcrumbs items={breadcrumbs.map(b => ({ label: b.title, href: b.href }))} />
                     </div>
-                    {position === 'right' && <SidebarTrigger className="-me-1 shrink-0 xl:hidden" />}
+                    {position === 'right' && <SidebarTrigger className="-me-1 shrink-0 relative z-10 xl:hidden" />}
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {/* Secondary actions — hidden on mobile to reduce crowding, visible from xl */}
