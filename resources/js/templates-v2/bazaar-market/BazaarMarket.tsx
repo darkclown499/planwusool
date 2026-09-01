@@ -564,7 +564,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl" data-bazaar-reveal>
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
       <div
-        className="bazaar-hero bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800"
+        className="bazaar-hero bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black"
         style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}
         onTouchStart={(e) => { touchStartX.current = e.touches[0]?.clientX ?? null; }}
         onTouchEnd={(e) => {
@@ -603,12 +603,10 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                     aria-hidden={!active}
                   />
                   {srcMobile && <video ref={(el) => { if (el && active) { /* mobile video handled via desktop ref; keep separate for poster */ } }} muted playsInline preload="metadata" loop={false} onEnded={() => goNext()} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={{ objectPosition: perPosMobile }} src={srcMobile} poster={poster} />}
-                  <div className="absolute inset-0 bg-gradient-to-l from-emerald-950/80 via-emerald-900/30 to-transparent" />
-                  {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
                   {!c.isExplicitOff && c.hasContent && (
                     <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
-                      {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{c.subtitle}</p>}
-                      {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{c.heading}</h1>}
+                      {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
+                      {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{c.heading}</h1>}
                       {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{c.ctaLabel} ←</a>}
                     </div>
                   )}
@@ -637,11 +635,10 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                       )}
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
                   {!c.isExplicitOff && c.hasContent && (
                     <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">
-                      {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{c.subtitle}</p>}
-                      {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{c.heading}</h1>}
+                      {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
+                      {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{c.heading}</h1>}
                       {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{c.ctaLabel} ←</a>}
                     </div>
                   )}
@@ -656,16 +653,14 @@ export function BazaarHero({ banners }: { banners: any[] }) {
               <div key={m.id || sIdx} className="bazaar-hero-slide absolute inset-0" style={{ opacity: active ? 1 : 0, transform: active ? 'scale(1)' : 'scale(1.01)', pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
                 {desktopSrc ? (
                   <>
-                    <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${perFit} opacity-75 ${hasMob?'hidden md:block':'block'}`} style={{ objectPosition: perPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.src||'')))}} width={1200} height={400} />
-                    {hasMob && mobileSrc && <img src={mobileSrc} alt="" className={`absolute inset-0 h-full w-full ${perFitMobile} opacity-75 block md:hidden`} style={{ objectPosition: perPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.srcMobile||'')))}} width={1200} height={1350} />}
+                    <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${perFit} ${hasMob?'hidden md:block':'block'}`} style={{ objectPosition: perPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.src||'')))}} width={1200} height={400} />
+                    {hasMob && mobileSrc && <img src={mobileSrc} alt="" className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={{ objectPosition: perPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.srcMobile||'')))}} width={1200} height={1350} />}
                   </>
                 ) : null}
-                <div className="absolute inset-0 bg-gradient-to-l from-emerald-950/80 via-emerald-900/30 to-transparent" />
-                {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
                 {!c.isExplicitOff && c.hasContent && (
                   <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
-                    {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{c.subtitle}</p>}
-                    {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{c.heading}</h1>}
+                    {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
+                    {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{c.heading}</h1>}
                     {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{c.ctaLabel} ←</a>}
                   </div>
                 )}
@@ -682,15 +677,13 @@ export function BazaarHero({ banners }: { banners: any[] }) {
             <div key={sIdx} className="bazaar-hero-slide absolute inset-0" style={{ opacity: active2 ? 1 : 0, transform: active2 ? 'scale(1)' : 'scale(1.01)', pointerEvents: active2 ? 'auto' : 'none' }} aria-hidden={!active2}>
               {desktopSrc ? (
                 <>
-                  <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFit} opacity-75 ${hasMobileImagesLegacy?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
-                  {hasMobileImagesLegacy && mobileSrc && <img src={mobileSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFitMobile} opacity-75 block md:hidden`} style={{ objectPosition: bazaarPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(mLegacy.image||''))}} width={1200} height={1350} />}
+                  <img src={desktopSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFit} ${hasMobileImagesLegacy?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
+                  {hasMobileImagesLegacy && mobileSrc && <img src={mobileSrc} alt="" className={`absolute inset-0 h-full w-full ${bazaarFitMobile} block md:hidden`} style={{ objectPosition: bazaarPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(mLegacy.image||''))}} width={1200} height={1350} />}
                 </>
               ) : null}
-              <div className="absolute inset-0 bg-gradient-to-l from-emerald-950/80 via-emerald-900/30 to-transparent" />
-              {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
               <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
-                {(b.subtitle || hero.subtitle) && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{b.subtitle || hero.subtitle}</p>}
-                {(b.title || hero.heading) && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{b.title || hero.heading}</h1>}
+                {(b.subtitle || hero.subtitle) && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{b.subtitle || hero.subtitle}</p>}
+                {(b.title || hero.heading) && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{b.title || hero.heading}</h1>}
                 {(b.button_text || hero.ctaLabel) && (
                   <a href={b.button_link || hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">
                     {b.button_text || hero.ctaLabel} ←
