@@ -15,7 +15,7 @@ import {
 } from '../shared/hooks';
 import HeaderLoyaltyBadge from '@/components/storefront/HeaderLoyaltyBadge';
 import { AuthContext } from '@/contexts/AuthContext';
-import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS } from '../shared/heroMedia';
+import { useResolvedHero, getHeroImageUrl, HERO_HEIGHTS, HERO_BREAKPOINT, HERO_BREAKPOINT_CSS, heroContentForMedia } from '../shared/heroMedia';
 import { useServerSearch, submitStorefrontSearch } from '@/hooks/useServerSearch';
 
 /* ===================================================================== */
@@ -284,175 +284,274 @@ function SouqSearchRow({ product, onPick }: { product: any; onPick: () => void }
   );
 }
 
-/* ------------------------------ Hero — Biddi light (hero_banner-aware) ------------------------------ */
+/* ------------------------------ Hero — Biddi light (hero_banner-aware) — multi-banner carousel ------------------------------ */
 
 export function SouqHero({ banners }: { banners: any[] }) {
   const hero = useResolvedHero();
-  const hasVideo = !!(hero.videoUrl || hero.videoUrlMobile);
-  const hasYoutube = !!(hero.youtubeId || hero.youtubeIdMobile);
-  const isVideo = hero.hasDynamicHero && hero.type === 'video' && hasVideo;
-  const isYoutube = hero.hasDynamicHero && hero.type === 'youtube' && hasYoutube;
-  // Keep legacy preview vars for test compatibility + Designer live draft
+  // Canonical hero.media is primary — every entry is one slide preserving merchant order
+  const mediaSlides = hero.media && hero.media.length > 0 ? hero.media : null;
+  // Keep legacy preview vars for test compatibility + Designer live draft (also used for legacy fallback branch)
   const previewMode = typeof document !== 'undefined' ? document.documentElement.getAttribute('data-preview-mode') : null;
   const isMobilePreview = previewMode === 'mobile';
   const safeBanners: any[] = Array.isArray(banners) ? banners : [];
-  // Shared media engine: fit/position/height contract — mobile overrides independent
-  const fitClass = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
-  const fitClassMobile = hero.fitMobile ? (hero.fitMobile==='contain' ? 'object-contain' : 'object-cover') : fitClass;
-  const posStyle: any = hero.position && hero.position !== 'center' ? { objectPosition: hero.position } : {};
-  const posStyleMobile: any = hero.positionMobile ? { objectPosition: hero.positionMobile } : posStyle;
+  // Legacy fallback when hero.media empty (old stores: images / video_url / youtube_url / banners prop)
+  const effectiveImages = isMobilePreview && hero.imagesMobile.length > 0 ? hero.imagesMobile : hero.images;
   const hasCustomHeight = !!(hero.heightDesktop || hero.heightMobile);
   const h = HERO_HEIGHTS['grocery-souq'];
   const souqDesktopH = hasCustomHeight && hero.heightDesktop ? hero.heightDesktop : h.desktop;
   const souqMobileH = hasCustomHeight && hero.heightMobile ? hero.heightMobile : h.mobile;
   const heightStyle: any = hasCustomHeight && hero.heightDesktop ? { height: hero.heightDesktop } as any : { height: souqDesktopH } as any;
   const mobileHeroStyle = (hero.fitMobile || hero.positionMobile) ? `@media ${HERO_BREAKPOINT_CSS}{ .souq-hero-media video, .souq-hero-media img{ ${hero.fitMobile ? `object-fit:${hero.fitMobile} !important;` : ''} ${hero.positionMobile ? `object-position:${hero.positionMobile} !important;` : ''} } }` : '';
-  const hasMobileVideo = !!hero.videoUrlMobile;
-  const hasMobileYoutube = !!hero.youtubeIdMobile;
-  const hasMobileImages = hero.imagesMobile.length>0;
-  if (isVideo) {
-    return (
-      <section className="mx-auto w-full max-w-[1280px] px-3 pt-2 lg:px-8" dir="rtl">
-        {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
-        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5" style={heightStyle}>
-          {/* Desktop video — hidden on mobile when mobile asset exists */}
-          <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitClass} ${hasMobileVideo?'hidden md:block':'block'}`} style={posStyle} src={getHeroImageUrl(hero.videoUrl)} />
-          {/* Mobile video */}
-          {hasMobileVideo && <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${fitClassMobile} block md:hidden`} style={posStyleMobile} src={getHeroImageUrl(hero.videoUrlMobile!)} />}
-          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
-          {(hero.heading || hero.subtitle || hero.ctaLabel) && (
+  // Unified slide list: media mode (mixed types) vs legacy image-banner mode
+  let slides: any[] = [];
+  let isMediaMode = false;
+  let legacySlides: any[] = [];
+  let legacySlidesMobile: any[] = [];
+  const hasMobileImagesLegacy = hero.imagesMobile.length > 0;
+  if (mediaSlides) {
+    slides = mediaSlides;
+    isMediaMode = true;
+  } else {
+    const effectiveHasImages = effectiveImages.length > 0;
+    const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && effectiveHasImages
+      ? effectiveImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+      : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && !effectiveHasImages
+        ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }]
+        : null;
+    // For legacy mobileImages handling: desktop vs mobile image lists may differ
+    const desktopImages = hero.images;
+    const mobileImages = hasMobileImagesLegacy ? hero.imagesMobile : desktopImages;
+    const dynamicSlidesMobile = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && mobileImages.length > 0
+      ? mobileImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
+      : dynamicSlides;
+    const rawSlides = dynamicSlides ?? (safeBanners.length > 0 ? safeBanners : []);
+    const rawSlidesMobile = dynamicSlidesMobile ?? rawSlides;
+    if (rawSlides.length === 0) {
+      if (!hero.heading && !hero.subtitle && !hero.ctaLabel) return null;
+      return (
+        <section className="mx-auto w-full max-w-[1280px] px-3 pt-2 lg:px-8" dir="rtl">
+          {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
+          <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={{ ...heightStyle, background: 'linear-gradient(to left, color-mix(in srgb, var(--store-primary, #FFC20E) 20%, transparent), #FDF9F1)' } as any}>
             <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
-              {hero.subtitle && <p className="mb-1 text-xs font-bold text-white/90 lg:text-sm drop-shadow">{hero.subtitle}</p>}
-              {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-white sm:text-2xl lg:text-3xl drop-shadow">{hero.heading}</h1>}
+              {hero.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{hero.subtitle}</p>}
+              {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{hero.heading}</h1>}
               {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{hero.ctaLabel} ←</a>}
             </div></div>
-          )}
-        </div>
-      </section>
-    );
-  }
-  if (isYoutube) {
-    const ytDesktop = hero.youtubeId!;
-    const ytMobile = hero.youtubeIdMobile || ytDesktop;
-    return (
-      <section className="mx-auto w-full max-w-[1280px] px-3 pt-2 lg:px-8" dir="rtl">
-        {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
-        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
-        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-black shadow-sm ring-1 ring-black/5" style={heightStyle}>
-          <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobileYoutube?'hidden md:block':'block'}`}>
-            {hero.fit === 'contain' ? (
-              <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-            ) : (
-              <div className="absolute inset-0 overflow-hidden bg-black">
-                <iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytDesktop}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytDesktop}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} />
-              </div>
-            )}
           </div>
-          {hasMobileYoutube && (
-            <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">
-              {(hero.fitMobile||hero.fit)==='contain' ? (
-                <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
-              ) : (
-                <div className="absolute inset-0 overflow-hidden bg-black">
-                  <iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${ytMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${ytMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} />
-                </div>
-              )}
-            </div>
-          )}
-          <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
-          {(hero.heading || hero.subtitle || hero.ctaLabel) && (
-            <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
-              {hero.subtitle && <p className="mb-1 text-xs font-bold text-white/90 lg:text-sm drop-shadow">{hero.subtitle}</p>}
-              {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-white sm:text-2xl lg:text-3xl drop-shadow">{hero.heading}</h1>}
-              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{hero.ctaLabel} ←</a>}
-            </div></div>
-          )}
-        </div>
-      </section>
-    );
+        </section>
+      );
+    }
+    legacySlides = rawSlides;
+    legacySlidesMobile = rawSlidesMobile;
+    slides = legacySlides;
   }
-  const effectiveImages = isMobilePreview && hero.imagesMobile.length > 0 ? hero.imagesMobile : hero.images;
-  const effectiveHasImages = effectiveImages.length > 0;
-  const dynamicSlides = hero.hasDynamicHero && (hero.type === 'image' || hero.type === 'slider' || hero.type === 'image_slider') && effectiveHasImages
-    ? effectiveImages.map((img) => ({ title: hero.heading, subtitle: hero.subtitle, image: img, button_text: hero.ctaLabel, button_link: hero.ctaLink }))
-    : hero.hasDynamicHero && (hero.heading || hero.subtitle || hero.ctaLabel) && !effectiveHasImages
-      ? [{ title: hero.heading, subtitle: hero.subtitle, image: '', button_text: hero.ctaLabel, button_link: hero.ctaLink }]
-      : null;
-  const rawSlides = dynamicSlides ?? (safeBanners.length > 0 ? safeBanners : []);
-  if (rawSlides.length === 0) {
-    if (!hero.heading && !hero.subtitle && !hero.ctaLabel) return null;
-    return (
-      <section className="mx-auto w-full max-w-[1280px] px-3 pt-2 lg:px-8" dir="rtl">
-        {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
-        <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={{ ...heightStyle, background: 'linear-gradient(to left, color-mix(in srgb, var(--store-primary, #FFC20E) 20%, transparent), #FDF9F1)' } as any}>
-          <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
-            {hero.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{hero.subtitle}</p>}
-            {hero.heading && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{hero.heading}</h1>}
-            {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{hero.ctaLabel} ←</a>}
-          </div></div>
-        </div>
-      </section>
-     );
-  }
-  const slides = rawSlides;
-  const normalized = slides.map((b: any) => ({
-    image: b.image || b.src || '/images/store/vegetables.jpg',
-    title: b.title || b.heading || '',
-    subtitle: b.subtitle || b.sub_title || '',
-    button_text: b.button_text || b.cta || '',
-    button_link: b.button_link || b.link || '#',
-  }));
+  if (slides.length === 0) return null;
+  const totalSlides = slides.length;
   const [i, setI] = useState(0);
+  const autoplayRef = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  // Keep index in bounds when slides change (reorder / add / remove)
+  useEffect(() => { if (i >= totalSlides) setI(0); }, [totalSlides, i]);
+  // Autoplay with timer reset on manual navigation — only when totalSlides>1, 5000ms
+  const stopAutoplay = () => { if (autoplayRef.current) { window.clearInterval(autoplayRef.current); autoplayRef.current = null; } };
+  const startAutoplay = () => {
+    stopAutoplay();
+    if (totalSlides <= 1) return;
+    autoplayRef.current = window.setInterval(() => setI((v) => (v + 1) % totalSlides), 5000);
+  };
   useEffect(() => {
-    if (normalized.length <= 1) return;
-    const t = setInterval(() => setI((v) => (v + 1) % normalized.length), 4500);
-    return () => clearInterval(t);
-  }, [normalized.length]);
-
-  // Image slider — correct contract 8:3 desktop, 4:5 mobile with mobile asset via CSS
-  const imgFit = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
-  const imgFitMobile = hero.fitMobile ? (hero.fitMobile==='contain' ? 'object-contain':'object-cover') : imgFit;
-  const imgPos: any = posStyle;
-  const imgPosMobile: any = posStyleMobile;
-  const effectiveMobileImages = hero.imagesMobile.length > 0 ? hero.imagesMobile : null;
+    startAutoplay();
+    return () => stopAutoplay();
+  }, [totalSlides]);
+  const goTo = (idx: number) => { setI(((idx % totalSlides) + totalSlides) % totalSlides); startAutoplay(); };
+  const goPrev = () => goTo(i - 1);
+  const goNext = () => goTo(i + 1);
+  const handleDot = (idx: number) => goTo(idx);
+  // Carousel-controlled video: active plays, hidden pauses + resets
+  useEffect(() => {
+    videoRefs.current.forEach((vid, idx) => {
+      if (!vid) return;
+      if (idx === i) {
+        try { vid.play().catch(() => {}); } catch {}
+      } else {
+        try { vid.pause(); vid.currentTime = 0; } catch {}
+      }
+    });
+  }, [i]);
+  // Shared height + fit helpers (Grocery geometry preserved)
+  const souqFit = hero.fit === 'contain' ? 'object-contain' : 'object-cover';
+  const souqFitMobile = hero.fitMobile ? (hero.fitMobile==='contain' ? 'object-contain':'object-cover') : souqFit;
+  const souqPos = hero.position && hero.position !== 'center' ? hero.position : 'center';
+  const souqPosMobile = hero.positionMobile || souqPos;
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null;
+    touchStartY.current = e.touches[0]?.clientY ?? null;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null || totalSlides <= 1) return;
+    const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
+    const dy = (e.changedTouches[0]?.clientY ?? 0) - touchStartY.current;
+    // Vertical gesture → page scroll (do not hijack), horizontal → carousel (threshold ~50px)
+    if (Math.abs(dy) > Math.abs(dx)) { touchStartX.current = null; touchStartY.current = null; return; }
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) goNext();
+      else goPrev();
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
   return (
     <section className="mx-auto w-full max-w-[1280px] px-3 pt-2 lg:px-8" dir="rtl">
       {mobileHeroStyle && <style>{mobileHeroStyle}</style>}
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .souq-hero-media{ height:${souqDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .souq-hero-media{ height:${souqMobileH} !important; } }`}</style>}
-      <div className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5" style={heightStyle}>
-        {normalized.map((b: any, idx: number) => {
-          const mobileImg = effectiveMobileImages ? (effectiveMobileImages[idx] || b.image) : b.image;
-          const hasMob = !!effectiveMobileImages;
-          return (
-          <div key={idx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: idx === i ? 1 : 0 }} aria-hidden={idx !== i}>
-            <img src={getOptimizedImageUrl(b.image || '', 'medium')} alt={b.title} className={`absolute inset-0 h-full w-full ${imgFit} ${hasMob?'hidden md:block':'block'}`} style={imgPos} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
-            {hasMob && <img src={getOptimizedImageUrl(mobileImg || '', 'medium')} alt={b.title} className={`absolute inset-0 h-full w-full ${imgFitMobile} block md:hidden`} style={imgPosMobile} loading="eager" decoding="async" fetchPriority="high" sizes="(max-width:767px) 100vw, 400px" onError={(e)=>{(e.currentTarget.src=getImageUrl(mobileImg||''))}} width={1080} height={1350} />}
-            {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
-            {(b.title || b.subtitle || b.button_text) && (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-l from-white/85 via-white/30 to-transparent lg:from-white/90 lg:via-white/40" />
-                <div className="absolute inset-0 flex items-center">
-                  <div className="px-4 sm:px-8">
-                    {b.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{b.subtitle}</p>}
-                    {b.title && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{b.title}</h1>}
-                    {b.button_text && (
-                      <a href={b.button_link || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">
-                        {b.button_text} ←
-                      </a>
+      <div
+        className="souq-hero-media hero-clamped relative w-full overflow-hidden rounded-[18px] bg-[#FDF9F1] shadow-sm ring-1 ring-black/5"
+        style={{ ...heightStyle, touchAction: 'pan-y' } as any}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {slides.map((item: any, sIdx: number) => {
+          const active = sIdx === i;
+          if (isMediaMode) {
+            const m: any = item;
+            const c = heroContentForMedia(m, hero);
+            const perFit = (m as any).fit ? (String((m as any).fit).toLowerCase()==='contain' ? 'object-contain':'object-cover') : souqFit;
+            const perFitMobile = (m as any).fitMobile ? (String((m as any).fitMobile).toLowerCase()==='contain' ? 'object-contain':'object-cover') : souqFitMobile;
+            const perPos = m.position ? String(m.position) : souqPos;
+            const perPosMobile = m.positionMobile ? String(m.positionMobile) : souqPosMobile;
+            if (m.type === 'video') {
+              const src = getHeroImageUrl(String(m.src||''));
+              const srcMobile = m.srcMobile ? getHeroImageUrl(String(m.srcMobile)) : null;
+              const poster = m.poster ? getHeroImageUrl(String(m.poster)) : undefined;
+              return (
+                <div key={m.id || sIdx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                  <video
+                    ref={(el) => { if (el) videoRefs.current.set(sIdx, el); else videoRefs.current.delete(sIdx); }}
+                    muted playsInline preload="metadata"
+                    loop={false}
+                    onEnded={() => goNext()}
+                    className={`absolute inset-0 h-full w-full ${perFit} ${srcMobile?'hidden md:block':'block'}`}
+                    style={{ objectPosition: perPos }}
+                    src={src} poster={poster}
+                  />
+                  {srcMobile && <video muted playsInline preload="metadata" loop={false} onEnded={() => goNext()} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={{ objectPosition: perPosMobile }} src={srcMobile} poster={poster} />}
+                  {!c.isExplicitOff && c.hasContent && (
+                    <>
+                      <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />
+                      <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
+                        {!!c.subtitle && <p className="mb-1 text-xs font-bold text-white/90 lg:text-sm drop-shadow">{c.subtitle}</p>}
+                        {!!c.heading && <h1 className="max-w-md text-lg font-black leading-snug text-white sm:text-2xl lg:text-3xl drop-shadow">{c.heading}</h1>}
+                        {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{c.ctaLabel} ←</a>}
+                      </div></div>
+                    </>
+                  )}
+                  {c.isExplicitOff === false && !c.hasContent && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
+                </div>
+              );
+            }
+            if (m.type === 'youtube') {
+              const yid = String(m.src||'').trim();
+              const yidMobile = m.srcMobile ? String(m.srcMobile).trim() : yid;
+              const hasYtMobile = !!m.srcMobile;
+              return (
+                <div key={m.id || sIdx} className="absolute inset-0 transition-opacity duration-700 bg-black" style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                  <div className={`absolute inset-0 overflow-hidden bg-black ${hasYtMobile?'hidden md:block':'block'}`}>
+                    {perFit==='object-contain' ? (
+                      <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${yid}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yid}&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+                    ) : (
+                      <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${yid}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yid}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
                     )}
                   </div>
+                  {hasYtMobile && (
+                    <div className="absolute inset-0 overflow-hidden bg-black block md:hidden">
+                      {(perFitMobile==='object-contain') ? (
+                        <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${yidMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yidMobile}&modestbranding=1&rel=0`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
+                      ) : (
+                        <div className="absolute inset-0 overflow-hidden bg-black"><iframe className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" src={`https://www.youtube.com/embed/${yidMobile}?autoplay=1&mute=1&loop=1&controls=0&playsinline=1&playlist=${yidMobile}&modestbranding=1&rel=0&enablejsapi=1`} title="YouTube mobile" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen style={{ width:'177.77777778vh', height:'56.25vw', minWidth:'100%', minHeight:'100%', maxWidth:'none', maxHeight:'none' } as any} /></div>
+                      )}
+                    </div>
+                  )}
+                  {!c.isExplicitOff && c.hasContent && (
+                    <div className="absolute inset-0 flex items-center"><div className="px-4 sm:px-8">
+                      {!!c.subtitle && <p className="mb-1 text-xs font-bold text-white/90 lg:text-sm drop-shadow">{c.subtitle}</p>}
+                      {!!c.heading && <h1 className="max-w-md text-lg font-black leading-snug text-white sm:text-2xl lg:text-3xl drop-shadow">{c.heading}</h1>}
+                      {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{c.ctaLabel} ←</a>}
+                    </div></div>
+                  )}
+                  <div className="absolute inset-0 bg-black pointer-events-none" style={{ opacity: hero.overlayOpacity }} />
                 </div>
-              </>
-            )}
-          </div>
-        )})}
-        {normalized.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-            {normalized.map((_, idx: number) => (
-              <button key={idx} type="button" onClick={() => setI(idx)} aria-label={`شريحة ${idx + 1}`} className={`h-1.5 rounded-full transition-all ${idx === i ? 'w-6' : 'w-1.5 bg-black/20'}`} style={idx === i ? { background: 'var(--store-primary, #FFC20E)' } : undefined} />
-            ))}
-          </div>
+              );
+            }
+            // image media
+            const desktopSrc = m.src ? getOptimizedImageUrl(String(m.src), 'medium') : '';
+            const mobileSrc = m.srcMobile ? getOptimizedImageUrl(String(m.srcMobile), 'medium') : desktopSrc;
+            const hasMob = !!m.srcMobile;
+            return (
+              <div key={m.id || sIdx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: active ? 1 : 0, pointerEvents: active ? 'auto' : 'none' }} aria-hidden={!active}>
+                {desktopSrc ? (
+                  <>
+                    <img src={desktopSrc} alt={c.heading || ''} className={`absolute inset-0 h-full w-full ${perFit} ${hasMob?'hidden md:block':'block'}`} style={{ objectPosition: perPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.src||'')))}} width={1200} height={400} />
+                    {hasMob && mobileSrc && <img src={mobileSrc} alt={c.heading || ''} className={`absolute inset-0 h-full w-full ${perFitMobile} block md:hidden`} style={{ objectPosition: perPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(String(m.srcMobile||'')))}} width={1200} height={1350} />}
+                  </>
+                ) : null}
+                {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
+                {!c.isExplicitOff && c.hasContent && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-l from-white/85 via-white/30 to-transparent lg:from-white/90 lg:via-white/40" />
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="px-4 sm:px-8">
+                        {!!c.subtitle && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{c.subtitle}</p>}
+                        {!!c.heading && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{c.heading}</h1>}
+                        {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{c.ctaLabel} ←</a>}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          }
+          // legacy image banner mode — use hero.fit/position globally, mobile image per index
+          const b: any = item;
+          const mLegacy: any = (legacySlidesMobile[sIdx] || b);
+          const desktopSrc = b.image ? getOptimizedImageUrl(b.image||'', 'medium') : '';
+          const mobileSrc = mLegacy.image ? getOptimizedImageUrl(mLegacy.image||'', 'medium') : desktopSrc;
+          const active2 = sIdx === i;
+          return (
+            <div key={sIdx} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: active2 ? 1 : 0, pointerEvents: active2 ? 'auto' : 'none' }} aria-hidden={!active2}>
+              {desktopSrc ? (
+                <>
+                  <img src={desktopSrc} alt={b.title || ''} className={`absolute inset-0 h-full w-full ${souqFit} ${hasMobileImagesLegacy?'hidden md:block':'block'}`} style={{ objectPosition: souqPos }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(b.image||''))}} width={1200} height={400} />
+                  {hasMobileImagesLegacy && mobileSrc && <img src={mobileSrc} alt={b.title || ''} className={`absolute inset-0 h-full w-full ${souqFitMobile} block md:hidden`} style={{ objectPosition: souqPosMobile }} loading="eager" decoding="async" fetchPriority="high" sizes="100vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(mLegacy.image||''))}} width={1200} height={1350} />}
+                </>
+              ) : null}
+              {hero.hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: hero.overlayOpacity }} />}
+              {(b.title || b.subtitle || b.button_text || hero.heading || hero.subtitle || hero.ctaLabel) && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-l from-white/85 via-white/30 to-transparent lg:from-white/90 lg:via-white/40" />
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="px-4 sm:px-8">
+                      {(b.subtitle || hero.subtitle) && <p className="mb-1 text-xs font-bold text-stone-600 lg:text-sm">{b.subtitle || hero.subtitle}</p>}
+                      {(b.title || hero.heading) && <h1 className="max-w-md text-lg font-black leading-snug text-stone-900 sm:text-2xl lg:text-3xl">{b.title || hero.heading}</h1>}
+                      {(b.button_text || hero.ctaLabel) && <a href={b.button_link || hero.ctaLink || '#'} className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#0F1620] px-5 py-2 text-xs font-black text-white shadow hover:bg-black">{b.button_text || hero.ctaLabel} ←</a>}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+        {totalSlides > 1 && (
+          <>
+            <button type="button" onClick={goPrev} aria-label="السابق" className="absolute left-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-stone-700 shadow backdrop-blur hover:bg-white md:flex">‹</button>
+            <button type="button" onClick={goNext} aria-label="التالي" className="absolute right-2 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-stone-700 shadow backdrop-blur hover:bg-white md:flex">›</button>
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+              {slides.map((_, sIdx: number) => (
+                <button key={sIdx} type="button" onClick={() => handleDot(sIdx)} aria-label={`شريحة ${sIdx + 1}`} className={`h-1.5 rounded-full transition-all ${sIdx === i ? 'w-6' : 'w-1.5 bg-black/20'}`} style={sIdx === i ? { background: 'var(--store-primary, #FFC20E)' } : undefined} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </section>
