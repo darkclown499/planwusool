@@ -815,6 +815,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('stores/{id}/domains/{domain}/check-ssl', [\App\Http\Controllers\StoreDomainController::class, 'checkSsl'])->middleware('permission:settings-stores')->name('stores.domains.check-ssl');
         Route::post('stores/{id}/domains/{domain}/make-primary', [\App\Http\Controllers\StoreDomainController::class, 'makePrimary'])->middleware('permission:settings-stores')->name('stores.domains.primary');
         Route::delete('stores/{id}/domains/{domain}', [\App\Http\Controllers\StoreDomainController::class, 'destroy'])->middleware('permission:settings-stores')->name('stores.domains.destroy');
+        // Server-side domain health recheck (live DNS + SSL probes), rate limited
+        Route::post('stores/{id}/domains/recheck', [\App\Http\Controllers\StoreDomainController::class, 'recheck'])->middleware(['permission:settings-stores', 'throttle:5,10'])->name('stores.domains.recheck');
 
         // Canonical store-scoped الشحن والتوصيل / الضرائب — explicit store isolation
         Route::get('stores/{id}/shipping', [\App\Http\Controllers\StoreShippingController::class, 'index'])->middleware('permission:settings-stores')->name('stores.shipping.canonical');

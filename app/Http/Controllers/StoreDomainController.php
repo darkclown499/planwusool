@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Store;
 use App\Models\StoreDomain;
+use App\Services\Domain\DomainHealthService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -108,6 +110,7 @@ class StoreDomainController extends Controller
                     'default_url' => $store->getStoreSubdomainUrl(),
                     'store_url' => $store->getStoreUrl(),
                 ],
+                'health' => DomainHealthService::storeHealth($store),
             ]);
         }
 
@@ -138,14 +141,22 @@ class StoreDomainController extends Controller
             return response()->json(['message' => $error], 422);
         }
 
-        $storeDomain = StoreDomain::create([
-            'store_id' => $store->id,
-            'domain_name' => $domain,
-            'is_verified' => false,
-            'ssl_status' => 'pending',
-            'verification_token' => 'wa-verify-' . Str::random(32),
-            'is_primary' => !$store->storeDomains()->exists(),
-        ]);
+        try {
+            $storeDomain = StoreDomain::create([
+                'store_id' => $store->id,
+                'domain_name' => $domain,
+                'is_verified' => false,
+                'ssl_status' => 'pending',
+                'verification_token' => 'wa-verify-' . Str::random(32),
+                'is_primary' => !$store->storeDomains()->exists(),
+            ]);
+        } catch (QueryException $e) {
+            // Unique index on domain_name — final concurrency guard even when
+            // two stores attach the same domain in the same moment.
+            return response()->json([
+                'message' => 'This domain is already in use.',
+            ], 422);
+        }
 
         return response()->json([
             'domain' => $this->formatDomain($storeDomain),
@@ -169,8 +180,9 @@ class StoreDomainController extends Controller
 
         $domain->is_verified = $verified;
         if ($verified) {
-            $domain->verified_at = now();
+            $domain->verified_at ??= now();
         }
+        $domain->last_checked_at = now();
         $domain->save();
 
         return response()->json([
@@ -201,6 +213,7 @@ class StoreDomainController extends Controller
         } else {
             $domain->ssl_status = 'pending';
         }
+        $domain->last_checked_at = now();
         $domain->save();
 
         $message = match ($domain->ssl_status) {
@@ -212,6 +225,53 @@ class StoreDomainController extends Controller
         return response()->json([
             'domain' => $this->formatDomain($domain->refresh()),
             'message' => $message,
+        ]);
+    }
+
+    /**
+     * Re-run live DNS + SSL checks for every domain attached to the store.
+     *
+     * Server-side only, throttled at the route level (throttle:5,10). Never
+     * downgrades an already-verified domain on a transient DNS miss — that
+     * would silently take the store offline. The result feeds the merchant
+     * health block and per-domain status.
+     */
+    public function recheck($storeId, Request $request)
+    {
+        $store = $this->resolveStore($storeId);
+
+        if ($gate = $this->requireDomainPlan($store)) {
+            return $gate;
+        }
+
+        foreach ($store->storeDomains()->get() as $domain) {
+            $verified = $this->checkDnsTxt($domain);
+
+            if ($verified && !$domain->is_verified) {
+                $domain->is_verified = true;
+                $domain->verified_at = now();
+            }
+
+            if ($this->checkSslConnection($domain->domain_name)) {
+                $domain->ssl_status = 'active';
+            } elseif ($this->isApexPointingToServer($domain->domain_name)) {
+                $domain->ssl_status = 'error';
+            } else {
+                $domain->ssl_status = 'pending';
+            }
+
+            $domain->last_checked_at = now();
+            $domain->save();
+        }
+
+        return response()->json([
+            'domains' => $store->storeDomains()
+                ->orderByDesc('is_primary')
+                ->orderBy('id')
+                ->get()
+                ->map(fn ($domain) => $this->formatDomain($domain)),
+            'health' => DomainHealthService::storeHealth($store->refresh()),
+            'checked_at' => now()->toIso8601String(),
         ]);
     }
 
@@ -268,13 +328,14 @@ public function destroy($storeId, $domainId)
     private function normalizeDomain(string $value): string
     {
         $domain = strtolower(trim($value));
-        $domain = str_replace(['http://', 'https://'], '', $domain);
-        // Drop any path/query portion
-        if (str_contains($domain, '/')) {
-            $domain = explode('/', $domain)[0];
-        }
-        if (str_contains($domain, '?')) {
-            $domain = explode('?', $domain)[0];
+        // Strip any scheme prefix (http://, https://, //, ftp://, ...) safely.
+        $domain = preg_replace('#^[a-z][a-z0-9+.\-]*://#', '', $domain) ?? $domain;
+        $domain = preg_replace('#^/+#', '', $domain) ?? $domain;
+        // Drop path, query or fragment portions: "example.com/shop", "?ref=x", "#frag".
+        foreach (['/', '?', '#'] as $separator) {
+            if (str_contains($domain, $separator)) {
+                $domain = explode($separator, $domain)[0];
+            }
         }
         return rtrim($domain, '.');
     }
@@ -288,12 +349,30 @@ public function destroy($storeId, $domainId)
             return 'Enter a valid domain name.';
         }
 
+        // A domain is a bare hostname: never a protocol, port, path or space.
+        if (str_contains($domain, '://') || preg_match('/[\s:@]/', $domain)) {
+            return 'Enter the domain only — without a protocol, port, path or spaces.';
+        }
+
+        if (filter_var($domain, FILTER_VALIDATE_IP) || preg_match('/^\d{1,3}(\.\d{1,3}){2,}$/', $domain)) {
+            return 'IP addresses cannot be used as a custom domain.';
+        }
+
         if (!filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
-            return 'Invalid domain format. Example: mystore.com';
+            return 'Invalid domain format. Example: myshop.com';
         }
 
         if (in_array($domain, ['localhost', '127.0.0.1', 'www', 'admin', 'api', 'mail'])) {
             return 'This domain is reserved.';
+        }
+
+        // Require a public-suffix-like TLD and reject internal/testing hosts.
+        if (!preg_match('/\.[a-z]{2,}$/', $domain)) {
+            return 'Enter a valid domain name. Example: myshop.com';
+        }
+        $tld = strtolower(substr($domain, strrpos($domain, '.') + 1));
+        if (in_array($tld, ['local', 'internal', 'test', 'lan', 'home', 'invalid', 'localhost', 'onion', 'example'], true)) {
+            return 'This internal or testing domain cannot be used.';
         }
 
         $mainAppDomain = getBaseDomain();
@@ -312,13 +391,19 @@ public function destroy($storeId, $domainId)
             return 'This domain is managed automatically. Use your own domain name instead.';
         }
 
-        // A store cannot have the same custom domain twice
-        if ($store->storeDomains()->where('domain_name', $domain)->exists()) {
-            return 'This domain is already in use.';
-        }
+        // A domain (and its www/non-www pair) must not belong to multiple
+        // stores simultaneously. Since the host resolver accepts both variants,
+        // blocking just one string would let a second store squat the pair.
+        $variants = [$domain];
+        $variants[] = str_starts_with($domain, 'www.') ? substr($domain, 4) : 'www.' . $domain;
 
-        if (!Store::isDomainAvailable($domain, $store->id)) {
-            return 'This domain is already in use.';
+        foreach ($variants as $variant) {
+            if ($store->storeDomains()->where('domain_name', $variant)->exists()) {
+                return 'This domain is already in use.';
+            }
+            if (!Store::isDomainAvailable($variant, $store->id)) {
+                return 'This domain is already in use.';
+            }
         }
 
         return null;
@@ -424,9 +509,14 @@ public function destroy($storeId, $domainId)
 
     /**
      * Format a domain for JSON responses.
+     *
+     * The status is always computed server-side — the frontend never invents
+     * "Connected". last_checked_at reflects the last live DNS/SSL probe.
      */
     private function formatDomain(StoreDomain $domain)
     {
+        $status = DomainHealthService::statusFor($domain);
+
         return [
             'id' => $domain->id,
             'store_id' => $domain->store_id,
@@ -437,7 +527,11 @@ public function destroy($storeId, $domainId)
             'verification_token' => $domain->verification_token,
             'is_primary' => (bool) $domain->is_primary,
             'verified_at' => $domain->verified_at ? $domain->verified_at->toIso8601String() : null,
+            'last_checked_at' => $domain->last_checked_at ? $domain->last_checked_at->toIso8601String() : null,
             'created_at' => $domain->created_at ? $domain->created_at->toIso8601String() : null,
+            'status' => $status['status'],
+            'status_label' => $status['label'],
+            'status_description' => $status['description'],
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Models\StoreDomain;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -165,5 +166,256 @@ class DomainSettingsTest extends TestCase
         $this->actingAs($superAdmin);
         $this->get(route('stores.domains', $storeA->id))->assertStatus(200)->assertInertia(fn ($p) => $p->component('stores/domains'));
         $this->getJson(route('stores.domains', $storeA->id))->assertStatus(200)->assertJsonStructure(['domains', 'dns', 'store']);
+    }
+
+    public function test_duplicate_domain_rejected_across_stores(): void
+    {
+        [$ownerA, $storeA] = $this->makeCompanyWithStore('Store Dup A');
+        [$ownerB, $storeB] = $this->makeCompanyWithStore('Store Dup B');
+
+        StoreDomain::create([
+            'store_id' => $storeA->id,
+            'domain_name' => 'dup.example.com',
+            'is_verified' => false,
+            'ssl_status' => 'pending',
+            'verification_token' => 'wa-verify-token',
+            'is_primary' => true,
+        ]);
+
+        // Same store cannot add the same domain twice
+        $this->actingAs($ownerA);
+        $this->postJson(route('stores.domains.store', $storeA->id), ['domain_name' => 'dup.example.com'])
+            ->assertStatus(422)
+            ->assertJsonMissingPath('domain');
+
+        // Another store cannot squat the same domain
+        $this->actingAs($ownerB);
+        $this->postJson(route('stores.domains.store', $storeB->id), ['domain_name' => 'dup.example.com'])
+            ->assertStatus(422);
+    }
+
+    public function test_www_pair_cannot_be_split_across_stores(): void
+    {
+        [$ownerA, $storeA] = $this->makeCompanyWithStore('Store Pair A');
+        [$ownerB, $storeB] = $this->makeCompanyWithStore('Store Pair B');
+
+        StoreDomain::create([
+            'store_id' => $storeA->id,
+            'domain_name' => 'pair.example.com',
+            'is_verified' => true,
+            'ssl_status' => 'pending',
+            'verification_token' => 'wa-verify-token',
+            'is_primary' => true,
+        ]);
+
+        // www or non-www variant of an owned domain is treated as taken
+        $this->actingAs($ownerB);
+        $this->postJson(route('stores.domains.store', $storeB->id), ['domain_name' => 'www.pair.example.com'])
+            ->assertStatus(422);
+
+        // And the reverse direction is also blocked for store A
+        $this->actingAs($ownerA);
+        $this->postJson(route('stores.domains.store', $storeA->id), ['domain_name' => 'www.pair.example.com'])
+            ->assertStatus(422);
+    }
+
+    public function test_database_unique_guard_rejects_duplicate_domain(): void
+    {
+        [$ownerA, $storeA] = $this->makeCompanyWithStore('Store Uniq A');
+        [$ownerB, $storeB] = $this->makeCompanyWithStore('Store Uniq B');
+
+        StoreDomain::create([
+            'store_id' => $storeA->id,
+            'domain_name' => 'shared.example.com',
+            'is_verified' => false,
+            'ssl_status' => 'pending',
+            'verification_token' => 'wa-verify-token',
+            'is_primary' => true,
+        ]);
+
+        $this->expectException(QueryException::class);
+        StoreDomain::create([
+            'store_id' => $storeB->id,
+            'domain_name' => 'shared.example.com',
+            'is_verified' => false,
+            'ssl_status' => 'pending',
+            'verification_token' => 'wa-verify-token-b',
+            'is_primary' => true,
+        ]);
+    }
+
+    public function test_invalid_domains_rejected(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Invalid');
+        $this->actingAs($owner);
+
+        foreach ([
+            'localhost',
+            '127.0.0.1',
+            '8.8.8.8',
+            'myshop',
+            'my shop.com',
+            'shop.example.com:8080',
+            'myshop.local',
+            'myshop.test',
+            'https://127.0.0.1',
+            '@example.com',
+        ] as $bad) {
+            $this->postJson(route('stores.domains.store', $store->id), ['domain_name' => $bad])
+                ->assertStatus(422, "domain [{$bad}] should have been rejected");
+        }
+    }
+
+    public function test_protocol_and_path_normalized_safely(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Normalize');
+        $this->actingAs($owner);
+
+        $this->postJson(route('stores.domains.store', $store->id), ['domain_name' => 'HTTPS://SHOP.Example.com/some/path?q=1#frag'])
+            ->assertStatus(201)
+            ->assertJsonPath('domain.domain_name', 'shop.example.com');
+    }
+
+    public function test_primary_domain_is_unique_per_store(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Primary');
+        $this->actingAs($owner);
+
+        $d1 = StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'one.example.com',
+            'is_verified' => true, 'ssl_status' => 'pending',
+            'verification_token' => 't1', 'is_primary' => true, 'verified_at' => now(),
+        ]);
+        $d2 = StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'two.example.com',
+            'is_verified' => true, 'ssl_status' => 'pending',
+            'verification_token' => 't2', 'is_primary' => false, 'verified_at' => now(),
+        ]);
+
+        $this->postJson(route('stores.domains.primary', [$store->id, $d2->id]))->assertStatus(200);
+
+        $prims = $store->storeDomains()->where('is_primary', true)->get();
+        $this->assertCount(1, $prims);
+        $this->assertSame('two.example.com', $prims->first()->domain_name);
+        $this->assertFalse($d1->fresh()->is_primary, 'only one primary domain per store');
+    }
+
+    public function test_default_subdomain_preserved_as_fallback(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Fallback');
+        $this->actingAs($owner);
+
+        // No custom domains -> store URL is the default Wusool subdomain
+        $this->assertSame($store->getStoreSubdomainUrl(), $store->fresh()->getStoreUrl());
+
+        $domain = StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'fb.example.com',
+            'is_verified' => true, 'ssl_status' => 'active',
+            'verification_token' => 't', 'is_primary' => true, 'verified_at' => now(),
+        ]);
+
+        $this->delete(route('stores.domains.destroy', [$store->id, $domain->id]))->assertStatus(200);
+
+        // Removing the only custom domain must not strand the store
+        $this->assertSame($store->getStoreSubdomainUrl(), $store->fresh()->getStoreUrl());
+    }
+
+    public function test_index_health_and_status_are_server_derived(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Health');
+        $this->actingAs($owner);
+
+        StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'health.example.com',
+            'is_verified' => false, 'ssl_status' => 'pending',
+            'verification_token' => 't', 'is_primary' => true,
+        ]);
+
+        $res = $this->getJson(route('stores.domains', $store->id))->assertStatus(200);
+
+        // Health block present with truthful aggregate state
+        $res->assertJsonStructure([
+            'health' => ['dns', 'routing', 'ssl', 'primary', 'canonical_domain', 'default_subdomain', 'www'],
+        ]);
+        $this->assertSame('pending', $res->json('health.dns.status'), 'unverified domain -> DNS not ready');
+        $this->assertSame($store->getStoreSubdomainUrl(), $res->json('health.default_subdomain'));
+
+        // Per-domain status is server-derived and never "ready" while unverified
+        $domain = collect($res->json('domains'))->firstWhere('domain_name', 'health.example.com');
+        $this->assertSame('pending_dns', $domain['status']);
+        $this->assertNotSame('ready', $domain['status']);
+    }
+
+    public function test_unverified_domain_is_never_labeled_connected(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Honest');
+        $this->actingAs($owner);
+
+        $this->postJson(route('stores.domains.store', $store->id), ['domain_name' => 'honest.example.com'])
+            ->assertStatus(201)
+            ->assertJsonPath('domain.status', 'pending_dns')
+            ->assertJsonMissingPath('domain.status_ready');
+    }
+
+    public function test_merchant_recheck_is_throttled(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Throttle');
+        $this->actingAs($owner);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson(route('stores.domains.recheck', $store->id))->assertStatus(200);
+        }
+        $this->postJson(route('stores.domains.recheck', $store->id))->assertStatus(429);
+    }
+
+    public function test_canonical_domain_resolver_uses_primary_verified_domain(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Canonical');
+        $this->actingAs($owner);
+
+        $a = StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'canon-a.example.com',
+            'is_verified' => true, 'ssl_status' => 'active',
+            'verification_token' => 'ta', 'is_primary' => true, 'verified_at' => now(),
+        ]);
+        $b = StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'canon-b.example.com',
+            'is_verified' => true, 'ssl_status' => 'pending',
+            'verification_token' => 'tb', 'is_primary' => false, 'verified_at' => now(),
+        ]);
+
+        $this->assertSame('http://canon-a.example.com', $store->fresh()->getStoreUrl());
+
+        $this->postJson(route('stores.domains.primary', [$store->id, $b->id]))->assertStatus(200);
+
+        $this->assertSame('http://canon-b.example.com', $store->fresh()->getStoreUrl());
+
+        // The index payload resolves the same canonical domain server-side
+        $res = $this->getJson(route('stores.domains', $store->id))->assertStatus(200);
+        $this->assertSame('http://canon-b.example.com', $res->json('health.canonical_domain'));
+    }
+
+    public function test_www_and_non_www_serve_store_without_redirect_loop(): void
+    {
+        [$owner, $store] = $this->makeCompanyWithStore('Store Www');
+        StoreDomain::create([
+            'store_id' => $store->id, 'domain_name' => 'www-ok.example.test',
+            'is_verified' => true, 'ssl_status' => 'active',
+            'verification_token' => 't', 'is_primary' => true, 'verified_at' => now(),
+        ]);
+
+        // The apex and the www variant both reach the store (candidate-host
+        // resolution) and neither triggers a redirect — no loop by design.
+        $apex = $this->get('http://www-ok.example.test/');
+        $this->assertSame(200, $apex->getStatusCode());
+        $this->assertFalse($apex->isRedirect());
+
+        $www = $this->get('http://www.www-ok.example.test/');
+        $this->assertSame(200, $www->getStatusCode());
+        $this->assertFalse($www->isRedirect());
+
+        // An unrelated host is not silently redirected to a store
+        $other = $this->get('http://unrelated.example.test/');
+        $this->assertFalse($other->isRedirect());
     }
 }

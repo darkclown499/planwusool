@@ -16,12 +16,14 @@ class StoreDomain extends BaseModel
         'verification_token',
         'is_primary',
         'verified_at',
+        'last_checked_at',
     ];
 
     protected $casts = [
         'is_verified' => 'boolean',
         'is_primary' => 'boolean',
         'verified_at' => 'datetime',
+        'last_checked_at' => 'datetime',
     ];
 
     /**

@@ -17,6 +17,8 @@ import {
   XCircle,
   Lock,
   Info,
+  Activity,
+  Router,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,7 +44,27 @@ interface DomainItem {
   verification_token: string | null;
   is_primary: boolean;
   verified_at: string | null;
+  last_checked_at: string | null;
   created_at: string | null;
+  status: string;
+  status_label: string;
+  status_description: string;
+}
+
+interface HealthBlockItem {
+  status: string;
+  label: string;
+  domain?: string;
+}
+
+interface StoreHealth {
+  dns: HealthBlockItem;
+  routing: HealthBlockItem;
+  ssl: HealthBlockItem;
+  primary: HealthBlockItem;
+  canonical_domain: string;
+  default_subdomain: string;
+  www: string;
 }
 
 interface DomainsPayload {
@@ -59,12 +81,71 @@ interface DomainsPayload {
     default_url: string;
     store_url: string;
   };
+  health?: StoreHealth;
 }
 
 interface DomainsTabProps {
   storeId: number;
 }
 
+/**
+ * Map the server-derived domain status to badge visual variant + Arabic text.
+ * The server owns the truth — the client never invents "Connected".
+ */
+const STATUS_META: Record<string, { variant: string; text: string; icon: 'ok' | 'wait' | 'err' | 'plain' }> = {
+  ready: { variant: 'success', text: 'جاهز', icon: 'ok' },
+  ssl_pending: { variant: 'secondary', text: 'SSL قيد التجهيز', icon: 'wait' },
+  verified: { variant: 'outline', text: 'مربوط', icon: 'plain' },
+  pending_dns: { variant: 'secondary', text: 'بانتظار إعداد DNS', icon: 'wait' },
+  ssl_error: { variant: 'destructive', text: 'خطأ في الإعداد', icon: 'err' },
+  not_connected: { variant: 'outline', text: 'غير مربوط', icon: 'plain' },
+};
+
+const DomainStatusBadge = ({ domain }: { domain: DomainItem }) => {
+  const meta = STATUS_META[domain.status] ?? STATUS_META.pending_dns;
+  return (
+    <Badge variant={meta.variant as any} className="gap-1">
+      {meta.icon === 'ok' && <CheckCircle2 className="h-3 w-3" />}
+      {meta.icon === 'wait' && <RefreshCw className="h-3 w-3 animate-[spin_2s_linear_infinite]" />}
+      {meta.icon === 'err' && <XCircle className="h-3 w-3" />}
+      {domain.status_label || meta.text}
+    </Badge>
+  );
+};
+
+const HealthBadge = ({ item }: { item: HealthBlockItem }) => {
+  const { status, label } = item;
+  if (status === 'ready' || status === 'active') {
+    return (
+      <Badge variant="success" className="gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        {label}
+      </Badge>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <Badge variant="destructive" className="gap-1">
+        <XCircle className="h-3 w-3" />
+        {label}
+      </Badge>
+    );
+  }
+  if (status === 'pending') {
+    return (
+      <Badge variant="secondary" className="gap-1">
+        <RefreshCw className="h-3 w-3 animate-[spin_2s_linear_infinite]" />
+        {label}
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="gap-1">
+      <Info className="h-3 w-3" />
+      {label}
+    </Badge>
+  );
+};
 /**
  * Detect whether a directly typed domain is a root (apex) domain
  * (example.com) or a subdomain (shop.example.com).
@@ -75,18 +156,6 @@ const detectDomainType = (value: string): 'apex' | 'subdomain' | null => {
   if (parts.length >= 3) return 'subdomain';
   if (parts.length === 2) return 'apex';
   return null;
-};
-
-/**
- * Derive a human status badge from verification + SSL state:
- *  connected  -> verified & SSL active
- *  error      -> SSL error
- *  propagating-> everything else
- */
-const getDomainStatus = (domain: DomainItem): 'connected' | 'propagating' | 'error' => {
-  if (domain.ssl_status === 'error') return 'error';
-  if (domain.is_verified && domain.ssl_status === 'active') return 'connected';
-  return 'propagating';
 };
 
 const CopyButton = ({
@@ -150,6 +219,7 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
   const [copied, setCopied] = useState('');
   const [removeTarget, setRemoveTarget] = useState<DomainItem | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [checkingHealth, setCheckingHealth] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -245,6 +315,21 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
       .finally(() => setRemoving(false));
   };
 
+  const handleRecheck = () => {
+    setCheckingHealth(true);
+    apiPost(route('stores.domains.recheck', storeId))
+      .then((res) => {
+        setData((prev) => ({
+          ...(prev as DomainsPayload),
+          domains: res?.domains ?? prev?.domains ?? [],
+          health: res?.health ?? prev?.health,
+        }));
+        toast.success(t('تم تحديث حالة الصحة من الخادم'));
+      })
+      .catch((e: any) => toast.error(t(e?.data?.message || e?.message || 'Failed to recheck domains')))
+      .finally(() => setCheckingHealth(false));
+  };
+
   const domainType = useMemo(() => detectDomainType(newDomain), [newDomain]);
 
   if (loading && !data) {
@@ -259,6 +344,7 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
   const domains = data?.domains || [];
   const dns = data?.dns;
   const storeInfo = data?.store;
+  const health = data?.health;
 
   return (
     <div className="space-y-4 mt-6">
@@ -268,6 +354,76 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
           {t('Connect your own domain to the store. Point your DNS records to our servers, then verify ownership. Your store keeps working on its free subdomain while you set everything up.')}
         </AlertDescription>
       </Alert>
+
+      {/* Domain health block */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            {t('حالة الدومين')}
+            <Button type="button" size="sm" variant="outline" className="ms-auto" onClick={handleRecheck} disabled={checkingHealth || busyId !== null}>
+              {checkingHealth ? <Loader2 className="h-4 w-4 animate-spin me-1.5" /> : <RefreshCw className="h-4 w-4 me-1.5" />}
+              {t('إعادة التحقق')}
+            </Button>
+          </CardTitle>
+          <CardDescription>
+            {t('هذه النتيجة تأتي من خادمنا، وليست مجرد عرض واجهة. اضغط إعادة التحقق لعمل فحص فعلي لسجلات DNS وشهادة SSL.')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                <Globe className="h-4 w-4" />
+                {t('DNS')}
+              </div>
+              <HealthBadge item={health?.dns ?? { status: 'not_configured', label: 'غير مربوط' }} />
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                <Router className="h-4 w-4" />
+                {t('ربط المتجر')}
+              </div>
+              <HealthBadge item={health?.routing ?? { status: 'not_configured', label: 'غير مربوط' }} />
+              {health?.routing?.domain && (
+                <p className="mt-2 text-xs text-muted-foreground break-all" dir="ltr">{health.routing.domain}</p>
+              )}
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                <Lock className="h-4 w-4" />
+                {t('SSL')}
+              </div>
+              <HealthBadge item={health?.ssl ?? { status: 'not_configured', label: 'غير مربوط' }} />
+            </div>
+            <div className="rounded-lg border p-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
+                <Star className="h-4 w-4" />
+                {t('الدومين الأساسي')}
+              </div>
+              <HealthBadge item={health?.primary ?? { status: 'not_configured', label: 'غير محدد' }} />
+              {health?.primary?.domain && (
+                <p className="mt-2 text-xs text-muted-foreground break-all" dir="ltr">{health.primary.domain}</p>
+              )}
+            </div>
+          </div>
+          {health?.canonical_domain && (
+            <div className="flex items-start gap-2 text-sm">
+              <Link2 className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+              <p className="text-muted-foreground">
+                {t('الدومين الأساسي المقروء للمحركات (Canonical) هو: ')}
+                <code dir="ltr" className="break-all rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{health.canonical_domain}</code>
+              </p>
+            </div>
+          )}
+          {health?.www && (
+            <div className="flex items-start gap-2 text-sm rounded-lg border border-muted bg-muted/40 p-3">
+              <Info className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+              <p className="text-muted-foreground">{health.www}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Current subdomain */}
       <Card>
@@ -483,7 +639,6 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
           ) : (
             <div className="space-y-3">
               {domains.map((domain) => {
-                const status = getDomainStatus(domain);
                 return (
                   <div key={domain.id} className="rounded-lg border p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -497,24 +652,7 @@ export default function DomainsTab({ storeId }: DomainsTabProps) {
                             {t('Primary')}
                           </Badge>
                         )}
-                        {status === 'connected' && (
-                          <Badge variant="success" className="gap-1">
-                            <CheckCircle2 className="h-3 w-3" />
-                            {t('Connected')}
-                          </Badge>
-                        )}
-                        {status === 'propagating' && (
-                          <Badge variant="secondary" className="gap-1">
-                            <RefreshCw className="h-3 w-3 animate-[spin_2s_linear_infinite]" />
-                            {t('Propagating')}
-                          </Badge>
-                        )}
-                        {status === 'error' && (
-                          <Badge variant="destructive" className="gap-1">
-                            <XCircle className="h-3 w-3" />
-                            {t('SSL Error')}
-                          </Badge>
-                        )}
+                        <DomainStatusBadge domain={domain} />
                       </div>
 
                       <div className="flex items-center gap-2 flex-wrap">
