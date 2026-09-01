@@ -29,13 +29,54 @@ export function ensureBazaarInteractionsStyle(): void {
   const st = document.createElement('style');
   st.setAttribute('data-bazaar-interactions', 'true');
   st.textContent = `
-    /* ── Bazaar motion tokens ── */
+    /* ── Bazaar motion + shadow tokens ── */
     :root {
       --bazaar-motion-fast: 150ms;
       --bazaar-motion-normal: 220ms;
       --bazaar-motion-section: 340ms;
       --bazaar-ease: cubic-bezier(0.22, 1, 0.36, 1);
       --bazaar-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      /* Depth system — neutral, soft, premium. Keep shadows subtle. */
+      --bazaar-shadow-sm: 0 1px 2px rgba(15,23,42,0.04), 0 2px 8px rgba(15,23,42,0.05);
+      --bazaar-shadow-md: 0 4px 12px rgba(15,23,42,0.06), 0 8px 20px rgba(15,23,42,0.06);
+      --bazaar-shadow-lg: 0 12px 28px rgba(15,23,42,0.11), 0 6px 16px rgba(15,23,42,0.08);
+      --bazaar-shadow-wa: 0 4px 14px rgba(15,23,42,0.09), 0 2px 8px rgba(15,23,42,0.07);
+    }
+    /* ── Shadow utility classes (Bazaar-scoped) ── */
+    .bazaar-shadow-sm { box-shadow: var(--bazaar-shadow-sm) !important; }
+    .bazaar-shadow-md { box-shadow: var(--bazaar-shadow-md) !important; }
+    .bazaar-shadow-lg { box-shadow: var(--bazaar-shadow-lg) !important; }
+    /* ── Semantic elevation ── */
+    .bazaar-header {
+      border-bottom: 1px solid rgb(241 245 249);
+      transition:
+        box-shadow var(--bazaar-motion-normal) var(--bazaar-ease),
+        border-color var(--bazaar-motion-normal) var(--bazaar-ease),
+        background-color var(--bazaar-motion-normal) var(--bazaar-ease);
+    }
+    .bazaar-header.is-scrolled {
+      box-shadow: var(--bazaar-shadow-sm);
+      border-color: rgb(226 232 240);
+    }
+    .bazaar-hero { box-shadow: var(--bazaar-shadow-md); }
+    .bazaar-promo { box-shadow: var(--bazaar-shadow-md); }
+    .bazaar-drawer-panel { box-shadow: var(--bazaar-shadow-lg) !important; }
+    .bazaar-wa-btn { box-shadow: var(--bazaar-shadow-wa) !important; }
+    .bazaar-social { box-shadow: var(--bazaar-shadow-sm); }
+    .bazaar-cat-ring {
+      box-shadow: var(--bazaar-shadow-sm);
+      border: 1px solid rgb(241 245 249);
+      transition:
+        box-shadow var(--bazaar-motion-fast) var(--bazaar-ease),
+        border-color var(--bazaar-motion-fast) var(--bazaar-ease),
+        transform var(--bazaar-motion-fast) var(--bazaar-ease);
+    }
+    .bazaar-wishlist {
+      box-shadow: var(--bazaar-shadow-sm);
+    }
+    .bazaar-section-bar {
+      box-shadow: var(--bazaar-shadow-sm);
+      border: 1px solid rgb(241 245 249);
     }
 
     /* ── Reveal (IntersectionObserver → .is-visible) ── */
@@ -76,8 +117,10 @@ export function ensureBazaarInteractionsStyle(): void {
       transform: none;
     }
 
-    /* ── Product card ── */
+    /* ── Product card — LEVEL 2 base, LEVEL 2+ hover ── */
     .bazaar-card {
+      box-shadow: var(--bazaar-shadow-sm);
+      border-color: rgb(241 245 249) !important;
       transition:
         transform var(--bazaar-motion-normal) var(--bazaar-ease),
         box-shadow var(--bazaar-motion-normal) var(--bazaar-ease),
@@ -87,8 +130,8 @@ export function ensureBazaarInteractionsStyle(): void {
     @media (hover: hover) and (pointer: fine) {
       .bazaar-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.06) !important;
-        border-color: rgba(20, 184, 166, 0.18) !important;
+        box-shadow: var(--bazaar-shadow-md) !important;
+        border-color: rgba(20, 184, 166, 0.14) !important;
       }
       .bazaar-card:hover .bazaar-card-img {
         transform: scale(1.03);
@@ -110,7 +153,7 @@ export function ensureBazaarInteractionsStyle(): void {
       .bazaar-card:active { transform: translateY(-1px) scale(0.99); }
     }
 
-    /* ── Category pills/circles ── */
+    /* ── Category pills/circles — LEVEL 1 base, lightest LEVEL 2 hover ── */
     .bazaar-cat {
       transition:
         transform var(--bazaar-motion-fast) var(--bazaar-ease),
@@ -121,27 +164,30 @@ export function ensureBazaarInteractionsStyle(): void {
         transform: translateY(-2px);
       }
       .bazaar-cat:hover .bazaar-cat-ring {
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
-        border-color: rgba(20, 184, 166, 0.22) !important;
+        box-shadow: var(--bazaar-shadow-md);
+        border-color: rgba(20, 184, 166, 0.18) !important;
       }
       .bazaar-cat:hover img { transform: scale(1.04); }
     }
     .bazaar-cat:active { transform: scale(0.97); }
     .bazaar-cat img { transition: transform var(--bazaar-motion-normal) var(--bazaar-ease); }
 
-    /* ── Buttons (primary) ── */
+    /* ── Buttons (primary) — small LEVEL 1, hover slightly deeper, active compresses ── */
     .bazaar-btn {
+      box-shadow: var(--bazaar-shadow-sm);
       transition:
         transform var(--bazaar-motion-fast) var(--bazaar-ease),
         background-color var(--bazaar-motion-fast) var(--bazaar-ease),
         box-shadow var(--bazaar-motion-fast) var(--bazaar-ease),
-        opacity var(--bazaar-motion-fast) var(--bazaar-ease);
+        opacity var(--bazaar-motion-fast) var(--bazaar-ease),
+        filter var(--bazaar-motion-fast) var(--bazaar-ease);
       will-change: transform;
     }
+    .bazaar-btn.bazaar-btn--no-shadow { box-shadow: none !important; }
     @media (hover: hover) and (pointer: fine) {
-      .bazaar-btn:hover { filter: brightness(1.06); box-shadow: 0 6px 16px rgba(13,148,136,0.22); }
+      .bazaar-btn:hover { filter: brightness(1.05); box-shadow: 0 6px 16px rgba(13,148,136,0.18); }
     }
-    .bazaar-btn:active { transform: scale(0.98); }
+    .bazaar-btn:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(13,148,136,0.12) !important; }
     .bazaar-btn:disabled { transform: none !important; filter: none !important; box-shadow: none !important; }
 
     /* ── Add-to-cart success ── */
@@ -222,7 +268,7 @@ export function ensureBazaarInteractionsStyle(): void {
       to { opacity: 1; }
     }
     .bazaar-drawer-backdrop { animation: bazaarBackdropIn 220ms var(--bazaar-ease) both; }
-    .bazaar-drawer-panel { animation: bazaarDrawerIn 260ms var(--bazaar-ease) both; }
+    .bazaar-drawer-panel { animation: bazaarDrawerIn 260ms var(--bazaar-ease) both; box-shadow: var(--bazaar-shadow-lg) !important; }
     .bazaar-drawer-chevron { transition: transform 180ms var(--bazaar-ease); }
     .bazaar-drawer-children {
       animation: bazaarDrawerChildrenIn 180ms var(--bazaar-ease) both;
@@ -238,21 +284,27 @@ export function ensureBazaarInteractionsStyle(): void {
       to { opacity: 1; transform: scale(1); }
     }
     .bazaar-wa-entrance { animation: bazaarWaIn 320ms var(--bazaar-ease) both; }
-    .bazaar-wa-btn { transition: transform var(--bazaar-motion-fast) var(--bazaar-ease); }
-    @media (hover: hover) and (pointer: fine) {
-      .bazaar-wa-btn:hover { transform: scale(1.04); }
+    .bazaar-wa-btn {
+      box-shadow: var(--bazaar-shadow-wa) !important;
+      transition:
+        transform var(--bazaar-motion-fast) var(--bazaar-ease),
+        box-shadow var(--bazaar-motion-fast) var(--bazaar-ease);
     }
-    .bazaar-wa-btn:active { transform: scale(0.96); }
+    @media (hover: hover) and (pointer: fine) {
+      .bazaar-wa-btn:hover { transform: scale(1.04); box-shadow: 0 8px 20px rgba(15,23,42,0.12), 0 4px 10px rgba(15,23,42,0.08) !important; }
+    }
+    .bazaar-wa-btn:active { transform: scale(0.96); box-shadow: var(--bazaar-shadow-sm) !important; }
 
-    /* ── Search focus ── */
+    /* ── Search focus — LEVEL 1 base, focus strengthens with tiny primary ring ── */
     .bazaar-search-ring {
+      box-shadow: var(--bazaar-shadow-sm);
       transition:
         border-color var(--bazaar-motion-fast) var(--bazaar-ease),
         box-shadow var(--bazaar-motion-fast) var(--bazaar-ease);
     }
     .bazaar-search-ring:focus-within {
       border-color: var(--store-primary, #0d9488) !important;
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--store-primary, #0d9488) 18%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--store-primary, #0d9488) 14%, transparent), var(--bazaar-shadow-sm) !important;
     }
 
     /* ── Header micro ── */
@@ -293,6 +345,18 @@ export function ensureBazaarInteractionsStyle(): void {
       .bazaar-social:hover { transform: translateY(-1px) scale(1.05); }
     }
 
+    /* ── Announcement bar ── */
+    .bazaar-announcement {
+      transition: border-color var(--bazaar-motion-fast) var(--bazaar-ease), box-shadow var(--bazaar-motion-fast) var(--bazaar-ease);
+    }
+    @keyframes bazaarAnnouncementIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .bazaar-announcement-slide { will-change: opacity, transform; }
+
+    /* ── Bazaar product sheet ── */
+    .bazaar-product-sheet { will-change: transform; }
+    [data-bazaar-drag-handle] { touch-action: none; }
+    [data-bazaar-product-media] { touch-action: none; }
+
     /* ── Image loading ── */
     .bazaar-img-fade {
       transition: opacity 220ms var(--bazaar-ease);
@@ -304,11 +368,11 @@ export function ensureBazaarInteractionsStyle(): void {
       .bazaar-section-accent, .bazaar-section-title { transform: none !important; opacity: 1 !important; transition: none !important; }
       .bazaar-card, .bazaar-card-img, .bazaar-cat, .bazaar-btn, .bazaar-drawer-chevron,
       .bazaar-wa-btn, .bazaar-header-action, .bazaar-qty-btn, .bazaar-variant, .bazaar-social,
-      .bazaar-hero-slide, .bazaar-hero-dot, .bazaar-hero-arrow, .bazaar-search-ring { transition: none !important; }
+      .bazaar-hero-slide, .bazaar-hero-dot, .bazaar-hero-arrow, .bazaar-search-ring, .bazaar-announcement, .bazaar-product-sheet { transition: none !important; }
       .bazaar-card:hover, .bazaar-cat:hover { transform: none !important; }
       .bazaar-cart-pulse, .bazaar-heart-add, .bazaar-heart-remove, .bazaar-check-pop,
       .bazaar-drawer-backdrop, .bazaar-drawer-panel, .bazaar-drawer-children,
-      .bazaar-wa-entrance, .bazaar-qty-pop { animation: none !important; }
+      .bazaar-wa-entrance, .bazaar-qty-pop, .bazaar-announcement-slide { animation: none !important; }
     }
   `;
   document.head.appendChild(st);

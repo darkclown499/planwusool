@@ -1,6 +1,7 @@
 import type { TemplateModule } from '../types';
 import { NEUTRAL_OVERLAYS } from '../shared/neutral';
 import { BazaarMarketRoot } from './BazaarMarket';
+import { BazaarProductDetail } from './BazaarProductDetail';
 
 /**
  * البازار — Bazaar Market
@@ -22,7 +23,7 @@ const bazaarMarket: TemplateModule = {
     plan_required: 'starter',
   },
   Root: BazaarMarketRoot,
-  overlays: NEUTRAL_OVERLAYS,
+  overlays: { ...NEUTRAL_OVERLAYS, product_detail: BazaarProductDetail as any },
   contentSchema: [
     { key: 'banners', label: 'شرائح الواجهة', type: 'image', group: 'الواجهة' },
   ],

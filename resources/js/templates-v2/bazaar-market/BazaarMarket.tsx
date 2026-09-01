@@ -27,6 +27,7 @@ import {
   initBazaarReveals,
   mountBazaarMotion,
 } from './bazaarInteractions';
+import { BazaarAnnouncementBar } from './BazaarAnnouncementBar';
 
 /* ===================================================================== */
 /* البازار — Bazaar Market                                                */
@@ -104,7 +105,7 @@ export function BazaarWhatsAppFloating() {
       rel="noreferrer"
       aria-label="تواصل واتساب"
       data-testid="bazaar-floating-whatsapp"
-      className="bazaar-wa-entrance bazaar-wa-btn fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_2px_10px_rgba(0,0,0,0.12),0_6px_18px_rgba(0,0,0,0.10)] ring-1 ring-black/5 md:hidden"
+      className="bazaar-wa-entrance bazaar-wa-btn fixed left-4 z-40 flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#25D366] text-white ring-1 ring-black/5 md:hidden"
       style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' } as any}
     >
       <MessageCircle className="h-[22px] w-[22px]" fill="white" />
@@ -153,7 +154,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
   }, [mobileNavOpen]);
   return (
     <>
-    <header className={`sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow ${scrolled ? 'shadow-lg shadow-teal-950/5' : ''}`} dir="rtl">
+    <header className={`bazaar-header sticky top-0 z-50 bg-white/90 backdrop-blur-md ${scrolled ? 'is-scrolled' : ''}`} dir="rtl">
       <div className="flex items-center gap-2 px-2.5 py-2.5 lg:hidden" dir="ltr">
         <button
           type="button"
@@ -172,7 +173,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[42vw] object-contain" />
           ) : (
             <>
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-sm font-black text-white shadow-md">س</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-sm font-black text-white bazaar-shadow-sm">س</span>
               <span className="max-w-[36vw] truncate text-[15px] font-black text-slate-900">{config?.storeName || store?.name}</span>
             </>
           )}
@@ -195,7 +196,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-11 w-auto object-contain" />
           ) : (
             <>
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-lg font-black text-white shadow-md">س</span>
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-lg font-black text-white bazaar-shadow-sm">س</span>
               <span className="min-w-0 max-w-[45vw] truncate text-xl font-black text-slate-900 sm:max-w-none">{config?.storeName || store?.name}</span>
             </>
           )}
@@ -229,7 +230,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           </button>
           )}
           <button type="button" onClick={() => ui.setShowCart(true)} data-bazaar-cart
-            className="bazaar-btn relative mr-1 flex items-center gap-2 rounded-full bg-gradient-to-l from-teal-600 to-emerald-600 py-2 pl-4 pr-3 text-sm font-black text-white shadow-md shadow-teal-600/25">
+            className="bazaar-btn relative mr-1 flex items-center gap-2 rounded-full bg-gradient-to-l from-teal-600 to-emerald-600 py-2 pl-4 pr-3 text-sm font-black text-white">
             <ShoppingBag className="h-4 w-4" />
             السلة
             {count > 0 && (
@@ -311,7 +312,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
   return (
     <div ref={drawerRef} className="fixed inset-0 z-[70]" dir="rtl" role="dialog" aria-modal="true" data-testid="bazaar-drawer" onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
       <div className="bazaar-drawer-backdrop absolute inset-0 bg-slate-900/45 backdrop-blur-[2px]" onClick={onClose} data-testid="bazaar-drawer-backdrop" />
-      <nav className="bazaar-drawer-panel absolute inset-y-0 right-0 flex max-h-[100dvh] w-[320px] max-w-[85vw] flex-col overflow-hidden bg-white shadow-2xl" data-testid="bazaar-drawer-nav">
+      <nav className="bazaar-drawer-panel absolute inset-y-0 right-0 flex max-h-[100dvh] w-[320px] max-w-[85vw] flex-col overflow-hidden bg-white" data-testid="bazaar-drawer-nav">
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3.5">
           <div className="flex items-center gap-2">
             {config?.logo || store?.logo ? (
@@ -330,13 +331,13 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3">
           <button type="button" onClick={handleHome} data-testid="bazaar-drawer-home"
-            className="flex w-full items-center gap-3 rounded-xl bg-teal-600 px-3 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-teal-700 active:scale-[0.98]">
+            className="flex w-full items-center gap-3 rounded-xl bg-teal-600 px-3 py-3 text-sm font-extrabold text-white bazaar-shadow-sm transition hover:bg-teal-700 active:scale-[0.98]">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white"><Home className="h-5 w-5" /></span>
             الرئيسية
             <ChevronLeft className="ms-auto h-4 w-4 text-white/60" />
           </button>
           <button type="button" onClick={handleCart} data-testid="bazaar-drawer-cart"
-            className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:bg-slate-50 active:scale-[0.98]">
+            className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-800 bazaar-shadow-sm transition hover:bg-slate-50 active:scale-[0.98]">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><ShoppingCart className="h-5 w-5" /></span>
             <span className="flex-1 text-start">السلة</span>
             {cartCount > 0 && <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-teal-600 px-1.5 text-xs font-black text-white">{cartCount}</span>}
@@ -451,7 +452,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
           )}
           {whatsappHref && (
             <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={onClose} data-testid="bazaar-drawer-whatsapp"
-              className="flex h-[52px] w-full items-center gap-3 rounded-xl bg-white px-3 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]">
+              className="flex h-[52px] w-full items-center gap-3 rounded-xl bg-white px-3 bazaar-shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50 active:scale-[0.98]">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white"><MessageCircle className="h-5 w-5" fill="white" /></span>
               <span className="flex-1 text-start">
                 <span className="block text-[13px] font-bold leading-none text-slate-900">تواصل معنا</span>
@@ -469,7 +470,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                   {socialSlots.filter((s: any) => s.safe).slice(0,6).map((slot: any) => {
                     const Icon = getBazaarSocialIcon(slot.platform);
                     return (
-                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} data-testid={`bazaar-social-${slot.platform}`} className="bazaar-social flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm active:scale-95">
+                      <a key={slot.idx} href={slot.url} target="_blank" rel="noreferrer" aria-label={slot.platform} data-testid={`bazaar-social-${slot.platform}`} className="bazaar-social flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white active:scale-95">
                         <Icon className="h-4 w-4" />
                       </a>
                     );
@@ -531,7 +532,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
         {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
-        <div className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black shadow-xl" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
+        <div className="bazaar-hero bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
           {/* Desktop video */}
           <video autoPlay loop muted playsInline className={`absolute inset-0 h-full w-full ${bazaarFit} ${hasMobileVideo?'hidden md:block':'block'}`} style={{ objectPosition: bazaarPos }} src={getHeroImageUrl(hero.videoUrl)} poster={slides[0]?.image ? getHeroImageUrl(slides[0].image) : undefined} />
           {/* Mobile video */}
@@ -542,7 +543,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
             <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">
               {hero.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{hero.subtitle}</p>}
               {hero.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{hero.heading}</h1>}
-              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">{hero.ctaLabel} ←</a>}
+              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{hero.ctaLabel} ←</a>}
             </div>
           )}
         </div>
@@ -555,7 +556,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     return (
       <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl">
         {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
-        <div className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black shadow-xl" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
+        <div className="bazaar-hero bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-black" style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}>
           {/* Desktop youtube */}
           <div className={`absolute inset-0 overflow-hidden bg-black ${hasMobileYoutube?'hidden md:block':'block'}`}>
             {hero.fit === 'contain' ? (
@@ -579,7 +580,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
             <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">
               {hero.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{hero.subtitle}</p>}
               {hero.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{hero.heading}</h1>}
-              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">{hero.ctaLabel} ←</a>}
+              {hero.ctaLabel && <a href={hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{hero.ctaLabel} ←</a>}
             </div>
           )}
         </div>
@@ -591,7 +592,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
     <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8" dir="rtl" data-bazaar-reveal>
       {!hasCustomHeight ? <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } } @media (min-width: ${HERO_BREAKPOINT}px) { .bazaar-hero-media{ height:${bazaarDesktopH} !important; } }`}</style> : <style>{`@media ${HERO_BREAKPOINT_CSS} { .bazaar-hero-media{ height:${bazaarMobileH} !important; } }`}</style>}
       <div
-        className="bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800 shadow-xl"
+        className="bazaar-hero bazaar-hero-media hero-clamped relative w-full overflow-hidden rounded-3xl bg-gradient-to-l from-teal-700 to-emerald-800"
         style={hasCustomHeight ? (hero.heightDesktop ? { height: hero.heightDesktop } as any : {}) : { height: bazaarDesktopH } as any}
         onTouchStart={(e) => { touchStartX.current = e.touches[0]?.clientX ?? null; }}
         onTouchEnd={(e) => {
@@ -623,7 +624,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
               {(b.subtitle || hero.subtitle) && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur">{b.subtitle || hero.subtitle}</p>}
               {(b.title || hero.heading) && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl">{b.title || hero.heading}</h1>}
               {(b.button_text || hero.ctaLabel) && (
-                <a href={b.button_link || hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg transition hover:bg-emerald-50">
+                <a href={b.button_link || hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">
                   {b.button_text || hero.ctaLabel} ←
                 </a>
               )}
@@ -632,8 +633,8 @@ export function BazaarHero({ banners }: { banners: any[] }) {
         )})}
         {slides.length > 1 && (
           <>
-            <button type="button" onClick={() => setI((v) => (v - 1 + slides.length) % slides.length)} aria-label="السابق" className="bazaar-hero-arrow absolute left-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md backdrop-blur md:flex">‹</button>
-            <button type="button" onClick={() => setI((v) => (v + 1) % slides.length)} aria-label="التالي" className="bazaar-hero-arrow absolute right-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-md backdrop-blur md:flex">›</button>
+            <button type="button" onClick={() => setI((v) => (v - 1 + slides.length) % slides.length)} aria-label="السابق" className="bazaar-hero-arrow bazaar-shadow-sm absolute left-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 backdrop-blur md:flex">‹</button>
+            <button type="button" onClick={() => setI((v) => (v + 1) % slides.length)} aria-label="التالي" className="bazaar-hero-arrow bazaar-shadow-sm absolute right-3 top-1/2 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 backdrop-blur md:flex">›</button>
             <div className="absolute bottom-4 right-1/2 flex translate-x-1/2 gap-1.5">
               {slides.map((_, idx: number) => (
                 <button key={idx} type="button" onClick={() => setI(idx)} aria-label={`شريحة ${idx + 1}`}
@@ -719,7 +720,7 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
           type="button"
           onClick={handleWishlist}
           aria-label="المفضلة"
-          className={`absolute top-2.5 left-2.5 rounded-full p-2 shadow-sm backdrop-blur ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
+          className={`bazaar-wishlist absolute top-2.5 left-2.5 rounded-full p-2 backdrop-blur ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
         >
           <Heart className="h-3.5 w-3.5" fill={wished ? 'currentColor' : 'none'} />
         </button>
@@ -748,7 +749,7 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
               type="button"
               onClick={add}
               aria-label={added ? 'تمت الإضافة' : 'أضف للسلة'}
-              className={`bazaar-btn flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-xs font-black text-white shadow-md shadow-teal-600/20 ${added ? 'bazaar-add-success' : 'bg-teal-600'}`}
+              className={`bazaar-btn flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-xs font-black text-white ${added ? 'bazaar-add-success' : 'bg-teal-600'}`}
             >
               {added ? (
                 <span className="bazaar-check-pop inline-flex items-center gap-1"><span>✓</span> تمت الإضافة</span>
@@ -780,6 +781,7 @@ export const BazaarMarketRoot: React.FC<TemplateRootProps> = ({ storeData, mode,
     return (
       <div dir="rtl" className="min-h-screen bg-slate-50 pb-16 md:pb-0">
         <BazaarHeader />
+        <BazaarAnnouncementBar />
         <BazaarWhatsAppFloating />
         <main className="prose-custom2 mx-auto max-w-4xl px-4 py-10 sm:px-6">
           <h1 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-black text-slate-900">{page?.title}</h1>
@@ -808,7 +810,7 @@ const SectionTitle: React.FC<{ children: React.ReactNode; moreHref?: string }> =
       <span className="bazaar-section-title">{children}</span>
     </h2>
     {moreHref && (
-      <a href={moreHref} className="bazaar-btn text-sm font-bold text-teal-700 hover:text-teal-600">عرض الكل ←</a>
+      <a href={moreHref} className="bazaar-btn bazaar-btn--no-shadow text-sm font-bold text-teal-700 hover:text-teal-600">عرض الكل ←</a>
     )}
   </div>
 );
@@ -830,6 +832,7 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
   return (
     <div dir="rtl" data-bazaar-root className="min-h-screen bg-slate-50 text-slate-800 antialiased">
       <BazaarHeader />
+      <BazaarAnnouncementBar />
       <BazaarWhatsAppFloating />
       <main className="space-y-12 pb-16">
         <BazaarHero banners={banners} />
@@ -841,7 +844,7 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
               {categories.slice(0, 8).map((c: any, idx: number) => (
                 <a key={c.id} href={`/category/${c.slug || c.id}`} data-bazaar-reveal data-bazaar-stagger className="bazaar-cat group flex flex-col items-center gap-2" style={{ ['--bazaar-idx' as any]: Math.min(idx, 5) } as any}>
-                  <span className="bazaar-cat-ring h-16 w-16 overflow-hidden rounded-2xl bg-white p-1 shadow-sm ring-1 ring-slate-100 sm:h-20 sm:w-20">
+                  <span className="bazaar-cat-ring h-16 w-16 overflow-hidden rounded-2xl bg-white p-1 sm:h-20 sm:w-20">
                     {c.image ? (
                       <img src={getOptimizedImageUrl(c.image||'', 'thumb')} alt="" loading="lazy" decoding="async" sizes="80px" onError={(e)=>{(e.currentTarget.src=getImageUrl(c.image||''))}} className="h-full w-full rounded-xl object-cover" width={80} height={80} />
                     ) : (
@@ -870,11 +873,11 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         {/* Promo band — truthful: only shown when real discounted products exist, no fake 40% claim */}
         {(() => { const dealsCount = products.filter((p:any)=> p.originalPrice && Number(p.originalPrice) > Number(p.price)).length; if (dealsCount===0) return null; return (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-l from-emerald-600 to-teal-700 p-7 text-white sm:p-10">
+          <div className="bazaar-promo relative overflow-hidden rounded-3xl bg-gradient-to-l from-emerald-600 to-teal-700 p-7 text-white sm:p-10">
             <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
             <p className="text-sm font-black tracking-wide text-emerald-100">عروض الأسبوع</p>
             <h2 className="mt-1.5 max-w-md text-2xl font-black leading-snug sm:text-3xl">عروض مميزة على منتجات مختارة</h2>
-            <a href="#popular" className="bazaar-btn mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 shadow-lg hover:bg-emerald-50">
+            <a href="#popular" className="bazaar-btn bazaar-btn--no-shadow mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 hover:bg-emerald-50">
               اكتشف العروض
             </a>
           </div>
@@ -936,6 +939,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
   return (
     <div dir="rtl" data-bazaar-root className="min-h-screen bg-slate-50 text-slate-800 antialiased pb-16 md:pb-0">
       <BazaarHeader homeHref="/" />
+      <BazaarAnnouncementBar />
       <BazaarWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500" aria-label="مسار التنقل">
@@ -980,8 +984,8 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
                     key={n}
                     type="button"
                     onClick={() => navigate({ page: n })}
-                    className={`bazaar-btn h-9 min-w-9 rounded-xl px-2 text-sm font-black ${
-                      n === categoryData.currentPage ? 'bg-teal-600 text-white shadow-md' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-700'
+                    className={`h-9 min-w-9 rounded-xl px-2 text-sm font-black ${
+                      n === categoryData.currentPage ? 'bazaar-shadow-sm bg-teal-600 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-700'
                     }`}
                   >
                     {n}

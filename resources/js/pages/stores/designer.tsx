@@ -886,6 +886,54 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                     </div>
                                 </Card>
 
+                                {/* 0b. Bazaar — شريط الأخبار والعروض (template-scoped) */}
+                                {theme === 'bazaar-market' && (() => {
+                                    const bazaarAnnEnabled = !!getDotted(content, 'bazaar_announcement.enabled');
+                                    const bazaarAnnMessages: string[] = (getDotted(content, 'bazaar_announcement.messages') ?? getDotted(content, 'bazaar_announcement.items') ?? []) as any;
+                                    const bazaarAnnAutoplay = getDotted(content, 'bazaar_announcement.autoplay');
+                                    const bazaarAnnSpeed = String(getDotted(content, 'bazaar_announcement.speed') ?? 'medium');
+                                    const showBazaarAutoplay = bazaarAnnAutoplay === undefined ? true : !!bazaarAnnAutoplay;
+                                    return (
+                                    <Card>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="flex items-center gap-1.5 text-xs font-black text-slate-800"><Megaphone className="h-3.5 w-3.5 text-teal-600" /> شريط الأخبار والعروض — البازار</span>
+                                            <Switch checked={bazaarAnnEnabled} onCheckedChange={(v) => setContent(setDotted(content, 'bazaar_announcement.enabled', !!v))} data-testid="bazaar-announcement-enabled" />
+                                        </div>
+                                        <p className="mb-2 text-[11px] leading-relaxed text-slate-500">يظهر أسفل الهيدر وفوق الهيرو — للعروض وأخبار المتجر والخصومات والتنبيهات. استخدم <span dir="ltr" className="font-mono text-[10px]">bazaar_announcement</span> المعزول لكل متجر.</p>
+                                        <div className="space-y-2">
+                                            <div>
+                                                <SectionLabel>الرسائل — سطر لكل رسالة (حتى 20)</SectionLabel>
+                                                <Textarea
+                                                    rows={5}
+                                                    dir="rtl"
+                                                    value={(Array.isArray(bazaarAnnMessages) ? bazaarAnnMessages : []).join('\n')}
+                                                    onChange={(e) => { const list = e.target.value.split('\n').map((s: string) => String(s).trim()).filter(Boolean).slice(0, 20); setContent(setDotted(content, 'bazaar_announcement.messages', list)); }}
+                                                    placeholder={'خصم 20% على المنتجات المختارة\nتوصيل مجاني للطلبات فوق 200 ₪\nوصلتنا تشكيلة جديدة'}
+                                                    className="mt-1 bg-white font-mono text-sm"
+                                                    data-testid="bazaar-announcement-messages"
+                                                />
+                                                <p className="mt-1 text-[10px] text-slate-400">رموز قصيرة ومركزة — تُعرض بشكل متتابع. رسالة واحدة تُعرض ثابتة، عدة رسائل تتناوب تلقائياً.</p>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                                    <span className="text-xs font-bold text-slate-700">الحركة التلقائية</span>
+                                                    <Switch checked={showBazaarAutoplay} onCheckedChange={(v) => setContent(setDotted(content, 'bazaar_announcement.autoplay', !!v))} data-testid="bazaar-announcement-autoplay" />
+                                                </div>
+                                                <div>
+                                                    <SectionLabel>سرعة التبديل</SectionLabel>
+                                                    <select value={['slow','medium','fast'].includes(bazaarAnnSpeed) ? bazaarAnnSpeed : 'medium'} onChange={(e) => setContent(setDotted(content, 'bazaar_announcement.speed', e.target.value))} data-testid="bazaar-announcement-speed" className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-teal-600 focus:outline-none">
+                                                        <option value="slow">بطيء (6ث)</option>
+                                                        <option value="medium">متوسط (4ث)</option>
+                                                        <option value="fast">سريع (3ث)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] leading-relaxed text-slate-400">يحترم <span dir="ltr" className="font-mono text-[10px]">prefers-reduced-motion</span>: يثبت أول رسالة بدون حركة. للتنقل اليدوي استخدم الأسهم أو السحب على الجوال.</p>
+                                        </div>
+                                    </Card>
+                                    );
+                                })()}
+
                                 {/* A. نوع الوسائط — segmented, warm accent */}
                                 <Card>
                                     <SectionLabel>نوع الوسائط</SectionLabel>
