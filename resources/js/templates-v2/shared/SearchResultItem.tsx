@@ -1,6 +1,7 @@
 import React from 'react';
+import { Heart } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
-import { usePriceFormatter } from './hooks';
+import { usePriceFormatter, useStorefrontCore } from './hooks';
 
 /**
  * Shared live-search row — polished, scannable, Arabic-friendly.
@@ -23,6 +24,16 @@ export const SearchResultItem: React.FC<{
   const oos = product?.availability === 'out_of_stock';
   const isVariant = product?.inventoryMode === 'variant';
   const canQuickAdd = !oos && !isVariant && typeof onQuickAdd === 'function';
+  // Wishlist — Bazaar (and all templates) via shared context; auth-gated, no duplicate state
+  const { wishlist, auth } = useStorefrontCore() as any;
+  const wished = !!(wishlist?.isInWishlist && product?.id != null && wishlist.isInWishlist(product.id));
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!auth?.isLoggedIn) { auth?.setShowLoginModal?.(true); return; }
+    const res = await wishlist?.toggle?.(product.id);
+    if (res === false) return;
+  };
 
   return (
     <div
@@ -57,6 +68,15 @@ export const SearchResultItem: React.FC<{
           ) : null}
         </span>
       </span>
+      <button
+        type="button"
+        onClick={handleWishlist}
+        aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
+        data-testid={`search-wishlist-${String(product.id)}`}
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border active:scale-95 ${wished ? 'border-rose-200 bg-rose-500 text-white' : 'border-black/10 bg-white text-stone-400 hover:text-rose-500'}`}
+      >
+        <Heart className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} />
+      </button>
       {canQuickAdd && (
         <button
           type="button"
