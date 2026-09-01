@@ -554,7 +554,10 @@ export function BazaarHero({ banners }: { banners: any[] }) {
   useEffect(() => { ensureBazaarInteractionsStyle(); }, []);
   useEffect(() => {
     if (totalSlides <= 1) return;
-    const t = setInterval(() => setIdx((v) => (v + 1) % totalSlides), 5500);
+    const t = setInterval(() => {
+      if (document.hidden) return;
+      setIdx((v) => (v + 1) % totalSlides);
+    }, 5500);
     return () => clearInterval(t);
   }, [totalSlides]);
   useEffect(() => {

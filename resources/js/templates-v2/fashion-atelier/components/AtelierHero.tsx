@@ -31,7 +31,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
   // For slider index we keep single index shared
   const [index, setIndex] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval>|null>(null);
-  useEffect(()=>{ if(list.length<=1) return; timer.current=setInterval(()=>setIndex(i=>(i+1)%list.length),6000); return()=>{ if(timer.current) clearInterval(timer.current)}},[list.length]);
+  useEffect(()=>{ if(list.length<=1) return; timer.current=setInterval(()=>{ if(document.hidden) return; setIndex(i=>(i+1)%list.length)},6000); return()=>{ if(timer.current) clearInterval(timer.current)}},[list.length]);
   const isSingleMedia = hasDynamicHero && (heroType==='video'||heroType==='youtube');
   if(list.length===0 && !isSingleMedia) return null;
   const go=(dir:number)=>setIndex(i=>(i+dir+list.length)%list.length);
@@ -195,9 +195,9 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
             return (
             <div key={i} className="absolute inset-0 bg-stone-900 transition-opacity duration-[1200ms] ease-out" style={{ opacity: i===index?1:0 }} aria-hidden={i!==index}>
               {/* Desktop image — true color, no internal gradient darkening; readability via overlayOpacity only */}
-              {desktopImg && <img src={desktopImg} alt="" className={`absolute inset-0 h-full w-full ${mediaFit} ${hasMobileImages?'hidden md:block':'block'}`} sizes="100vw" loading={i===0?'eager':'lazy'} decoding="async" style={{ objectPosition: mediaPos, transform: i===index?'scale(1.02)':'scale(1.01)', transition:'transform 7s ease-out' }} />}
+              {desktopImg && <img src={desktopImg} alt="" className={`absolute inset-0 h-full w-full ${mediaFit} ${hasMobileImages?'hidden md:block':'block'}`} sizes="100vw" loading={i===0?'eager':'lazy'} fetchPriority={i===0?'high':undefined} decoding="async" style={{ objectPosition: mediaPos, transform: i===index?'scale(1.02)':'scale(1.01)', transition:'transform 7s ease-out' }} />}
               {/* Mobile image */}
-              {mobileImg && hasMobileImages && <img src={mobileImg} alt="" className={`absolute inset-0 h-full w-full ${mediaFitMobile} block md:hidden`} sizes="100vw" loading={i===0?'eager':'lazy'} decoding="async" style={{ objectPosition: mediaPosMobile, transform: i===index?'scale(1.02)':'scale(1.01)', transition:'transform 7s ease-out' }} />}
+              {mobileImg && hasMobileImages && <img src={mobileImg} alt="" className={`absolute inset-0 h-full w-full ${mediaFitMobile} block md:hidden`} sizes="100vw" loading={i===0?'eager':'lazy'} fetchPriority={i===0?'high':undefined} decoding="async" style={{ objectPosition: mediaPosMobile, transform: i===index?'scale(1.02)':'scale(1.01)', transition:'transform 7s ease-out' }} />}
               {hasDynamicHero && <div className="absolute inset-0 bg-black" style={{ opacity: overlayStyleOpacity }} />}
             </div>
           )})}

@@ -25,7 +25,6 @@ import { AppDirectionProvider } from './components/app-direction-provider';
 import { TourProvider } from './components/tour/tour-context';
 import { TourOverlay } from './components/tour/tour-overlay';
 import ErrorBoundary from './components/ErrorBoundary';
-import { initSentry } from './components/SentryProvider';
 import './utils/axios-config';
 import { setupFlashMessages } from './utils/flash-messages';
 

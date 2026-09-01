@@ -375,7 +375,10 @@ export function HayahHero({ banners }: { banners?: any[] }) {
 
   useEffect(() => {
     if (totalSlides <= 1) return;
-    const t = setInterval(() => setIndex((v) => (v + 1) % totalSlides), 5000);
+    const t = setInterval(() => {
+      if (document.hidden) return;
+      setIndex((v) => (v + 1) % totalSlides);
+    }, 5000);
     return () => clearInterval(t);
   }, [totalSlides]);
 

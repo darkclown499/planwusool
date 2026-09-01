@@ -225,7 +225,7 @@ export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpa
               ) : m.type === 'youtube' ? (
                 <iframe className="absolute inset-0 h-full w-full" src={`https://www.youtube.com/embed/${singleSrc}?mute=1&controls=0&playsinline=1&modestbranding=1&rel=0`} title="YouTube" frameBorder="0" allow="autoplay; fullscreen" allowFullScreen />
               ) : (
-                <img src={getImageUrl(singleSrc)} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: singlePosNorm }} />
+                <img src={getImageUrl(singleSrc)} alt="" className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" decoding="async" style={{ objectPosition: singlePosNorm }} />
               )}
               <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity }} />
               {m.showContent !== false && (m.title || m.subtitle || m.ctaLabel) && (
@@ -432,6 +432,7 @@ export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpa
                     className="absolute inset-0 h-full w-full object-cover"
                     style={{ objectPosition: perItemPosNorm }}
                     loading={i === 0 ? 'eager' : 'lazy'}
+                    fetchPriority={i === 0 ? 'high' : undefined}
                     decoding="async"
                     draggable={false}
                   />

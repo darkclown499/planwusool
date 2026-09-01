@@ -359,7 +359,10 @@ export function SouqHero({ banners }: { banners: any[] }) {
   const startAutoplay = () => {
     stopAutoplay();
     if (totalSlides <= 1) return;
-    autoplayRef.current = window.setInterval(() => setI((v) => (v + 1) % totalSlides), 5000);
+    autoplayRef.current = window.setInterval(() => {
+      if (document.hidden) return;
+      setI((v) => (v + 1) % totalSlides);
+    }, 5000);
   };
   useEffect(() => {
     startAutoplay();

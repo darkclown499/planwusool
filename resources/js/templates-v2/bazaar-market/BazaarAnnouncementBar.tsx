@@ -140,7 +140,10 @@ export const BazaarAnnouncementBar: React.FC = () => {
 
   useEffect(() => {
     if (!shouldAutoplay) return;
-    const t = setInterval(() => setIndex((v) => (v + 1) % count), interval);
+    const t = setInterval(() => {
+      if (document.hidden) return;
+      setIndex((v) => (v + 1) % count);
+    }, interval);
     return () => clearInterval(t);
   }, [shouldAutoplay, count, interval]);
 

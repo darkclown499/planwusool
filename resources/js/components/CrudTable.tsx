@@ -16,9 +16,22 @@ import {
   TooltipTrigger 
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
-import * as LucidIcons from 'lucide-react';
+import type { ComponentType } from 'react';
+import { Check, ChevronDown, ChevronUp, ChevronsUpDown, Edit, Eye, KeyRound, Lock, Trash2, X } from 'lucide-react';
 import { hasPermission } from '@/utils/authorization';
+
+// The CRUD configs reference action icons by string name (Eye/Edit/Trash2/Check/X/KeyRound/Lock).
+// A static map keeps the import tree-shakeable — a wildcard lucide import would
+// drag every one of the ~1,500 icons into this shared chunk.
+const ACTION_ICONS: Record<string, ComponentType<{ size?: number; className?: string }>> = {
+  Eye,
+  Edit,
+  Trash2,
+  Check,
+  X,
+  KeyRound,
+  Lock,
+};
 import { TableColumn, TableAction } from '@/types/crud';
 import { Link } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
@@ -101,7 +114,7 @@ export function CrudTable({
             return null;
           }
 
-          const IconComponent = (LucidIcons as any)[action.icon] as React.ComponentType<any>;
+          const IconComponent = ACTION_ICONS[action.icon];
 
           // Handle link actions
           if (action.href) {
@@ -119,7 +132,7 @@ export function CrudTable({
                         size="icon" 
                         className={cn("h-8 w-8", action.className)}
                       >
-                        <IconComponent size={16} />
+                        {IconComponent ? <IconComponent size={16} /> : null}
                       </Button>
                     </Link>
                   </TooltipTrigger>
@@ -142,7 +155,7 @@ export function CrudTable({
                     className={cn("h-8 w-8", action.className)} 
                     onClick={() => onAction(action.action ?? '', row)}
                   >
-                    <IconComponent size={16} />
+                    {IconComponent ? <IconComponent size={16} /> : null}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

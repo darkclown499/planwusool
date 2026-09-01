@@ -134,7 +134,10 @@ export function useRotatingAnnouncement(count: number, intervalMs = 4500): numbe
   const [index, setIndex] = useState(0);
   useEffect(() => {
     if (count <= 1) return;
-    const timer = setInterval(() => setIndex((i) => (i + 1) % count), intervalMs);
+    const timer = setInterval(() => {
+      if (document.hidden) return;
+      setIndex((i) => (i + 1) % count);
+    }, intervalMs);
     return () => clearInterval(timer);
   }, [count, intervalMs]);
   return Math.min(index, Math.max(0, count - 1));
