@@ -110,8 +110,9 @@ class FashionAtelierBlockersTest extends TestCase
         $product = Product::factory()->create(['store_id' => $store->id, 'is_active' => true]);
         // create approved and unapproved via direct insert
         $customer = $this->makeCustomer($store, 'rev@test.com');
+        $customer2 = $this->makeCustomer($store, 'rev2@test.com');
         \App\Models\ProductReview::create(['store_id'=>$store->id,'product_id'=>$product->id,'customer_id'=>$customer->id,'rating'=>5,'title'=>'Great','comment'=>'Excellent','is_approved'=>true, 'is_verified_purchase'=>true]);
-        \App\Models\ProductReview::create(['store_id'=>$store->id,'product_id'=>$product->id,'customer_id'=>$customer->id,'rating'=>1,'title'=>'Bad','comment'=>'Poor','is_approved'=>false, 'is_verified_purchase'=>false]);
+        \App\Models\ProductReview::create(['store_id'=>$store->id,'product_id'=>$product->id,'customer_id'=>$customer2->id,'rating'=>1,'title'=>'Bad','comment'=>'Poor','is_approved'=>false, 'is_verified_purchase'=>false]);
         $res = $this->getJson("/api/reviews/product/{$product->id}");
         $res->assertOk();
         $reviews = $res->json('reviews.data') ?? $res->json('reviews') ?? [];

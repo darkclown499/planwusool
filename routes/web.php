@@ -965,6 +965,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('product-reviews/export', [ProductReviewController::class, 'export'])->middleware('permission:export-product-reviews')->name('product-reviews.export');
             Route::post('product-reviews/{review}/approve', [ProductReviewController::class, 'approve'])->middleware('permission:approve-product-reviews')->name('product-reviews.approve');
             Route::post('product-reviews/{review}/reject', [ProductReviewController::class, 'reject'])->middleware('permission:approve-product-reviews')->name('product-reviews.reject');
+            Route::post('product-reviews/{review}/hide', [ProductReviewController::class, 'hide'])->middleware('permission:approve-product-reviews')->name('product-reviews.hide');
+            Route::post('product-reviews/{review}/show', [ProductReviewController::class, 'show'])->middleware('permission:approve-product-reviews')->name('product-reviews.show');
             Route::post('product-reviews/{review}/reply', [ProductReviewController::class, 'reply'])->middleware('permission:reply-product-reviews')->name('product-reviews.reply');
             Route::delete('product-reviews/{review}', [ProductReviewController::class, 'destroy'])->middleware('permission:delete-product-reviews')->name('product-reviews.destroy');
         });

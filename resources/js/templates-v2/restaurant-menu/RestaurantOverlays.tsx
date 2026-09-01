@@ -4,6 +4,7 @@ import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 import { SearchSheet } from '../shared/SearchSheet';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 /* ===================================================================== */
 /* الهيئة overlays — light commerce sheets                                */
@@ -169,6 +170,10 @@ export function HayahProductModal({ product, onClose }: any) {
               </div>
             </div>
           ))}
+
+          <div className="mt-6 border-t border-slate-100 pt-4">
+            <ProductReviews productId={product.id} />
+          </div>
 
           <div className="mt-6 flex items-center gap-3">
             <div className="flex items-center rounded-full border border-slate-200 bg-white">

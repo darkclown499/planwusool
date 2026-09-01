@@ -399,7 +399,7 @@ class ThemeController extends Controller
             $cacheKey,
             300,
             function () use ($store) {
-                return Product::where('store_id', $store['id'])
+                $products = Product::where('store_id', $store['id'])
                     ->where('is_active', true)
                     ->with('category')
                     ->orderBy('created_at', 'desc')
@@ -417,6 +417,10 @@ class ThemeController extends Controller
                         return $catalog;
                     })
                     ->values();
+
+                // Verified-review aggregates ride on the catalog so cards can
+                // show rating stars without a per-product API call.
+                return $this->attachReviewStats((int) $store['id'], $products);
             }
         );
         
@@ -525,6 +529,8 @@ class ThemeController extends Controller
                 return $catalog;
             })
             ->values();
+
+        $products = $this->attachReviewStats((int) $store['id'], $products);
 
         $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
 
@@ -647,6 +653,8 @@ class ThemeController extends Controller
                 return $catalog;
             })
             ->values();
+
+        $products = $this->attachReviewStats((int) $store['id'], $products);
 
         $theme = $this->applyPreviewTheme($request, $theme, $storeModel && $storeModel->user ? $storeModel->user->plan : null);
 
@@ -858,6 +866,37 @@ class ThemeController extends Controller
     }
 
     /**
+     * Attach lightweight verified-review aggregates (count + average) to a
+     * serialized product list using ONE grouped query — no per-card N+1.
+     * Stats are per-store and visible reviews only, so a rejected/hidden review
+     * can never inflate a product's rating. The storefront catalog cache is
+     * invalidated on every review mutation (see ProductReview model boot()).
+     */
+    private function attachReviewStats(int $storeId, $products): array
+    {
+        if (empty($products)) {
+            return [];
+        }
+
+        $ids = array_values(array_unique(array_map(
+            fn ($item) => (int) ($item['id'] ?? 0),
+            is_iterable($products) ? (is_array($products) ? $products : $products->all()) : [$products]
+        )));
+
+        $ids = array_values(array_filter($ids, fn ($id) => $id > 0));
+        $stats = \App\Models\ProductReview::statsForProducts($storeId, $ids);
+
+        foreach ($products as $key => $item) {
+            $productStats = $stats[(int) ($item['id'] ?? 0)] ?? null;
+            $item['reviewCount'] = $productStats['review_count'] ?? 0;
+            $item['averageRating'] = (float) ($productStats['average_rating'] ?? 0);
+            $products[$key] = $item;
+        }
+
+        return is_array($products) ? array_values($products) : $products->values()->all();
+    }
+
+    /**
      * Storefront search results page — GET /search?q=اندومي on store subdomain.
      * Store-scoped, active products only, active categories only, server-authoritative,
      * paginated, supports sort/filter. Renders Inertia store/search page reusing
@@ -945,6 +984,8 @@ class ThemeController extends Controller
             // Variant-aware availability post-filter
             if ($availabilityFilter === 'in_stock') $products = $products->filter(fn($pr)=> $pr['availability'] !== 'out_of_stock')->values();
             elseif ($availabilityFilter === 'out_of_stock') $products = $products->filter(fn($pr)=> $pr['availability'] === 'out_of_stock')->values();
+
+            $products = $this->attachReviewStats((int) $store['id'], $products);
 
             $total = $paginator->total();
             $currentPage = $paginator->currentPage();

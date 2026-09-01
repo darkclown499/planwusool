@@ -5,6 +5,7 @@ import { createSafeHtml } from '@/utils/xss-protection';
 import { SearchSheet } from '../shared/SearchSheet';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 /* ===================================================================== */
 /* Electronics Hub overlays — mobile-first premium.                       */
@@ -323,6 +324,10 @@ export function HubProductModal({ product, onClose }: any) {
                 </div>
               </div>
             ))}
+
+            <div className="mt-5 border-t border-[#e6ebf1] pt-4">
+              <ProductReviews productId={product.id} />
+            </div>
 
             {/* Quantity + CTA — pinned to bottom of info column */}
             <div className="mt-6 pt-2">

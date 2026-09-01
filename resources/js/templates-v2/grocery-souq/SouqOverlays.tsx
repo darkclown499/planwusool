@@ -4,6 +4,7 @@ import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { computeCartTotals, discountPercent, isVariableProduct, resolveFreeShippingThreshold, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 import { SearchSheet } from '../shared/SearchSheet';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 /* ===================================================================== */
 /* Souq overlays — a working cart drawer and a quick product sheet, both  */
@@ -352,6 +353,10 @@ export function SouqProductSheet({ product, onClose }: any) {
               </div>
             </div>
           ))}
+
+          <div className="mt-6 border-t border-black/5 pt-4">
+            <ProductReviews productId={product.id} />
+          </div>
         </div>
 
         <div className="flex items-center gap-3 border-t border-black/5 bg-stone-50 p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">

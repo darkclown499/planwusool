@@ -8,6 +8,7 @@ import { Gift, Heart, MessageCircle, Minus, PackageCheck, Plus, Share2, Shopping
 import React, { useEffect, useState } from 'react';
 import { useStorefrontCore } from '@/templates-v2/shared/contexts';
 import { calcEarnedPoints, getEffectiveLoyaltyPrice, getLoyaltySettingsFromPage } from '@/utils/loyalty';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface TemplateProductDetailModalProps {
     product: any;
@@ -304,6 +305,9 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
                                     SKU: {product.sku}
                                 </p>
                             )}
+                            <div className="mt-6 border-t pt-4" style={{ borderColor: 'var(--twc-border, #e5e7eb)' }}>
+                                <ProductReviews productId={product.id} />
+                            </div>
                         </div>
                     </div>
                 </div>

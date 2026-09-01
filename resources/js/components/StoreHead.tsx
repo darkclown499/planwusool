@@ -64,6 +64,20 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
         },
       };
       if (p.short_description) item.description = p.short_description;
+
+      // aggregateRating is only emitted for real verified reviews — a 0/empty
+      // aggregate is never exposed to search engines.
+      const reviewCount = Number(p.reviewCount ?? p.review_count ?? 0);
+      const averageRating = Number(p.averageRating ?? p.average_rating ?? 0);
+      if (reviewCount > 0 && averageRating > 0) {
+        item.aggregateRating = {
+          '@type': 'AggregateRating',
+          ratingValue: averageRating.toFixed(1),
+          bestRating: 5,
+          reviewCount,
+        };
+      }
+
       return item;
     });
 

@@ -5,6 +5,7 @@ import { createSafeHtml } from '@/utils/xss-protection';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 import { ensureBazaarInteractionsStyle, triggerBazaarWishlistPop } from './bazaarInteractions';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 interface BazaarProductDetailProps {
   product: any;
@@ -343,6 +344,10 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="border-t border-slate-100 pt-4">
+          <ProductReviews productId={product.id} />
         </div>
 
         {/* Purchase bar */}

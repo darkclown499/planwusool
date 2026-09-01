@@ -4,6 +4,7 @@ import { getImageUrl } from '@/utils/image-helper';
 import { SearchSheet } from '../shared/SearchSheet';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { computeCartTotals, isVariableProduct, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
+import { ProductReviews } from '@/components/storefront/ProductReviews';
 
 /* ===================================================================== */
 /* Bakery House overlays — cream-toned cart drawer and a warm product     */
@@ -161,6 +162,10 @@ export function BakeryProductModal({ product, onClose }: any) {
               </div>
             </div>
           ))}
+
+          <div className="mt-6 border-t border-[#eaddcf] pt-4">
+            <ProductReviews productId={product.id} />
+          </div>
 
           <div className="mt-6 flex items-center gap-3">
             <div className="flex items-center rounded-full border-2 border-[#eaddcf] bg-white">

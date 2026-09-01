@@ -6,8 +6,10 @@ import { getImageUrl } from '@/utils/image-helper';
 
 interface ReviewCustomer {
   id: string | number;
-  first_name: string;
-  last_name: string;
+  display_name?: string;
+  initials?: string;
+  first_name?: string;
+  last_name?: string;
   avatar?: string | null;
 }
 
@@ -110,7 +112,7 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => 
 
       const data = await response.json();
       if (data.success) {
-        toast.success('تم إرسال تقييمك وسيظهر بعد موافقة المتجر');
+        toast.success(data.message || 'تم تحديث تقييمك');
         setShowForm(false);
         setRating(0);
         setTitle('');
@@ -225,11 +227,11 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => 
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold">
-                    {review.customer?.first_name?.[0] || 'ز'}
+                    {review.customer?.initials || review.customer?.first_name?.[0] || 'ز'}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      {review.customer?.first_name} {review.customer?.last_name}
+                      {review.customer?.display_name || `${review.customer?.first_name || ''} ${review.customer?.last_name || ''}`.trim() || 'عميل'}
                     </p>
                     <div className="flex items-center gap-2">
                       <div className="flex gap-0.5">
