@@ -4,8 +4,9 @@ import * as meta from './adapters/meta';
 import * as tiktok from './adapters/tiktok';
 import * as ga4 from './adapters/ga4';
 import {
-    hasPurchaseFired,
-    markPurchaseFired,
+    beginPurchase,
+    markPurchaseSent,
+    clearPurchasePending,
     dedupKey,
 } from './dedup';
 
@@ -16,12 +17,14 @@ import {
  *   it is a no-op in preview/owner-preview modes.
  * - `trackCommerceEvent` fans every canonical event out to all active
  *   providers.
- * - `trackPurchase` is idempotent per logical order: the same success may be
- *   observed through the in-app success modal AND the standalone invoice
- *   (including a new tab or a later session). A durable, store+order-scoped
- *   localStorage breadcrumb (bounded: 30-day TTL, capped entry list) guarantees
- *   exactly one purchase event per browser/profile. sessionStorage is used only
- *   as a fallback when localStorage is unavailable.
+ * - `trackPurchase` is idempotent per logical order using a pending→sent state
+ *   machine backed by a durable, store+order-scoped localStorage breadcrumb.
+ *   A purchase is claimed as `pending` (short TTL) before the canonical order
+ *   fetch, and only promoted to `sent` (30-day TTL) AFTER the configured
+ *   provider adapters were invoked without a local exception. A failed payload
+ *   fetch clears the pending claim so a reload/revisit can retry — a purchase
+ *   is never permanently suppressed before it actually dispatches. sessionStorage
+ *   mirrors localStorage only as a fallback when localStorage is unavailable.
  *
  * This is attribution for a successfully created order — it is NOT
  * collected-revenue reporting (see marketing page docs).
@@ -82,19 +85,42 @@ export function trackCommerceEvent(event: CommerceEventType, data: CommerceEvent
     });
 }
 
-function purchaseAlreadyFired(orderNumber: string): boolean {
-    const key = dedupKey(config.storeSlug || '', orderNumber);
-    return (
-        hasPurchaseFired(durableStorage(), PURCHASE_STORAGE_KEY, key) ||
-        hasPurchaseFired(fallbackStorage(), PURCHASE_STORAGE_KEY, key)
-    );
-}
-
-function recordPurchaseFired(orderNumber: string): void {
+/**
+ * Claims the purchase slot. Returns true when this caller should proceed.
+ * Mirrors the state onto both durable and fallback storage; a claim that is
+ * blocked in either counts as blocked for the order.
+ */
+function tryBeginPurchase(orderNumber: string): boolean {
     const key = dedupKey(config.storeSlug || '', orderNumber);
     const now = Date.now();
-    markPurchaseFired(durableStorage(), PURCHASE_STORAGE_KEY, key, now);
-    markPurchaseFired(fallbackStorage(), PURCHASE_STORAGE_KEY, key, now);
+    const durable = beginPurchase(durableStorage(), PURCHASE_STORAGE_KEY, key, now);
+    const fallback = beginPurchase(fallbackStorage(), PURCHASE_STORAGE_KEY, key, now);
+    return durable && fallback;
+}
+
+/** Promotes pending → sent after successful dispatch. */
+function recordPurchaseSent(orderNumber: string): void {
+    const key = dedupKey(config.storeSlug || '', orderNumber);
+    const now = Date.now();
+    markPurchaseSent(durableStorage(), PURCHASE_STORAGE_KEY, key, now);
+    markPurchaseSent(fallbackStorage(), PURCHASE_STORAGE_KEY, key, now);
+}
+
+/** Drops the pending claim so a failed fetch can be retried later. */
+function retractPurchasePending(orderNumber: string): void {
+    const key = dedupKey(config.storeSlug || '', orderNumber);
+    const now = Date.now();
+    clearPurchasePending(durableStorage(), PURCHASE_STORAGE_KEY, key, now);
+    clearPurchasePending(fallbackStorage(), PURCHASE_STORAGE_KEY, key, now);
+}
+
+/** True when at least one advertising provider is configured to receive events. */
+function hasConfiguredProvider(): boolean {
+    return Boolean(
+        config.metaPixelId?.trim() ||
+            config.tiktokPixelId?.trim() ||
+            config.googleAnalyticsId?.trim(),
+    );
 }
 
 interface OrderItem {
@@ -132,14 +158,20 @@ async function fetchOrderPayload(orderNumber: string): Promise<OrderPayload | nu
 export async function trackPurchase(orderNumber: string, optimisticTotal?: number): Promise<void> {
     if (!initialized || config.disabled || !orderNumber) return;
 
-    if (purchaseAlreadyFired(orderNumber)) return;
-    // Mark before the async fetch so a concurrent duplicate (reload/new tab)
-    // cannot slip through while the order payload is being resolved.
-    recordPurchaseFired(orderNumber);
+    // Claim the slot (pending, short TTL). Blocked by an active `sent` (already
+    // attributed) or a recent concurrent `pending` (another tab in flight).
+    if (!tryBeginPurchase(orderNumber)) return;
 
+    // Resolve the canonical order payload. On failure, retract the pending claim
+    // so a subsequent reload/revisit can retry — never permanently suppressed
+    // just because the network failed.
     const payload = await fetchOrderPayload(orderNumber);
+    if (!payload) {
+        retractPurchasePending(orderNumber);
+        return;
+    }
 
-    const items = (payload?.items || []).map((item) => ({
+    const items = (payload.items || []).map((item) => ({
         id: item.id ?? item.product_id,
         name: item.name,
         quantity: Number(item.quantity ?? 1),
@@ -147,18 +179,30 @@ export async function trackPurchase(orderNumber: string, optimisticTotal?: numbe
     }));
 
     const value =
-        payload && payload.total !== undefined
+        payload.total !== undefined
             ? Number(payload.total)
             : typeof optimisticTotal === 'number' && Number.isFinite(optimisticTotal)
               ? optimisticTotal
               : 0;
 
+    // Dispatch to configured providers. For browser SDKs "sent" = the adapter
+    // event calls were invoked without a local exception after canonical order
+    // data was resolved; we do not wait for remote acknowledgement they provide.
     trackCommerceEvent('purchase', {
         purchase: {
-            transactionId: String(payload?.order_number || orderNumber),
+            transactionId: String(payload.order_number || orderNumber),
             value,
-            currency: String(payload?.currency_code || config.currencyCode || 'ILS'),
+            currency: String(payload.currency_code || config.currencyCode || 'ILS'),
             items,
         },
     });
+
+    // Only promote to `sent` when at least one provider is actually configured
+    // and the dispatch path completed without throwing. A store with no pixels
+    // is never permanently marked — nothing was actually sent.
+    if (hasConfiguredProvider()) {
+        recordPurchaseSent(orderNumber);
+    } else {
+        retractPurchasePending(orderNumber);
+    }
 }

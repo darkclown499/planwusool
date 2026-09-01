@@ -1,6 +1,6 @@
 /**
  * Unit tests for resources/js/tracking/dedup.ts — the pure (framework-free,
- * window-free) Social Commerce purchase-dedup algorithm.
+ * window-free) Social Commerce purchase-dedup state machine (pending/sent).
  *
  * The module is compiled from TypeScript with esbuild (already installed via
  * node_modules) and exercised with a tiny in-memory StorageLike backend, so the
@@ -11,10 +11,13 @@
  *   node tests/js/tracking/dedup.test.mjs
  *
  * Semantics under test (see dedup.ts):
- *   - one logical order fires at most once per browser/profile;
- *   - dedup is keyed by store + order (different stores with the same order
- *     number NEVER collide; different orders always fire independently);
- *   - entries are bounded (TTL expiry + max entry cap).
+ *   - successful purchase → SENT; later invocation blocked;
+ *   - second invocation (recent PENDING) blocked → concurrent tab protection;
+ *   - failed payload fetch → PENDING cleared → retry allowed;
+ *   - stale PENDING (TTL expired) → retry allowed;
+ *   - success modal → invoice = one send; invoice refresh = one send;
+ *   - store+order keyed → cross-store collision impossible; different orders fire;
+ *   - TTL / entry cap stay bounded (expiry + eviction).
  */
 
 import { execFileSync } from 'node:child_process';
@@ -27,7 +30,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const esbuild = require.resolve('esbuild/bin/esbuild');
 const src = join(__dirname, '..', '..', '..', 'resources', 'js', 'tracking', 'dedup.ts');
-// Build artifact goes to the OS temp dir so it is never committed to the repo.
 const out = join(os.tmpdir(), 'wusool-dedup-test.cjs');
 
 // Build the pure module to CommonJS for direct require().
@@ -42,13 +44,15 @@ execFileSync(process.execPath, [
 
 const {
   dedupKey,
-  hasPurchaseFired,
-  markPurchaseFired,
+  beginPurchase,
+  markPurchaseSent,
+  clearPurchasePending,
   PURCHASE_DEDUP_MAX_ENTRIES,
-  PURCHASE_DEDUP_TTL_MS,
+  PURCHASE_PENDING_TTL_MS,
+  PURCHASE_SENT_TTL_MS,
 } = require(out);
 
-const TTL_DAY_MS = 24 * 60 * 60 * 1000;
+const STORAGE_KEY = 'wusool_tracking_purchases';
 
 class MemoryStorage {
   constructor() {
@@ -74,86 +78,144 @@ function assert(condition, message) {
   }
 }
 
-console.log('Social Commerce — purchase dedup unit tests\n');
+console.log('Social Commerce — purchase dedup state machine tests\n');
 
-// 1. Fire -> refresh -> still one (same store same order, no duplicate).
-{
-  const storage = new MemoryStorage();
-  const key = dedupKey('store-a', 'ORDER-1');
-  assert(!hasPurchaseFired(storage, 'wusool_tracking_purchases', key), 'fresh order may fire');
-  markPurchaseFired(storage, 'wusool_tracking_purchases', key, Date.now());
-  assert(hasPurchaseFired(storage, 'wusool_tracking_purchases', key), 'same order after fire is blocked');
-  assert(hasPurchaseFired(storage, 'wusool_tracking_purchases', key), 'second check stays blocked (idempotent)');
-}
-
-// 2. Two different orders fire independently (same store).
-{
-  const storage = new MemoryStorage();
-  const a = dedupKey('store-a', 'ORDER-1');
-  const b = dedupKey('store-a', 'ORDER-2');
-  markPurchaseFired(storage, 'wusool_tracking_purchases', a, Date.now());
-  assert(!hasPurchaseFired(storage, 'wusool_tracking_purchases', b), 'different order (same store) still fires');
-}
-
-// 3. Two stores sharing the same order number never collide.
-{
-  const storage = new MemoryStorage();
-  const a = dedupKey('store-a', 'ORDER-1');
-  const b = dedupKey('store-b', 'ORDER-1');
-  assert(a !== b, 'store+order keys differ for equal order numbers');
-  markPurchaseFired(storage, 'wusool_tracking_purchases', a, Date.now());
-  assert(!hasPurchaseFired(storage, 'wusool_tracking_purchases', b), 'store A fire does not block store B');
-  markPurchaseFired(storage, 'wusool_tracking_purchases', b, Date.now());
-  assert(hasPurchaseFired(storage, 'wusool_tracking_purchases', b), 'store B now blocked too');
-}
-
-// 4. TTL: after the retention window an order may fire again (fresh window).
+// 1. Successful purchase => SENT; second invocation blocked.
 {
   const storage = new MemoryStorage();
   const key = dedupKey('store-a', 'ORDER-1');
   const t0 = Date.now();
-  markPurchaseFired(storage, 'wusool_tracking_purchases', key, t0);
-  assert(hasPurchaseFired(storage, 'wusool_tracking_purchases', key, t0 + TTL_DAY_MS), 'in-window is blocked');
-  // Just after TTL expires the order becomes eligible again.
-  assert(!hasPurchaseFired(storage, 'wusool_tracking_purchases', key, t0 + PURCHASE_DEDUP_TTL_MS + 1), 'post-TTL eligible again');
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0) === true, 'first begin claims the slot');
+  markPurchaseSent(storage, STORAGE_KEY, key, t0 + 100);
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + 200) === false, 'sent order is blocked on retry');
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + 3000) === false, 'sent stays blocked');
 }
 
-// 5. Bounded storage: expired entries are pruned on read.
+// 2. Recent PENDING blocks concurrent invocation (second tab).
+{
+  const storage = new MemoryStorage();
+  const key = dedupKey('store-a', 'ORDER-2');
+  const t0 = Date.now();
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0) === true, 'first tab claims pending');
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + 50) === false, 'concurrent tab blocked by pending');
+}
+
+// 3. Failed payload fetch => PENDING cleared => retry allowed.
+{
+  const storage = new MemoryStorage();
+  const key = dedupKey('store-a', 'ORDER-3');
+  const t0 = Date.now();
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0) === true, 'claim pending');
+  clearPurchasePending(storage, STORAGE_KEY, key, t0 + 50);
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + 60) === true, 'retry allowed after pending cleared');
+}
+
+// 4. Stale PENDING (TTL expired) allows retry.
+{
+  const storage = new MemoryStorage();
+  const key = dedupKey('store-a', 'ORDER-4');
+  const t0 = Date.now();
+  beginPurchase(storage, STORAGE_KEY, key, t0);
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + PURCHASE_PENDING_TTL_MS + 1) === true, 'expired pending allows retry');
+}
+
+// 5. Success modal -> invoice => one send.
+{
+  const storage = new MemoryStorage();
+  const key = dedupKey('store-a', 'ORDER-5');
+  const t0 = Date.now();
+  // Success modal begins+publishes.
+  beginPurchase(storage, STORAGE_KEY, key, t0);
+  markPurchaseSent(storage, STORAGE_KEY, key, t0 + 10);
+  // Invoice (same session, maybe new tab shortly after) must be blocked.
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + 500) === false, 'invoice after success modal is blocked');
+}
+
+// 6. Invoice refresh => one send.
+{
+  const storage = new MemoryStorage();
+  const key = dedupKey('store-a', 'ORDER-6');
+  const t0 = Date.now();
+  beginPurchase(storage, STORAGE_KEY, key, t0);
+  markPurchaseSent(storage, STORAGE_KEY, key, t0 + 10);
+  // Refresh much later (still within 30-day sent TTL).
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + PURCHASE_PENDING_TTL_MS + 5000) === false, 'invoice refresh blocked (sent)');
+}
+
+// 7. Same order number across different stores => independent.
+{
+  const storage = new MemoryStorage();
+  const a = dedupKey('store-a', 'ORDER-7');
+  const b = dedupKey('store-b', 'ORDER-7');
+  const t0 = Date.now();
+  assert(a !== b, 'store+order keys differ for equal order numbers');
+  beginPurchase(storage, STORAGE_KEY, a, t0);
+  markPurchaseSent(storage, STORAGE_KEY, a, t0 + 10);
+  assert(beginPurchase(storage, STORAGE_KEY, b, t0 + 20) === true, 'store A sent does not block store B');
+  markPurchaseSent(storage, STORAGE_KEY, b, t0 + 30);
+  assert(beginPurchase(storage, STORAGE_KEY, b, t0 + 40) === false, 'store B now sent too');
+}
+
+// 8. Different orders => independent.
+{
+  const storage = new MemoryStorage();
+  const a = dedupKey('store-a', 'ORDER-A1');
+  const b = dedupKey('store-a', 'ORDER-B1');
+  const t0 = Date.now();
+  beginPurchase(storage, STORAGE_KEY, a, t0);
+  markPurchaseSent(storage, STORAGE_KEY, a, t0 + 10);
+  assert(beginPurchase(storage, STORAGE_KEY, b, t0 + 20) === true, 'different order (same store) fires independently');
+}
+
+// 9. Expired SENT (30-day TTL) allows a fresh attribution window.
+{
+  const storage = new MemoryStorage();
+  const key = dedupKey('store-a', 'ORDER-9');
+  const t0 = Date.now();
+  beginPurchase(storage, STORAGE_KEY, key, t0);
+  markPurchaseSent(storage, STORAGE_KEY, key, t0 + 10);
+  assert(beginPurchase(storage, STORAGE_KEY, key, t0 + 10 + PURCHASE_SENT_TTL_MS + 1) === true, 'expired sent allows fresh window');
+}
+
+// 10. TTL pruning: expired SENT entries are removed on read.
 {
   const storage = new MemoryStorage();
   const oldKey = dedupKey('store-a', 'OLD-ORDER');
   const newKey = dedupKey('store-b', 'NEW-ORDER');
   const t0 = Date.now();
-  markPurchaseFired(storage, 'wusool_tracking_purchases', oldKey, t0);
-  // Fresh order marked "now" so it is within the retention window at read time.
-  markPurchaseFired(storage, 'wusool_tracking_purchases', newKey, t0 + PURCHASE_DEDUP_TTL_MS + 1);
-  // Reading with a time well past TTL for the old order must prune it.
-  hasPurchaseFired(storage, 'wusool_tracking_purchases', oldKey, t0 + PURCHASE_DEDUP_TTL_MS + 5);
-  const raw = JSON.parse(storage.getItem('wusool_tracking_purchases'));
-  assert(!(oldKey in raw), 'expired entry removed from stored map');
-  assert(newKey in raw, 'fresh entry retained after prune');
+  beginPurchase(storage, STORAGE_KEY, oldKey, t0);
+  markPurchaseSent(storage, STORAGE_KEY, oldKey, t0 + 10);
+  // New order marked far in the future (fresh sent within its window at read time).
+  beginPurchase(storage, STORAGE_KEY, newKey, t0 + PURCHASE_SENT_TTL_MS + 1);
+  markPurchaseSent(storage, STORAGE_KEY, newKey, t0 + PURCHASE_SENT_TTL_MS + 1);
+  // A read well past the OLD order's sent TTL prunes it (beginPurchase prunes on read).
+  beginPurchase(storage, STORAGE_KEY, newKey, t0 + 10 + PURCHASE_SENT_TTL_MS + 20);
+  const raw = JSON.parse(storage.getItem(STORAGE_KEY));
+  const liveKeys = Object.keys(raw);
+  assert(!liveKeys.includes(oldKey), 'expired sent pruned from stored map');
+  assert(liveKeys.includes(newKey), 'fresh sent retained after prune');
 }
 
-// 6. Bounded storage: entry cap evicts oldest first.
+// 11. Entry cap evicts oldest first (bounded growth).
 {
   const storage = new MemoryStorage();
   const t0 = Date.now();
   for (let i = 0; i < PURCHASE_DEDUP_MAX_ENTRIES + 50; i++) {
-    markPurchaseFired(storage, 'wusool_tracking_purchases', dedupKey('store-cap', `ORDER-${i}`), t0 + i);
+    beginPurchase(storage, STORAGE_KEY, dedupKey('store-cap', `ORDER-${i}`), t0 + i);
+    markPurchaseSent(storage, STORAGE_KEY, dedupKey('store-cap', `ORDER-${i}`), t0 + i);
   }
-  const map = JSON.parse(storage.getItem('wusool_tracking_purchases'));
+  const map = JSON.parse(storage.getItem(STORAGE_KEY));
   const size = Object.keys(map).length;
   assert(size <= PURCHASE_DEDUP_MAX_ENTRIES, `capped at ${PURCHASE_DEDUP_MAX_ENTRIES} (was ${size})`);
-  // The 50 oldest were dropped (they were inserted first with earliest t).
   assert(!('store-cap:ORDER-0' in map), 'oldest entry evicted first');
-  assert('store-cap:ORDER-0' in map === false, 'oldest entry not retained');
 }
 
-// 7. Null storage (localStorage blocked) — best effort, never throws.
+// 12. Null storage (blocked localStorage) — best effort, never throws.
 {
-  assert(!hasPurchaseFired(null, 'wusool_tracking_purchases', dedupKey('store-a', 'ORDER-1')), 'null storage reports not-fired without throwing');
-  markPurchaseFired(null, 'wusool_tracking_purchases', dedupKey('store-a', 'ORDER-1'));
-  assert(true, 'marking on null storage does not throw');
+  assert(beginPurchase(null, STORAGE_KEY, dedupKey('store-a', 'ORDER-12')) === true, 'null storage allows proceed without throwing');
+  markPurchaseSent(null, STORAGE_KEY, dedupKey('store-a', 'ORDER-12'));
+  clearPurchasePending(null, STORAGE_KEY, dedupKey('store-a', 'ORDER-12'));
+  assert(true, 'mark/clear on null storage do not throw');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
