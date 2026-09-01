@@ -131,13 +131,13 @@ export function ensureBazaarInteractionsStyle(): void {
       .bazaar-card:hover {
         transform: translateY(-2px);
         box-shadow: var(--bazaar-shadow-md) !important;
-        border-color: rgba(20, 184, 166, 0.14) !important;
+        border-color: color-mix(in srgb, var(--store-primary, #0d9488) 14%, transparent) !important;
       }
       .bazaar-card:hover .bazaar-card-img {
         transform: scale(1.03);
       }
       .bazaar-card:hover .bazaar-card-title {
-        color: rgb(15 118 110) !important;
+        color: var(--store-primary, #0d9488) !important;
       }
     }
     .bazaar-card-img {
@@ -165,7 +165,7 @@ export function ensureBazaarInteractionsStyle(): void {
       }
       .bazaar-cat:hover .bazaar-cat-ring {
         box-shadow: var(--bazaar-shadow-md);
-        border-color: rgba(20, 184, 166, 0.18) !important;
+        border-color: color-mix(in srgb, var(--store-primary, #0d9488) 18%, transparent) !important;
       }
       .bazaar-cat:hover img { transform: scale(1.04); }
     }
@@ -185,9 +185,9 @@ export function ensureBazaarInteractionsStyle(): void {
     }
     .bazaar-btn.bazaar-btn--no-shadow { box-shadow: none !important; }
     @media (hover: hover) and (pointer: fine) {
-      .bazaar-btn:hover { filter: brightness(1.05); box-shadow: 0 6px 16px rgba(13,148,136,0.18); }
+      .bazaar-btn:hover { filter: brightness(1.05); box-shadow: 0 6px 16px color-mix(in srgb, var(--store-primary, #0d9488) 18%, transparent); }
     }
-    .bazaar-btn:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(13,148,136,0.12) !important; }
+    .bazaar-btn:active { transform: scale(0.98); box-shadow: 0 2px 8px color-mix(in srgb, var(--store-primary, #0d9488) 12%, transparent) !important; }
     .bazaar-btn:disabled { transform: none !important; filter: none !important; box-shadow: none !important; }
 
     /* ── Add-to-cart success ── */
@@ -478,7 +478,8 @@ export function flyToCartBazaar(
   } else {
     node = document.createElement('div');
     node.setAttribute('aria-hidden', 'true');
-    node.style.background = '#0d9488';
+    node.style.background = 'var(--store-primary, #0d9488)';
+    try { node.style.background = getComputedStyle(document.documentElement).getPropertyValue('--store-primary').trim() || '#0d9488'; } catch {}
     node.style.borderRadius = '9999px';
     node.style.display = 'flex';
     node.style.alignItems = 'center';
@@ -486,7 +487,7 @@ export function flyToCartBazaar(
     node.style.color = '#ffffff';
     node.style.fontSize = '16px';
     node.textContent = '🛒';
-    node.style.boxShadow = '0 8px 18px rgba(13,148,136,0.28)';
+    node.style.boxShadow = '0 8px 18px color-mix(in srgb, var(--store-primary, #0d9488) 28%, transparent)';
   }
 
   node.setAttribute('aria-hidden', 'true');

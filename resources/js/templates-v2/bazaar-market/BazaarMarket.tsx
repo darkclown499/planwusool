@@ -189,7 +189,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-9 w-auto max-w-[42vw] object-contain" />
           ) : (
             <>
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-sm font-black text-white bazaar-shadow-sm">س</span>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-sm font-black text-white bazaar-shadow-sm" style={{ background: 'var(--store-primary, #0d9488)' } as any}>س</span>
               <span className="max-w-[36vw] truncate text-[15px] font-black text-slate-900">{config?.storeName || store?.name}</span>
             </>
           )}
@@ -207,7 +207,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           <button type="button" onClick={() => ui.setShowCart(true)} aria-label="السلة" data-bazaar-cart className="bazaar-header-action relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-700" style={{ minWidth: 44, minHeight: 44 } as any}>
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
-              <span data-bazaar-cart-badge className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-black text-white">{count > 99 ? '99+' : count}</span>
+              <span data-bazaar-cart-badge className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-black text-white" style={{ background: 'var(--store-primary, #0d9488)' } as any}>{count > 99 ? '99+' : count}</span>
             )}
           </button>
         </div>
@@ -218,7 +218,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
             <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-11 w-auto object-contain" />
           ) : (
             <>
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-lg font-black text-white bazaar-shadow-sm">س</span>
+              <span className="grid h-11 w-11 place-items-center rounded-xl text-lg font-black text-white bazaar-shadow-sm" style={{ background: 'var(--store-primary, #0d9488)' } as any}>س</span>
               <span className="min-w-0 max-w-[45vw] truncate text-xl font-black text-slate-900 sm:max-w-none">{config?.storeName || store?.name}</span>
             </>
           )}
@@ -252,11 +252,11 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           </button>
           )}
           <button type="button" onClick={() => ui.setShowCart(true)} data-bazaar-cart
-            className="bazaar-btn relative mr-1 flex items-center gap-2 rounded-full bg-gradient-to-l from-teal-600 to-emerald-600 py-2 pl-4 pr-3 text-sm font-black text-white">
+            className="bazaar-btn relative mr-1 flex items-center gap-2 rounded-full py-2 pl-4 pr-3 text-sm font-black text-white" style={{ background: 'var(--store-primary, #0d9488)' } as any}>
             <ShoppingBag className="h-4 w-4" />
             السلة
             {count > 0 && (
-              <span data-bazaar-cart-badge className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-black text-teal-700">{count}</span>
+              <span data-bazaar-cart-badge className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-black" style={{ color: 'var(--store-primary, #0d9488)' } as any}>{count}</span>
             )}
           </button>
         </div>
@@ -266,7 +266,7 @@ export function BazaarHeader({ homeHref = '/' }: { homeHref?: string }) {
           <div className="scrollbar-none mx-auto flex max-w-7xl items-center justify-start gap-0.5 overflow-x-auto px-4 sm:px-6 lg:justify-center lg:px-8">
             {categories.map((c: any) => (
               <a key={c.id} href={`/category/${c.slug || c.id}`}
-                className="whitespace-nowrap border-b-2 border-transparent px-3.5 py-2.5 text-sm font-bold text-slate-600 transition hover:border-teal-600 hover:text-teal-700">
+                className="whitespace-nowrap border-b-2 border-transparent px-3.5 py-2.5 text-sm font-bold text-slate-600 transition hover:border-[var(--store-primary)] hover:text-[var(--store-primary)]" style={{ borderColor: 'transparent' } as any}>
                 {c.name}
               </a>
             ))}
@@ -342,7 +342,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
               <img src={getImageUrl(config.logo || store.logo)} alt="" className="h-7 w-auto max-w-[90px] object-contain" />
             ) : (
               <span className="flex items-center gap-1.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600 text-white text-xs font-black">س</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg text-white text-xs font-black" style={{ background: 'var(--store-primary, #0d9488)' } as any}>س</span>
                 <span className="text-sm font-extrabold text-slate-900">{config?.storeName || store?.name}</span>
               </span>
             )}
@@ -354,22 +354,22 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
         </div>
         <div className="flex-1 overflow-y-auto overscroll-contain p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3">
           <button type="button" onClick={handleHome} data-testid="bazaar-drawer-home"
-            className="flex w-full items-center gap-3 rounded-xl bg-teal-600 px-3 py-3 text-sm font-extrabold text-white bazaar-shadow-sm transition hover:bg-teal-700 active:scale-[0.98]">
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-extrabold text-white bazaar-shadow-sm transition active:scale-[0.98]" style={{ background: 'var(--store-primary, #0d9488)' } as any}>
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white"><Home className="h-5 w-5" /></span>
             الرئيسية
             <ChevronLeft className="ms-auto h-4 w-4 text-white/60" />
           </button>
           <button type="button" onClick={handleCart} data-testid="bazaar-drawer-cart"
             className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-800 bazaar-shadow-sm transition hover:bg-slate-50 active:scale-[0.98]">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700"><ShoppingCart className="h-5 w-5" /></span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: 'color-mix(in srgb, var(--store-primary, #0d9488) 10%, white)', color: 'var(--store-primary, #0d9488)' } as any}><ShoppingCart className="h-5 w-5" /></span>
             <span className="flex-1 text-start">السلة</span>
-            {cartCount > 0 && <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-teal-600 px-1.5 text-xs font-black text-white">{cartCount}</span>}
+            {cartCount > 0 && <span className="flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-black text-white" style={{ background: 'var(--store-primary, #0d9488)' } as any}>{cartCount}</span>}
             <ChevronLeft className="h-4 w-4 text-slate-300" />
           </button>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
             <button type="button" onClick={() => setCategoriesOpen((v) => !v)} aria-expanded={categoriesOpen} aria-controls="bazaar-cats" data-testid="bazaar-drawer-categories-toggle"
               className="flex h-[56px] w-full items-center gap-3 px-3 text-start transition">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-teal-600 ring-1 ring-slate-200"><LayoutGrid className="h-5 w-5" /></span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white ring-1 ring-slate-200" style={{ color: 'var(--store-primary, #0d9488)' } as any}><LayoutGrid className="h-5 w-5" /></span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[13px] font-extrabold leading-none text-slate-900">الأقسام</span>
                 <span className="mt-1 block text-[11px] font-medium leading-none text-slate-400">{categories.length ? `${categories.length} أقسام` : 'استكشف الأقسام'}</span>
@@ -394,7 +394,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                               {img ? (
                                 <img src={img} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" loading="lazy" />
                               ) : (
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-600 ring-1 ring-slate-200"><LayoutGrid className="h-4 w-4" /></span>
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-slate-200" style={{ background: 'color-mix(in srgb, var(--store-primary, #0d9488) 10%, white)', color: 'var(--store-primary, #0d9488)' } as any}><LayoutGrid className="h-4 w-4" /></span>
                               )}
                               <span className="flex-1 truncate text-[13px] font-bold text-slate-900">{cat.name}</span>
                             </button>
@@ -424,7 +424,7 @@ function BazaarMobileDrawer({ drawerRef, config, store, content, categories, aut
                       );
                     })}
                     {categories.length > 30 && (
-                      <button type="button" onClick={() => setShowAllCats((v) => !v)} data-testid="bazaar-drawer-categories-more" className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg bg-slate-50 py-2 text-[12px] font-bold text-teal-700 hover:bg-slate-100">
+                      <button type="button" onClick={() => setShowAllCats((v) => !v)} data-testid="bazaar-drawer-categories-more" className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg bg-slate-50 py-2 text-[12px] font-bold hover:bg-slate-100" style={{ color: 'var(--store-primary, #0d9488)' } as any}>
                         {showAllCats ? 'عرض أقل' : `عرض المزيد (${categories.length - 30})`}
                         <ChevronDown className={`h-3.5 w-3.5 ${showAllCats ? 'rotate-180' : ''}`} />
                       </button>
@@ -629,7 +629,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                     <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
                       {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
                       {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{c.heading}</h1>}
-                      {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{c.ctaLabel} ←</a>}
+                      {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black bazaar-shadow-sm transition" style={{ color: 'var(--store-primary, #0d9488)' } as any}>{c.ctaLabel} ←</a>}
                     </div>
                   )}
                 </div>
@@ -661,7 +661,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                     <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-2 p-7 sm:p-12">
                       {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
                       {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{c.heading}</h1>}
-                      {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{c.ctaLabel} ←</a>}
+                      {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black bazaar-shadow-sm transition" style={{ color: 'var(--store-primary, #0d9488)' } as any}>{c.ctaLabel} ←</a>}
                     </div>
                   )}
                 </div>
@@ -683,7 +683,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                   <div className="absolute inset-y-0 right-0 flex flex-col items-start justify-center gap-3 p-7 sm:p-12">
                     {!!c.subtitle && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{c.subtitle}</p>}
                     {!!c.heading && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{c.heading}</h1>}
-                    {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">{c.ctaLabel} ←</a>}
+                    {!!c.ctaLabel && <a href={c.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black bazaar-shadow-sm transition" style={{ color: 'var(--store-primary, #0d9488)' } as any}>{c.ctaLabel} ←</a>}
                   </div>
                 )}
               </div>
@@ -707,7 +707,7 @@ export function BazaarHero({ banners }: { banners: any[] }) {
                 {(b.subtitle || hero.subtitle) && <p className="rounded-full bg-white/15 px-3 py-1 text-xs font-black text-white backdrop-blur" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.45)' } as any}>{b.subtitle || hero.subtitle}</p>}
                 {(b.title || hero.heading) && <h1 className="max-w-lg text-2xl font-black leading-snug text-white sm:text-4xl" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.35)' } as any}>{b.title || hero.heading}</h1>}
                 {(b.button_text || hero.ctaLabel) && (
-                  <a href={b.button_link || hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 bazaar-shadow-sm transition hover:bg-emerald-50">
+                  <a href={b.button_link || hero.ctaLink || '#'} className="mt-1 rounded-full bg-white px-6 py-2.5 text-sm font-black bazaar-shadow-sm transition" style={{ color: 'var(--store-primary, #0d9488)' } as any}>
                     {b.button_text || hero.ctaLabel} ←
                   </a>
                 )}
@@ -824,7 +824,7 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
         })()}
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <div className="leading-tight">
-            <p className="text-lg font-black text-teal-700">{formatPrice(product.price)}</p>
+            <p className="text-lg font-black" style={{ color: 'var(--store-primary, #0d9488)' } as any}>{formatPrice(product.price)}</p>
             {discount > 0 && !!product.originalPrice && (
               <p className="text-xs text-slate-400 line-through">{formatPrice(product.originalPrice)}</p>
             )}
@@ -835,7 +835,8 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
               type="button"
               onClick={add}
               aria-label={added ? 'تمت الإضافة' : 'أضف للسلة'}
-              className={`bazaar-btn flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-xs font-black text-white ${added ? 'bazaar-add-success' : 'bg-teal-600'}`}
+              className={`bazaar-btn flex h-9 items-center gap-1.5 rounded-xl px-3.5 text-xs font-black text-white ${added ? 'bazaar-add-success' : ''}`}
+              style={added ? undefined : ({ background: 'var(--store-primary, #0d9488)' } as any)}
             >
               {added ? (
                 <span className="bazaar-check-pop inline-flex items-center gap-1"><span>✓</span> تمت الإضافة</span>
@@ -892,11 +893,11 @@ const sortList = (list: any[], sort?: string) => {
 const SectionTitle: React.FC<{ children: React.ReactNode; moreHref?: string }> = ({ children, moreHref }) => (
   <div className="mb-4 flex items-center justify-between" data-bazaar-reveal>
     <h2 className="bazaar-section-title flex items-center gap-2.5 text-xl font-black text-slate-900">
-      <span className="bazaar-section-accent h-6 w-1.5 rounded-full bg-gradient-to-b from-teal-500 to-emerald-600" style={{ background: 'var(--store-primary, #0d9488)' } as any} />
+      <span className="bazaar-section-accent h-6 w-1.5 rounded-full" style={{ background: 'var(--store-primary, #0d9488)' } as any} />
       <span className="bazaar-section-title">{children}</span>
     </h2>
     {moreHref && (
-      <a href={moreHref} className="bazaar-btn bazaar-btn--no-shadow text-sm font-bold text-teal-700 hover:text-teal-600">عرض الكل ←</a>
+      <a href={moreHref} className="bazaar-btn bazaar-btn--no-shadow text-sm font-bold" style={{ color: 'var(--store-primary, #0d9488)' } as any}>عرض الكل ←</a>
     )}
   </div>
 );
@@ -934,10 +935,10 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                     {c.image ? (
                       <img src={getOptimizedImageUrl(c.image||'', 'thumb')} alt="" loading="lazy" decoding="async" sizes="80px" onError={(e)=>{(e.currentTarget.src=getImageUrl(c.image||''))}} className="h-full w-full rounded-xl object-cover" width={80} height={80} />
                     ) : (
-                      <span className="flex h-full w-full items-center justify-center bg-teal-50 text-xl sm:text-2xl">🛍️</span>
+                      <span className="flex h-full w-full items-center justify-center text-xl sm:text-2xl" style={{ background: 'color-mix(in srgb, var(--store-primary, #0d9488) 10%, white)', color: 'var(--store-primary, #0d9488)' } as any}>🛍️</span>
                     )}
                   </span>
-                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-slate-600 group-hover:text-teal-700 line-clamp-2">{c.name}</span>
+                  <span className="max-w-[80px] break-words text-center text-xs font-bold leading-tight text-slate-600 group-hover:text-[var(--store-primary)] line-clamp-2">{c.name}</span>
                 </a>
               ))}
             </div>
@@ -959,11 +960,11 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
         {/* Promo band — truthful: only shown when real discounted products exist, no fake 40% claim */}
         {(() => { const dealsCount = products.filter((p:any)=> p.originalPrice && Number(p.originalPrice) > Number(p.price)).length; if (dealsCount===0) return null; return (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" data-bazaar-reveal>
-          <div className="bazaar-promo relative overflow-hidden rounded-3xl bg-gradient-to-l from-emerald-600 to-teal-700 p-7 text-white sm:p-10">
+          <div className="bazaar-promo relative overflow-hidden rounded-3xl p-7 text-white sm:p-10" style={{ background: 'var(--store-primary, #0d9488)' } as any}>
             <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-            <p className="text-sm font-black tracking-wide text-emerald-100">عروض الأسبوع</p>
+            <p className="text-sm font-black tracking-wide text-white/80">عروض الأسبوع</p>
             <h2 className="mt-1.5 max-w-md text-2xl font-black leading-snug sm:text-3xl">عروض مميزة على منتجات مختارة</h2>
-            <a href="#popular" className="bazaar-btn bazaar-btn--no-shadow mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black text-emerald-800 hover:bg-emerald-50">
+            <a href="#popular" className="bazaar-btn bazaar-btn--no-shadow mt-4 inline-block rounded-full bg-white px-6 py-2.5 text-sm font-black" style={{ color: 'var(--store-primary, #0d9488)' } as any}>
               اكتشف العروض
             </a>
           </div>
@@ -998,7 +999,7 @@ const BazaarHome: React.FC<{ storeData: any }> = ({ storeData }) => {
                     ))}
                   </div>
                   <div className="mt-4 text-center">
-                    <a href={`/category/${cat.slug || cat.id}`} className="bazaar-btn inline-flex items-center gap-1 rounded-full border border-teal-200 bg-white px-5 py-2 text-sm font-bold text-teal-700 hover:bg-teal-50">
+                    <a href={`/category/${cat.slug || cat.id}`} className="bazaar-btn inline-flex items-center gap-1 rounded-full border bg-white px-5 py-2 text-sm font-bold hover:bg-slate-50" style={{ borderColor: 'var(--store-primary, #0d9488)', color: 'var(--store-primary, #0d9488)' } as any}>
                       عرض الكل ←
                     </a>
                   </div>
@@ -1029,7 +1030,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
       <BazaarWhatsAppFloating />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-4 flex items-center gap-1.5 text-sm text-slate-500" aria-label="مسار التنقل">
-          <a href="/" className="bazaar-btn font-bold hover:text-teal-700">الرئيسية</a>
+          <a href="/" className="bazaar-btn font-bold hover:text-[var(--store-primary)]">الرئيسية</a>
           <ChevronLeft className="h-4 w-4" />
           <span className="font-black text-slate-900">{cat?.name}</span>
         </nav>
@@ -1042,7 +1043,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
           <select
             value={categoryData?.sort}
             onChange={(e) => navigate({ sort: e.target.value })}
-            className="bazaar-search-ring rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 focus:border-teal-600 focus:outline-none"
+            className="bazaar-search-ring rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 focus:border-[var(--store-primary)] focus:outline-none"
           >
             {SORTS.map((s) => (
               <option key={s} value={s}>{SORT_LABELS[s]}</option>
@@ -1054,7 +1055,7 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
           <div className="flex flex-col items-center gap-4 py-24 text-center">
             <PackageSearch className="h-12 w-12 text-slate-300" />
             <p className="text-lg font-bold text-slate-600">لا توجد منتجات بهذا القسم بعد</p>
-            <a href="/" className="rounded-full bg-teal-600 px-6 py-2.5 text-sm font-black text-white hover:bg-teal-500">تصفح باقي المتجر</a>
+            <a href="/" className="rounded-full px-6 py-2.5 text-sm font-black text-white" style={{ background: 'var(--store-primary, #0d9488)' } as any}>تصفح باقي المتجر</a>
           </div>
         ) : (
           <>
@@ -1071,8 +1072,9 @@ const BazaarCategoryMode: React.FC<{ categoryData?: any | null }> = ({ categoryD
                     type="button"
                     onClick={() => navigate({ page: n })}
                     className={`h-9 min-w-9 rounded-xl px-2 text-sm font-black ${
-                      n === categoryData.currentPage ? 'bazaar-shadow-sm bg-teal-600 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-teal-700'
+                      n === categoryData.currentPage ? 'bazaar-shadow-sm text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:text-[var(--store-primary)]'
                     }`}
+                    style={n === categoryData.currentPage ? ({ background: 'var(--store-primary, #0d9488)' } as any) : undefined}
                   >
                     {n}
                   </button>

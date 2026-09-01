@@ -333,7 +333,7 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
                       type="button"
                       disabled={isUnavailable}
                       onClick={() => { if (!isUnavailable) setSelection((s) => ({ ...s, [group.name]: val })); }}
-                      className={`bazaar-variant rounded-full border px-3 py-1.5 text-[13px] font-bold transition ${activeVal ? 'text-white' : isUnavailable ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 line-through opacity-60' : 'border-slate-200 text-slate-700 hover:border-teal-300'}`}
+                      className={`bazaar-variant rounded-full border px-3 py-1.5 text-[13px] font-bold transition ${activeVal ? 'text-white' : isUnavailable ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 line-through opacity-60' : 'border-slate-200 text-slate-700 hover:border-[var(--store-primary)]'}`}
                       style={activeVal ? ({ background: 'var(--store-primary, #0d9488)', borderColor: 'var(--store-primary, #0d9488)' } as any) : undefined}
                     >
                       {val}

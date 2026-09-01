@@ -94,11 +94,16 @@ export default function DesignTokensInjector({ tokens }: Props) {
         const parts: string[] = [];
         if (primary) {
             parts.push(`
-                .bg-teal-600, .bg-emerald-600, .bg-teal-500, .from-teal-600, .from-teal-500, .from-emerald-600 { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
-                .to-emerald-600, .to-emerald-700, .to-teal-700 { --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
-                .bg-gradient-to-l.from-teal-600, .bg-gradient-to-l.from-emerald-600, .bg-gradient-to-br.from-teal-500 { --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-secondary, var(--store-primary)) var(--tw-gradient-to-position) !important; }
-                .text-teal-700, .text-teal-600, .hover\\:text-teal-700:hover { color: var(--store-primary) !important; }
-                .border-teal-600, .border-teal-500, .ring-teal-200 { border-color: var(--store-primary) !important; --tw-ring-color: var(--store-primary) !important; }
+                .bg-teal-600, .bg-emerald-600, .bg-teal-500, .from-teal-600, .from-teal-500, .from-emerald-600, .bg-teal-700, .from-teal-700, .to-teal-600 { background-color: var(--store-primary) !important; --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; }
+                .to-emerald-600, .to-emerald-700, .to-teal-700, .from-emerald-700 { --tw-gradient-to: var(--store-primary) var(--tw-gradient-to-position) !important; }
+                .bg-gradient-to-l.from-teal-600, .bg-gradient-to-l.from-emerald-600, .bg-gradient-to-br.from-teal-500, .bg-gradient-to-l.from-teal-700 { --tw-gradient-from: var(--store-primary) var(--tw-gradient-from-position) !important; --tw-gradient-to: var(--store-secondary, var(--store-primary)) var(--tw-gradient-to-position) !important; }
+                .bg-teal-50, .bg-emerald-50, .hover\\:bg-teal-50:hover, .hover\\:bg-emerald-50:hover { background-color: color-mix(in srgb, var(--store-primary) 10%, white) !important; }
+                .bg-teal-100, .bg-emerald-100 { background-color: color-mix(in srgb, var(--store-primary) 14%, white) !important; }
+                .text-teal-700, .text-teal-600, .text-emerald-800, .text-emerald-700, .text-teal-500, .hover\\:text-teal-700:hover, .hover\\:text-teal-600:hover, .group-hover\\:text-teal-700:hover, .hover\\:text-emerald-800:hover { color: var(--store-primary) !important; }
+                .border-teal-600, .border-teal-500, .border-teal-300, .border-teal-200, .border-emerald-600, .hover\\:border-teal-600:hover, .hover\\:border-teal-300:hover, .focus\\:border-teal-600:focus, .ring-teal-200, .ring-teal-300 { border-color: var(--store-primary) !important; --tw-ring-color: var(--store-primary) !important; }
+                .border-teal-200 { border-color: color-mix(in srgb, var(--store-primary) 25%, transparent) !important; }
+                .border-teal-300 { border-color: color-mix(in srgb, var(--store-primary) 35%, transparent) !important; }
+                .hover\\:bg-teal-700:hover, .hover\\:bg-teal-600:hover, .hover\\:bg-emerald-600:hover { background-color: color-mix(in srgb, var(--store-primary) 88%, black) !important; }
                 .shadow-teal-600\\/25, .shadow-teal-600\\/20 { --tw-shadow-color: var(--store-primary) !important; }
                 /* Hardcoded template primaries — map to --store-primary (covers all 6 templates).
                    Rules are split per-property so each tailwind utility keeps its own behavior:
