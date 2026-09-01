@@ -523,6 +523,9 @@ export function heroPositionForMedia(m: HeroMediaItem, hero: ResolvedHero, isMob
   return heroPositionFor(hero, isMobile);
 }
 export function heroZoomForMedia(m: HeroMediaItem, hero: ResolvedHero, isMobile: boolean): number {
+  // Contain must remain fully visible — lock zoom to 1
+  const effectiveFit = heroFitForMedia(m, hero, isMobile);
+  if (effectiveFit === 'contain') return 1;
   const raw = isMobile ? (m.zoomMobile ?? m.zoom) : m.zoom;
   if (raw !== null && raw !== undefined && Number.isFinite(Number(raw))) {
     const n = Number(raw);

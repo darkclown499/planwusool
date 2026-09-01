@@ -184,18 +184,25 @@ class DesignerController extends Controller
                         $fitMobNorm = strtolower(trim((string)$fitMobRaw));
                         $fitMob = $fitMobNorm === 'contain' ? 'contain' : 'cover';
                     }
-                    // Per-media zoom: 1.0 – 2.0, defaults to 1 when absent
+                    // Per-media zoom: 1.0 – 2.0, defaults to 1 when absent — contain locks to 1 (no crop promise)
                     $zoomRaw = $item['zoom'] ?? $item['scale'] ?? null;
                     $zoom = null;
                     if ($zoomRaw !== null && $zoomRaw !== '' && is_numeric($zoomRaw)) {
                         $z = (float)$zoomRaw;
                         if (is_finite($z)) $zoom = max(1.0, min(2.0, round($z, 2)));
                     }
+                    if ($fit === 'contain') $zoom = 1.0;
                     $zoomMobRaw = $item['zoomMobile'] ?? $item['zoom_mobile'] ?? $item['mobile_zoom'] ?? null;
                     $zoomMob = null;
                     if ($zoomMobRaw !== null && $zoomMobRaw !== '' && is_numeric($zoomMobRaw)) {
                         $zm = (float)$zoomMobRaw;
                         if (is_finite($zm)) $zoomMob = max(1.0, min(2.0, round($zm, 2)));
+                    }
+                    if ($fitMob === 'contain') $zoomMob = 1.0;
+                    // Also handle fallback where mobile fit falls back to desktop fit containing
+                    if ($fitMob === null && $fit === 'contain' && $zoomMob === null) {
+                        // keep null so runtime fallback resolves to desktop contain -> 1, but enforce if zoomMob derived from desktop zoom
+                        if ($zoom !== null && $zoom === 1.0) $zoomMob = 1.0;
                     }
                     // Per-banner optional content — canonical keys: heading/subtitle/cta_label/cta_link/show_content
                     $rawHeading = $item['heading'] ?? $item['title'] ?? null;

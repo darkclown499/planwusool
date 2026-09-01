@@ -274,13 +274,17 @@ function HeroCropEditor({
             <div className="mt-2">
                 <div className="flex items-center justify-between">
                     <p className="text-[10px] font-bold text-slate-500">تكبير الوسائط</p>
-                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-slate-700 ring-1 ring-slate-200">{Math.round(safeZoom*100)}%</span>
+                    <span className={`rounded-full px-2 py-0.5 font-mono text-[10px] font-bold ring-1 ${safeFit==='contain' ? 'bg-slate-100 text-slate-400 ring-slate-200' : 'bg-white text-slate-700 ring-slate-200'}`}>{safeFit==='contain' ? '100%' : `${Math.round(safeZoom*100)}%`}</span>
                 </div>
-                <div className="mt-1 flex items-center gap-2">
-                    <button type="button" aria-label="تصغير" onClick={() => onZoomChange(clampZoom(safeZoom - 0.1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">−</button>
-                    <input type="range" min={1} max={2} step={0.05} value={safeZoom} onChange={(e) => onZoomChange(clampZoom(e.target.value))} className="flex-1 accent-slate-900" aria-label="تكبير الوسائط" />
-                    <button type="button" aria-label="تكبير" onClick={() => onZoomChange(clampZoom(safeZoom + 0.1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">+</button>
-                </div>
+                {safeFit === 'contain' ? (
+                    <p className="mt-1 rounded-lg bg-amber-50 px-2 py-1.5 text-[10px] font-bold text-amber-700 ring-1 ring-amber-200">التكبير متاح في وضع تعبئة البنر</p>
+                ) : (
+                    <div className="mt-1 flex items-center gap-2">
+                        <button type="button" aria-label="تصغير" onClick={() => onZoomChange(clampZoom(safeZoom - 0.1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">−</button>
+                        <input type="range" min={1} max={2} step={0.05} value={safeZoom} onChange={(e) => onZoomChange(clampZoom(e.target.value))} className="flex-1 accent-slate-900" aria-label="تكبير الوسائط" />
+                        <button type="button" aria-label="تكبير" onClick={() => onZoomChange(clampZoom(safeZoom + 0.1))} className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">+</button>
+                    </div>
+                )}
             </div>
             {/* Crop frame — stable Hero geometry, media moves inside */}
             <div
@@ -1195,8 +1199,10 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                     position={item.position || '50% 50%'}
                                                     zoom={clampZoom(item.zoom ?? 1)}
                                                     onFitChange={(f) => {
-                                                        if (hasMedia) updateHeroMedia(String(item.id), { fit: f });
-                                                        else {
+                                                        if (hasMedia) {
+                                                            if (f === 'contain') updateHeroMedia(String(item.id), { fit: f, zoom: 1 });
+                                                            else updateHeroMedia(String(item.id), { fit: f });
+                                                        } else {
                                                             const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, fit: j===idx ? f : 'cover', position: '50% 50%', positionMobile: '50% 50%', zoom: 1 }));
                                                             setContent(setDotted(content,'hero_banner.media', hyd));
                                                         }
@@ -1233,8 +1239,10 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                                     position={item.positionMobile || item.position || '50% 50%'}
                                                     zoom={clampZoom(item.zoomMobile ?? item.zoom ?? 1)}
                                                     onFitChange={(f) => {
-                                                        if (hasMedia) updateHeroMedia(String(item.id), { fitMobile: f });
-                                                        else {
+                                                        if (hasMedia) {
+                                                            if (f === 'contain') updateHeroMedia(String(item.id), { fitMobile: f, zoomMobile: 1 });
+                                                            else updateHeroMedia(String(item.id), { fitMobile: f });
+                                                        } else {
                                                             const hyd = heroImages.map((s:string,j:number)=> ({ id: `legacy-image-${j}-${s.slice(-8)}`, type:'image', src:s, position: '50% 50%', positionMobile: '50% 50%', fitMobile: j===idx ? f : 'cover' }));
                                                             setContent(setDotted(content,'hero_banner.media', hyd));
                                                         }
@@ -1381,7 +1389,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                               fit={(v.fit === 'contain' ? 'contain' : 'cover')}
                                               position={v.position || '50% 50%'}
                                               zoom={clampZoom(v.zoom ?? 1)}
-                                              onFitChange={(f)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,fit:f,position:'50% 50%',positionMobile:'50% 50%',zoom:1}]; let tmp=setDotted(content,'hero_banner.media',hyd); tmp=setDotted(tmp,'hero_banner.video_url',v.src); tmp=setDotted(tmp,'hero_video_url',v.src); setContent(tmp);} else updateHeroMedia(String(v.id),{fit:f}); }}
+                                              onFitChange={(f)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,fit:f,position:'50% 50%',positionMobile:'50% 50%',zoom:1}]; let tmp=setDotted(content,'hero_banner.media',hyd); tmp=setDotted(tmp,'hero_banner.video_url',v.src); tmp=setDotted(tmp,'hero_video_url',v.src); setContent(tmp);} else { if (f==='contain') updateHeroMedia(String(v.id),{fit:f, zoom:1}); else updateHeroMedia(String(v.id),{fit:f}); } }}
                                               onPositionChange={(pos)=>setVideoField('position', pos)}
                                               onZoomChange={(z)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',zoom:clampZoom(z)}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{zoom:clampZoom(z)}); }}
                                               onReset={()=>{ if(String(v.id)==='legacy-video'){ const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,fit:'cover',position:'50% 50%',zoom:1}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{fit:'cover',position:'50% 50%',zoom:1}); }}
@@ -1395,7 +1403,7 @@ export default function StoreDesigner({ store, availableThemes, settings, storeU
                                               fit={(v.fitMobile === 'contain' ? 'contain' : (v.fitMobile==='cover' ? 'cover' : (v.fit==='contain' ? 'contain' : 'cover')))}
                                               position={v.positionMobile || v.position || '50% 50%'}
                                               zoom={clampZoom(v.zoomMobile ?? v.zoom ?? 1)}
-                                              onFitChange={(f)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',positionMobile:'50% 50%',fitMobile:f}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{fitMobile:f}); }}
+                                              onFitChange={(f)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',positionMobile:'50% 50%',fitMobile:f,zoomMobile:1}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else { if (f==='contain') updateHeroMedia(String(v.id),{fitMobile:f, zoomMobile:1}); else updateHeroMedia(String(v.id),{fitMobile:f}); } }}
                                               onPositionChange={(pos)=>setVideoField('positionMobile', pos)}
                                               onZoomChange={(z)=> { if (String(v.id)==='legacy-video') { const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',zoomMobile:clampZoom(z)}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{zoomMobile:clampZoom(z)}); }}
                                               onReset={()=>{ if(String(v.id)==='legacy-video'){ const hyd=[{id:`video-${Date.now().toString(36)}`,type:'video',src:v.src,position:'50% 50%',positionMobile:'50% 50%',fitMobile:'cover'}]; let tmp=setDotted(content,'hero_banner.media',hyd); setContent(tmp);} else updateHeroMedia(String(v.id),{fitMobile:'cover',positionMobile:'50% 50%',zoomMobile:1}); }}

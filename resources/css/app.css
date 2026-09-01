@@ -556,17 +556,9 @@ button[disabled],
   }
 }
 
-/* Merchant navigation shell: never allow horizontal scrolling */
-[data-slot="sidebar-wrapper"],
-[data-slot="sidebar"],
-[data-sidebar="sidebar"],
+/* Merchant navigation: local overflow guard on scrolling container only (not global scrollbar hiding) */
 [data-slot="sidebar-content"] {
-  overflow-x: hidden !important;
-}
-[data-slot="sidebar-content"]::-webkit-scrollbar:horizontal,
-[data-slot="sidebar-wrapper"]::-webkit-scrollbar:horizontal {
-  display: none;
-  height: 0;
+  overflow-x: hidden;
 }
 
 /* ========== Storefront mobile optimizations ========== */
