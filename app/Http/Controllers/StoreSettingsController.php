@@ -24,11 +24,6 @@ class StoreSettingsController extends Controller
         'whatsapp_widget_position',
         'whatsapp_widget_show_on_mobile',
         'whatsapp_widget_show_on_desktop',
-        'google_analytics_id',
-        'meta_pixel_id',
-        'tiktok_pixel_id',
-        'snapchat_pixel_id',
-        'gtm_id',
         'custom_css',
         'custom_javascript',
         'custom_head_scripts',
@@ -45,11 +40,14 @@ class StoreSettingsController extends Controller
     }
 
     /**
-     * Whether the merchant's active plan includes advanced storefront settings.
-     * Uses template_editor_level as the tier discriminator (none=Starter,
-     * limited=Growth, full=Professional).
+     * Whether the merchant's active plan unlocks advanced (non-plan) storefront
+     * settings (custom CSS/JS, WhatsApp widget, secondary currency, …).
+     *
+     * WARNING: this is a template-editor tier discriminator and must NOT be used
+     * as a marketing/tracking entitlement. There is no canonical marketing
+     * entitlement in the plans/features architecture (see marketing()).
      */
-    private function planAllowsAdvancedFeatures(): bool
+    private function hasAdvancedPlanTier(): bool
     {
         $user = Auth::user();
         $plan = $user->type === 'company' ? $user->plan : ($user->creator->plan ?? null);
@@ -144,6 +142,12 @@ class StoreSettingsController extends Controller
      * for a store. Values persist through the shared stores.settings.update /
      * autosave endpoints and are exposed to the storefront via
      * ThemeController::getStoreConfig under config.*_pixel_id.
+     *
+     * PLAN GATING DEFERRED: there is NO canonical marketing/pixel entitlement in
+     * the plans/features architecture, so tracking is deliberately NOT coupled to
+     * the template-editor tier (`template_editor_level`). Social Commerce is
+     * available to every eligible store until a dedicated marketing entitlement
+     * is introduced.
      */
     public function marketing(Request $request, $storeId)
     {
@@ -156,7 +160,6 @@ class StoreSettingsController extends Controller
         return Inertia::render('stores/marketing', [
             'store' => $store,
             'settings' => StoreConfiguration::getConfiguration($storeId),
-            'planAllowsAdvancedFeatures' => $this->planAllowsAdvancedFeatures(),
         ]);
     }
 
@@ -318,7 +321,10 @@ class StoreSettingsController extends Controller
 
         // Strip advanced (Growth/Pro) storefront features for plans that do
         // not explicitly include them. Skips the whole save for those keys.
-        if (!$this->planAllowsAdvancedFeatures()) {
+        // NOTE: Social Commerce tracking IDs are NOT in ADVANCED_SETTING_KEYS —
+        // plan gating is deferred (no canonical marketing entitlement), see
+        // marketing().
+        if (!$this->hasAdvancedPlanTier()) {
             foreach (self::ADVANCED_SETTING_KEYS as $advancedKey) {
                 unset($settingsToSave[$advancedKey]);
             }

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
 import {
-  Save, Loader2, CheckCircle2, XCircle, Info, Rocket, BarChart3, Music2, Facebook,
+  Save, Loader2, CheckCircle2, XCircle, Info, BarChart3, Music2, Facebook,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { router } from '@inertiajs/react';
 import { toast } from '@/components/custom-toast';
@@ -14,7 +13,6 @@ import { toast } from '@/components/custom-toast';
 interface Props {
   store: any;
   settings: any;
-  planAllowsAdvancedFeatures?: boolean;
 }
 
 const META_RE = /^\d{10,20}$/;
@@ -32,7 +30,7 @@ interface TrackingField {
   hint: string;
 }
 
-export default function StoreMarketingPage({ store, settings, planAllowsAdvancedFeatures = true }: Props) {
+export default function StoreMarketingPage({ store, settings }: Props) {
   const { t } = useTranslation();
 
   const [form, setForm] = useState<Record<'google_analytics_id' | 'meta_pixel_id' | 'tiktok_pixel_id', string>>({
@@ -155,86 +153,67 @@ export default function StoreMarketingPage({ store, settings, planAllowsAdvanced
         { title: 'التسويق والتتبع' },
       ]}
     >
-      {!planAllowsAdvancedFeatures && (
-        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <Rocket className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-            <div>
-              <p className="text-sm font-bold text-amber-800">التسويق والتتبع متاح في الخطط المتقدمة</p>
-              <p className="mt-0.5 text-xs text-amber-700">{t('Your plan does not include advanced tracking. Upgrade to Growth or Professional to connect Meta, TikTok and Google Analytics.')}</p>
-            </div>
-          </div>
-          <Button asChild variant="outline" className="shrink-0 border-amber-500 text-amber-700 hover:bg-amber-100">
-            <a href={route('plans.index')}>{t('Upgrade Plan')}</a>
-          </Button>
-        </div>
-      )}
-
       <div className="mb-4 flex items-start gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs leading-relaxed text-blue-800">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
         <p>{t('Your store sends conversion, page-view, product-view and search events to the connected advertising pixels. Events include the selected currency, product IDs and order numbers for accurate ad attribution.')}</p>
       </div>
 
-      {!planAllowsAdvancedFeatures ? (
-        <p className="text-sm font-medium text-muted-foreground">{t('Social Commerce improves when you connect your advertising pixels.')}</p>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {fields.map((field) => {
-            const value = form[field.key];
-            const isConnected = connected(value);
-            const error = errors[field.key];
-            return (
-              <Card key={field.id} className="overflow-hidden">
-                <CardHeader className="flex-row items-start justify-between space-y-0">
-                  <div className="flex items-start gap-3">
-                    {field.icon}
-                    <div>
-                      <CardTitle className="text-base">{field.title}</CardTitle>
-                      <CardDescription className="mt-1 leading-relaxed">{field.description}</CardDescription>
-                    </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {fields.map((field) => {
+          const value = form[field.key];
+          const isConnected = connected(value);
+          const error = errors[field.key];
+          return (
+            <Card key={field.id} className="overflow-hidden">
+              <CardHeader className="flex-row items-start justify-between space-y-0">
+                <div className="flex items-start gap-3">
+                  {field.icon}
+                  <div>
+                    <CardTitle className="text-base">{field.title}</CardTitle>
+                    <CardDescription className="mt-1 leading-relaxed">{field.description}</CardDescription>
                   </div>
-                  <span
-                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
-                      isConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {isConnected ? (
-                      <>
-                        <CheckCircle2 className="h-3 w-3" />
-                        {t('connected')}
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="h-3 w-3" />
-                        {t('not set')}
-                      </>
-                    )}
-                  </span>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Label htmlFor={field.id} className="text-xs font-semibold text-muted-foreground">
-                    {t('Pixel ID')}
-                  </Label>
-                  <Input
-                    id={field.id}
-                    dir="ltr"
-                    value={value}
-                    disabled={saving}
-                    placeholder={field.placeholder}
-                    onChange={(e) => handleChange(field, e.target.value)}
-                    className={error ? 'border-red-400 focus-visible:ring-red-400' : ''}
-                  />
-                  {error ? (
-                    <p className="text-xs font-semibold text-red-600">{error}</p>
+                </div>
+                <span
+                  className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                    isConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  {isConnected ? (
+                    <>
+                      <CheckCircle2 className="h-3 w-3" />
+                      {t('connected')}
+                    </>
                   ) : (
-                    <p className="text-xs text-muted-foreground">{field.hint}</p>
+                    <>
+                      <XCircle className="h-3 w-3" />
+                      {t('not set')}
+                    </>
                   )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                </span>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label htmlFor={field.id} className="text-xs font-semibold text-muted-foreground">
+                  {t('Pixel ID')}
+                </Label>
+                <Input
+                  id={field.id}
+                  dir="ltr"
+                  value={value}
+                  disabled={saving}
+                  placeholder={field.placeholder}
+                  onChange={(e) => handleChange(field, e.target.value)}
+                  className={error ? 'border-red-400 focus-visible:ring-red-400' : ''}
+                />
+                {error ? (
+                  <p className="text-xs font-semibold text-red-600">{error}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">{field.hint}</p>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </PageTemplate>
   );
 }

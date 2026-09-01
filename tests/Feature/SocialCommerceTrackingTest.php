@@ -16,9 +16,12 @@ use Tests\TestCase;
  * Social Commerce Phase 1 — tracking foundations.
  *
  * Covers the merchant Marketing page (Meta/TikTok/GA4), strict ID validation,
- * plan gating (Starter strips tracking), tenant isolation, storefront config
- * propagation (currency_code + pixel IDs) and the session-scoped orders API
- * fields used by the purchase event.
+ * tenant isolation, storefront config propagation (currency_code + pixel IDs)
+ * and the session-scoped orders API fields used by the purchase event.
+ *
+ * PLAN GATING is deferred: there is no canonical marketing entitlement in the
+ * plans/features architecture, so tracking is intentionally not coupled to the
+ * template-editor tier — tracking IDs persist for every plan.
  */
 class SocialCommerceTrackingTest extends TestCase
 {
@@ -93,8 +96,9 @@ class SocialCommerceTrackingTest extends TestCase
         $this->assertArrayHasKey('store', $page['props']);
         $this->assertSame($store->id, $page['props']['store']['id']);
         $this->assertArrayHasKey('settings', $page['props']);
-        $this->assertArrayHasKey('planAllowsAdvancedFeatures', $page['props']);
-        $this->assertTrue($page['props']['planAllowsAdvancedFeatures']);
+        // Plan gating is deferred (no canonical marketing entitlement): the page
+        // must NOT couple tracking UI to the template-editor tier.
+        $this->assertArrayNotHasKey('planAllowsAdvancedFeatures', $page['props']);
     }
 
     public function test_marketing_page_shotgunned_other_tenant_store_404s(): void
@@ -202,8 +206,11 @@ class SocialCommerceTrackingTest extends TestCase
         $this->assertSame('', $config['google_analytics_id']);
     }
 
-    public function test_starter_plan_strips_tracking_ids(): void
+    public function test_tracking_ids_persist_for_all_plans_no_marketing_entitlement_gate(): void
     {
+        // Starter-tier (no advanced settings) must STILL be able to save tracking
+        // IDs: there is no canonical marketing entitlement, so tracking must not
+        // be coupled to the template-editor tier.
         [$user, $store] = $this->ownerWithStore(['template_editor_level' => 'none']);
         $this->actingAs($user);
 
@@ -213,8 +220,8 @@ class SocialCommerceTrackingTest extends TestCase
 
         StoreConfiguration::flushRequestCache();
         $config = StoreConfiguration::getConfiguration($store->id);
-        $this->assertSame('', $config['meta_pixel_id']);
-        $this->assertSame('', $config['tiktok_pixel_id']);
+        $this->assertSame('123456789012345', $config['meta_pixel_id']);
+        $this->assertSame('CVR1234ABCDEFG12', $config['tiktok_pixel_id']);
     }
 
     public function test_tenant_isolation_update_rejected(): void
@@ -245,14 +252,32 @@ class SocialCommerceTrackingTest extends TestCase
         $this->assertStorefrontConfig($store, ['currency_code' => 'USD']);
     }
 
-    public function test_marketing_page_reports_starter_plan_gate(): void
+    public function test_marketing_page_does_not_gate_on_plan_tier(): void
     {
+        // Even a Starter-tier merchant sees a fully usable marketing page; there
+        // is no marketing entitlement to gate on yet (PLAN GATING DEFERRED).
         [$user, $store] = $this->ownerWithStore(['template_editor_level' => 'none']);
         $this->actingAs($user);
 
         $res = $this->get(route('stores.marketing', $store->id));
         $res->assertOk();
-        $this->assertFalse($res->inertiaPage()['props']['planAllowsAdvancedFeatures']);
+        $props = $res->inertiaPage()['props'];
+        $this->assertArrayNotHasKey('planAllowsAdvancedFeatures', $props);
+    }
+
+    public function test_unconfigured_store_exposes_empty_pixel_ids(): void
+    {
+        // An unconfigured store must expose empty pixel IDs to the storefront, so
+        // the tracking layer receives empty values and no provider script loads.
+        [$user, $store] = $this->ownerWithStore();
+        $this->actingAs($user);
+
+        $config = $this->assertStorefrontConfig($store, [
+            'meta_pixel_id' => '',
+            'tiktok_pixel_id' => '',
+            'google_analytics_id' => '',
+        ]);
+        $this->assertSame('', $config['google_analytics_id']);
     }
 
     public function test_orders_api_show_returns_currency_code_and_item_ids(): void

@@ -1,4 +1,4 @@
-import type { CommerceEventData, CommerceEventType, TrackingConfig } from '../types';
+import type { CommerceEventData, CommerceEventType, PurchaseItem, TrackingConfig } from '../types';
 import { injectExternalScript, injectInlineScript } from '../scripts';
 
 /**
@@ -49,8 +49,10 @@ export function init(config: TrackingConfig): void {
 }
 
 function items(data: CommerceEventData): Array<Record<string, unknown>> {
-    return (data.purchase?.items || (data.content_ids || (data.content_id ? [data.content_id] : [])).map((id) => ({ id: String(id) })))
-        .filter((it) => it.id !== undefined || it.name !== undefined)
+    const source: Array<PurchaseItem | { id: string }> =
+        data.purchase?.items || (data.content_ids || (data.content_id ? [data.content_id] : [])).map((id) => ({ id: String(id) }));
+    return source
+        .filter((it) => it.id !== undefined || 'name' in it)
         .map((it: any, index: number) => ({
             item_id: String(it.id ?? it.product_id ?? ''),
             item_name: it.name || data.content_name || '',

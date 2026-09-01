@@ -53,8 +53,9 @@ const OrderInvoice: React.FC<OrderInvoiceProps> = ({ orderNumber, order, config,
     bootedRef.current = true;
 
     // The invoice is a standalone page outside ThemeProvider, so initialize the
-    // tracking layer imperatively. Purchase dedup (sessionStorage) guarantees no
-    // double event when the customer reaches the invoice from the success modal.
+    // tracking layer imperatively. Durable store+order-scoped dedup guarantees no
+    // double event when the customer reaches the invoice from the success modal
+    // (even in a new tab or after a reload).
     initCommerceTracking({
       metaPixelId: config.meta_pixel_id || '',
       tiktokPixelId: config.tiktok_pixel_id || '',
