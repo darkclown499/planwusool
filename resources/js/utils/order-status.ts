@@ -41,6 +41,35 @@ export const paymentStatusAr: Record<string, string> = {
   Unpaid: 'غير مدفوع',
 };
 
+export const returnStatusAr: Record<string, string> = {
+  requested: 'جديد',
+  approved: 'مقبول',
+  rejected: 'مرفوض',
+  in_transit: 'قيد الشحن',
+  received: 'مستلم',
+  completed: 'مكتمل',
+  cancelled: 'ملغي',
+};
+
+export const returnRefundStatusAr: Record<string, string> = {
+  none: 'لا يوجد استرداد',
+  pending: 'قيد الانتظار',
+  partial: 'استرداد جزئي',
+  refunded: 'تم الاسترداد',
+};
+
+export function tReturnStatus(status: string): string {
+  if (!status) return '';
+  const key = String(status).trim();
+  return returnStatusAr[key] ?? returnStatusAr[key.toLowerCase()] ?? key;
+}
+
+export function tReturnRefundStatus(status: string): string {
+  if (!status) return '';
+  const key = String(status).trim();
+  return returnRefundStatusAr[key] ?? returnRefundStatusAr[key.toLowerCase()] ?? key;
+}
+
 export const paymentMethodAr: Record<string, string> = {
   cod: 'الدفع عند الاستلام',
   cash: 'الدفع عند الاستلام',

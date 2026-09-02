@@ -323,4 +323,89 @@ class ReturnsRefundsTest extends TestCase
         // Simulate email failure in controller would not rollback — service itself no email, so just ensure creation persisted
         $this->assertNotNull($ret->id);
     }
+
+    // ================================================================
+    // WORKFLOW CLARITY / VALIDATION TESTS
+    // ================================================================
+
+    public function test_invalid_status_transitions_rejected(): void
+    {
+        $p=$this->product(); $o=$this->createOrder($p,1); $o->update(['status'=>'delivered']);
+        $ret = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
+
+        // rejected -> completed must be rejected
+        $rej = ReturnService::transition($ret, 'rejected');
+        $this->expectException(\Exception::class);
+        ReturnService::transition($rej, 'completed');
+    }
+
+    public function test_completed_return_cannot_reopen(): void
+    {
+        $p=$this->product(); $o=$this->createOrder($p,1); $o->update(['status'=>'delivered']);
+        $ret = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
+        ReturnService::transition($ret,'approved');
+        ReturnService::transition($ret,'received');
+        ReturnService::restock($ret, $ret->items->first()->id, 1);
+        $done = ReturnService::complete($ret);
+        $this->assertEquals('completed', $done->status);
+        $this->expectException(\Exception::class);
+        ReturnService::transition($done, 'requested');
+    }
+
+    public function test_received_cannot_revert_to_approved(): void
+    {
+        $p=$this->product(); $o=$this->createOrder($p,1); $o->update(['status'=>'delivered']);
+        $ret = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
+        ReturnService::transition($ret,'approved');
+        $recv = ReturnService::transition($ret,'received');
+        $this->expectException(\Exception::class);
+        ReturnService::transition($recv, 'approved');
+    }
+
+    public function test_rejected_return_does_not_restore_stock(): void
+    {
+        $p=$this->product(['stock'=>10]); $o=$this->createOrder($p,2); $p->refresh();
+        $afterOrder=(int)$p->stock; // 8
+        $o->update(['status'=>'delivered']);
+        $ret = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
+        ReturnService::transition($ret, 'rejected');
+        $p->refresh();
+        $this->assertEquals($afterOrder, (int)$p->stock);
+        // restock after reject is impossible
+        $this->expectException(\Exception::class);
+        ReturnService::restock($ret, $ret->items->first()->id, 1);
+        $p->refresh();
+        $this->assertEquals($afterOrder, (int)$p->stock);
+    }
+
+    public function test_complete_does_not_falsely_auto_refund(): void
+    {
+        $p=$this->product(['stock'=>10]); $o=$this->createOrder($p,1); $o->update(['status'=>'delivered']);
+        $ret = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1]], 'other', null);
+        ReturnService::transition($ret,'approved');
+        ReturnService::transition($ret,'received');
+        ReturnService::restock($ret, $ret->items->first()->id, 1);
+        $done = ReturnService::complete($ret);
+        $o->refresh();
+        // completing a return must NOT change payment status / refund amounts automatically
+        $this->assertEquals('pending', $o->payment_status);
+        $this->assertEquals(0, (float)$done->fresh()->refund_amount);
+        $this->assertEquals('none', $done->fresh()->refund_status);
+    }
+
+    public function test_return_contains_original_order_customer_and_items(): void
+    {
+        $p=$this->product(['stock'=>10,'name'=>'Return Product']);
+        $o=$this->createOrder($p,2);
+        $o->update(['status'=>'delivered','customer_email'=>'owner@test.com']);
+        $customer = \App\Models\Customer::create(['store_id'=>$this->store->id,'first_name'=>'Owner','last_name'=>'Test','email'=>'owner@test.com','phone'=>'0591234567','is_active'=>true]);
+        $ret = ReturnService::createReturn($o, [['order_item_id'=>$o->items->first()->id,'quantity'=>1,'reason'=>'damaged']], 'damaged','please help', $customer->id);
+        $ret->load('order','customer','items');
+        $this->assertEquals($o->id, $ret->order->id);
+        $this->assertEquals($this->store->id, $ret->store_id);
+        $this->assertEquals($customer->id, $ret->customer_id);
+        $this->assertCount(1, $ret->items);
+        $this->assertEquals($o->items->first()->product_id, $ret->items->first()->product_id);
+        $this->assertEquals('damaged', $ret->items->first()->reason);
+    }
 }
