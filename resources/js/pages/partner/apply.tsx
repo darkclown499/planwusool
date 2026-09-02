@@ -213,7 +213,7 @@ export default function PartnerApply({ partner }: PartnerApplyProps) {
                 </div>
               </div>
 
-              {errors.error && <p className="text-sm text-destructive">{errors.error}</p>}
+              {(errors as Record<string, string>).error && <p className="text-sm text-destructive">{(errors as Record<string, string>).error}</p>}
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => router.visit(route('dashboard'))}>

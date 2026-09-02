@@ -32,6 +32,7 @@ interface AdminPartnersResponse {
   data: AdminPartner[];
   links?: any[];
   last_page?: number;
+  total: number;
 }
 
 const STATUS_META: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {

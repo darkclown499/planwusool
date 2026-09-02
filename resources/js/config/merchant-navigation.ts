@@ -266,7 +266,7 @@ export function getMerchantContextNav(
         case 'products': {
             const items: ContextNavItem[] = [];
             if (hasPermission('manage-products')) items.push({ title: t('Products'), href: tryRoute('products.index', '/products') });
-            if (hasPermission('create-products')) items.push({ title: t('Import Products') !== 'Import Products' ? t('Import Products') : '??????? ????????', href: tryRoute('products.import', '/products/import'), activePaths: ['/products/import'] });
+            if (hasPermission('create-products')) items.push({ title: t('Import Products') !== 'Import Products' ? t('Import Products') : 'استيراد المنتجات', href: tryRoute('products.import', '/products/import'), activePaths: ['/products/import'] });
             if (hasPermission('manage-categories')) {
                 const href = sid ? `/stores/${sid}/categories` : tryRoute('categories.index', '/categories');
                 const activePaths = sid ? [`/stores/${sid}/categories`, '/categories'] : ['/categories'];

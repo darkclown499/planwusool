@@ -369,7 +369,7 @@ export default function Customers() {
                                   <Button variant="ghost" size="sm" onClick={() => openProfile(customer)} className="h-8 px-2"><Eye className="h-4 w-4" /></Button>
                                 )}
                                 {hasPermission('edit-customers') && customer.id != null && (
-                                  <Button variant="ghost" size="sm" onClick={() => handleActionClick('edit-customers', () => router.visit(route('customers.edit', customer.id)))} className="h-8 px-2"><Edit className="h-4 w-4" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleActionClick('edit-customers', () => router.visit(route('customers.edit', customer.id as number)))} className="h-8 px-2"><Edit className="h-4 w-4" /></Button>
                                 )}
                                 {hasPermission('delete-customers') && customer.id != null && (
                                   <Button variant="ghost" size="sm" onClick={() => handleDelete(customer)} className="h-8 px-2 text-destructive"><Trash2 className="h-4 w-4" /></Button>

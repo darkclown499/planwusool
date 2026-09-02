@@ -342,4 +342,61 @@ class StoreSeoPhase1Test extends TestCase
         $response = $this->get($this->storeUrl($store) . '/');
         $this->assertStringContainsString('Config Phase Title', $response->getContent());
     }
+
+    // ─── 21. Server-rendered REAL aggregateRating (Reviews integration) ──
+
+    private function addReview(int $storeId, int $productId, int $rating, array $overrides = []): void
+    {
+        \App\Models\ProductReview::create(array_merge([
+            'store_id' => $storeId,
+            'product_id' => $productId,
+            'rating' => $rating,
+            'comment' => 'Test review',
+            'is_approved' => true,
+            'is_rejected' => false,
+            'hide_reason' => null,
+            'is_verified_purchase' => true,
+        ], $overrides));
+    }
+
+    public function test_product_json_ld_emits_real_aggregate_rating_from_visible_reviews(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $product = $this->createActiveProduct($store);
+        $this->addReview($store->id, $product->id, 5);
+        $this->addReview($store->id, $product->id, 4);
+
+        $response = $this->get($this->storeUrl($store) . '/product/phase-one-product');
+        $content = $response->getContent();
+
+        // Real average = (5+4)/2 = 4.5, reviewCount = 2 — derived from published
+        // visible reviews only, never fabricated.
+        $this->assertStringContainsString('"aggregateRating"', $content);
+        $this->assertStringContainsString('"reviewCount":2', $content);
+        $this->assertStringContainsString('"ratingValue":"4.5"', $content);
+    }
+
+    public function test_product_json_ld_hides_aggregate_for_hidden_and_rejected_reviews(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $product = $this->createActiveProduct($store);
+
+        // A rejected review + a hidden review must NOT contribute an aggregate.
+        $this->addReview($store->id, $product->id, 5, ['is_rejected' => true]);
+        $this->addReview($store->id, $product->id, 5, ['hide_reason' => 'spam']);
+
+        $response = $this->get($this->storeUrl($store) . '/product/phase-one-product');
+        $this->assertStringNotContainsString('aggregateRating', $response->getContent());
+    }
+
+    public function test_product_json_ld_emits_no_aggregate_when_only_pending_reviews_exist(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $product = $this->createActiveProduct($store);
+        // Pending (not approved) reviews must never surface as visible.
+        $this->addReview($store->id, $product->id, 5, ['is_approved' => false]);
+
+        $response = $this->get($this->storeUrl($store) . '/product/phase-one-product');
+        $this->assertStringNotContainsString('aggregateRating', $response->getContent());
+    }
 }

@@ -331,4 +331,48 @@ class CustomerCrmPhase1Test extends TestCase
         $this->assertDatabaseHas('orders', ['customer_id'=>null,'customer_email'=>'guestonly@x.com']);
         $this->assertDatabaseHas('customers', ['id'=>$registered->id]);
     }
+
+    /* ── Performance / behavior regression (Step 8 gate) ── */
+    public function test_directory_aggregation_is_sql_bounded_and_query_count_is_fixed(): void
+    {
+        [$user,$storeA] = $this->companyWithStore();
+        [$userB,$storeB] = $this->companyWithStore();
+
+        // A store with many guest order rows (one distinct guest phone) must
+        // NOT cause the directory to load each order row into PHP. Aggregation
+        // is a SQL GROUP BY, so the whole guest set collapses into ONE identity
+        // and the number of DB queries for a page is independent of order count.
+        for ($i = 0; $i < 40; $i++) {
+            $this->makeOrder($storeA, ['customer_phone'=>'0592000000','customer_first_name'=>'Guest','customer_last_name'=>'Buyer']);
+        }
+        // A second distinct guest for tenant-isolation + pagination variety
+        $this->makeOrder($storeA, ['customer_phone'=>'0592000001','customer_first_name'=>'Ali','customer_last_name'=>'Said']);
+        // Store B must never leak into A's directory
+        $this->makeOrder($storeB, ['customer_phone'=>'0599000000','customer_first_name'=>'Other','customer_last_name'=>'Store']);
+
+        $countedQueries = 0;
+        DB::listen(function ($q) use (&$countedQueries) { $countedQueries++; });
+
+        $directory = app(CustomerDirectoryService::class)->directory($storeA->id, []);
+
+        // 40 identical guests collapse into a single identity (bounded by
+        // distinct identities, not order rows), plus one distinct guest:
+        // A sees exactly 2 customers even though it has 41 order rows.
+        $this->assertCount(2, $directory['customers']);
+        $guest = collect($directory['customers'])->firstWhere('full_name','Guest Buyer');
+        $this->assertNotNull($guest);
+        $this->assertEquals(40, $guest['orders_count']);
+
+        // No other store's identity appears
+        $this->assertNull(collect($directory['customers'])->firstWhere('full_name','Other Store'));
+
+        // Pagination is server-side accurate regardless of order volume
+        $page2 = app(CustomerDirectoryService::class)->directory($storeA->id, ['per_page'=>1,'page'=>2]);
+        $this->assertSame(2, $page2['pagination']['last_page']);
+        $this->assertSame(2, $page2['pagination']['total']);
+
+        // The whole directory is built from a small, constant number of queries
+        // (one per aggregation, customers, tags) — no per-order / per-row N+1.
+        $this->assertLessThan(10, $countedQueries, 'directory must not issue a per-row query for order rows');
+    }
 }

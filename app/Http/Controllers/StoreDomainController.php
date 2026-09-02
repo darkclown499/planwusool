@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Store;
 use App\Models\StoreDomain;
 use App\Services\Domain\DomainHealthService;
+use App\Services\Domain\PublicIpGuard;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -434,20 +435,85 @@ public function destroy($storeId, $domainId)
 
     /**
      * Probe whether the domain currently serves a TLS certificate.
+     *
+     * SECURITY (SSRF): the domain is merchant-controlled, so we never open a
+     * connection to an arbitrary host. We first resolve its A/AAAA records and
+     * require at least one PUBLIC (non-private / non-loopback / non-link-local
+     * / non-reserved) address. Only a validated public resolved IP is used for
+     * the outbound connect; the original hostname is still used for the TLS
+     * SNI / peer name so a public CDN fronting the domain is verified honestly.
+     *
+     * If resolution yields no public address (e.g. the domain points at an
+     * internal host), we degrade the SSL status honestly instead of probing.
      */
     private function checkSslConnection(string $domain): bool
     {
-        $errno = 0;
-        $errstr = '';
-        $context = stream_context_create(['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
-        $fp = @stream_socket_client('ssl://' . $domain . ':443', $errno, $errstr, 5, STREAM_CLIENT_CONNECT, $context);
+        $publicIps = $this->resolvePublicIps($domain);
+        if (empty($publicIps)) {
+            // No public address recorded — never probe a private/internal target.
+            return false;
+        }
 
-        if ($fp) {
-            fclose($fp);
-            return true;
+        foreach ($publicIps as $publicIp) {
+            $errno = 0;
+            $errstr = '';
+            // Connect to the validated public IP; present the original hostname
+            // for TLS SNI so hosts/CDNs are served the right certificate. Peer
+            // verification is intentionally relaxed here: this probe only answers
+            // "does the endpoint serve a TLS cert on :443", and the connection
+            // target has already been SSRF-vetted to a public resolved IP above.
+            $context = stream_context_create([
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'SNI_enabled' => true,
+                    'peer_name' => $domain,
+                ],
+            ]);
+            $url = 'ssl://' . $publicIp . ':443';
+            $fp = @stream_socket_client($url, $errno, $errstr, 5, STREAM_CLIENT_CONNECT, $context);
+
+            if ($fp) {
+                fclose($fp);
+                return true;
+            }
         }
 
         return false;
+    }
+
+    /**
+     * Resolve the A / AAAA records of a host and return the first PUBLIC
+     * (globally routable, non-reserved) addresses only.
+     *
+     * Rejects loopback, RFC1918 private, link-local (incl. 169.254.169.254
+     * cloud-metadata), IPv6 loopback/link-local/ULA/multicast, documentation
+     * and all other reserved ranges. The guard is applied to the RESOLVED IP,
+     * not the domain text, so a public-looking hostname that resolves to an
+     * internal address is still rejected.
+     *
+     * @return string[]
+     */
+    private function resolvePublicIps(string $domain): array
+    {
+        if (!function_exists('dns_get_record')) {
+            return [];
+        }
+
+        $records = @dns_get_record($domain, DNS_A | DNS_AAAA);
+        if (!$records) {
+            return [];
+        }
+
+        $public = [];
+        foreach ($records as $record) {
+            $ip = $record['ip'] ?? $record['ipv6'] ?? null;
+            if ($ip && PublicIpGuard::isPublic($ip)) {
+                $public[] = $ip;
+            }
+        }
+
+        return array_values(array_unique($public));
     }
 
     /**
@@ -480,7 +546,21 @@ public function destroy($storeId, $domainId)
     }
 
     /**
-     * Get the server IP address for the A record instructions.
+     * The public origin IP of the Wusool server, used for the custom-domain
+     * A record instructions and to detect whether a domain points at us.
+     *
+     * SECURITY: this never calls a public third-party IP discovery service
+     * (ipify / ipinfo) during a normal merchant request. It only reads the
+     * canonical server-provided addresses. When the hosting environment does
+     * not expose a public address in SERVER_ADDR/LOCAL_ADDR (e.g. proxied
+     * setups), the value is honest NULL rather than a fabricated IP.
+     *
+     * Required infrastructure/configuration: set an allowed
+     * APP_PUBLIC_SERVER_IP (or rely on SERVER_ADDR/LOCAL_ADDR being the public
+     * address) if you want the "A record" hint and apex-pointing detection to
+     * be non-empty behind a reverse proxy.
+     *
+     * @return string|null
      */
     private function getServerIp()
     {
@@ -492,16 +572,18 @@ public function destroy($storeId, $domainId)
             $serverIp = $_SERVER['LOCAL_ADDR'];
         }
 
-        if (!$serverIp || $serverIp === '127.0.0.1' || $serverIp === '::1') {
-            try {
-                $serverIp = trim((string) file_get_contents('https://ipinfo.io/ip'));
-            } catch (\Exception $e) {
-                try {
-                    $serverIp = trim((string) file_get_contents('https://api.ipify.org'));
-                } catch (\Exception $e) {
-                    $serverIp = null;
-                }
+        // An explicit configured public IP (when safely available) is preferred
+        // over a loopback-local value.
+        if (empty($serverIp) || $serverIp === '127.0.0.1' || $serverIp === '::1') {
+            $configured = trim((string) env('APP_PUBLIC_SERVER_IP', ''));
+            if ($configured !== '' && PublicIpGuard::isPublic($configured)) {
+                $serverIp = $configured;
             }
+        }
+
+        // Never fabricate an IP: if nothing public is available, return null.
+        if ($serverIp === '127.0.0.1' || $serverIp === '::1' || !PublicIpGuard::isPublic($serverIp)) {
+            return null;
         }
 
         return $serverIp;

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductReview;
 use App\Models\Store;
 use App\Models\StoreConfiguration;
 use App\Models\StorePage;
@@ -399,11 +400,34 @@ class StorefrontSeoService
     }
 
     /**
-     * Optional real aggregate-rating hook. Returns [] until a reviews
-     * integration provides genuine values — never fabricated.
+     * Real aggregate-rating from published, storefront-visible reviews only.
+     *
+     * Uses the canonical ProductReview::visible() scope (approved, not
+     * rejected, not merchant-hidden) so ratings are never computed from hidden
+     * or rejected reviews. aggregateRating is emitted ONLY when there is at
+     * least one visible review AND the real average is > 0 — a product with
+     * zero visible reviews gets NO rating node, and no fallback rating is
+     * ever fabricated. Qualifies the server-rendered (crawlable) product page,
+     * independent of the client-side StoreHead JSON-LD.
      */
     protected function realAggregateRating(Product $product): array
     {
+        try {
+            $average = ProductReview::averageRatingFor((int) $product->id);
+            $count = ProductReview::countFor((int) $product->id);
+        } catch (\Throwable $e) {
+            return [];
+        }
+
+        if ($count > 0 && $average > 0) {
+            return [
+                '@' . 'type' => 'AggregateRating',
+                'ratingValue' => (string) round($average, 1),
+                'bestRating' => 5,
+                'reviewCount' => $count,
+            ];
+        }
+
         return [];
     }
 
