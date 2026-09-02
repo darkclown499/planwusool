@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AdvancedCoupon;
 use App\Models\StoreCoupon;
 use App\Models\Order;
+use App\Services\AdvancedCouponService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -19,8 +21,47 @@ class CouponController extends Controller
             'customer_email' => 'nullable|email'
         ]);
 
-        $coupon = StoreCoupon::where('code', $request->code)
-            ->where('store_id', $request->store_id)
+        $storeId = (int) $request->store_id;
+        $code = $request->code;
+
+        // Advanced-coupon engine first (REUSE the canonical engine). Any coupon
+        // managed through the Promotions center (AdvancedCoupon) is resolved here.
+        $advanced = AdvancedCoupon::where('store_id', $storeId)
+            ->where('code', $code)
+            ->first();
+
+        if ($advanced) {
+            $service = app(AdvancedCouponService::class);
+            $result = $service->validateCoupon($code, $storeId, [
+                'subtotal' => (float) $request->subtotal,
+                'customer_identifier' => $request->customer_email,
+                'items' => [],
+            ]);
+
+            if (!$result['valid']) {
+                return response()->json([
+                    'valid' => false,
+                    'error' => $this->advancedErrorMessage($result['errors']),
+                    'message' => $this->advancedErrorMessage($result['errors']),
+                ], 400);
+            }
+
+            $discount = (float) ($result['discount']['discount_amount'] ?? 0);
+
+            return response()->json([
+                'valid' => true,
+                'coupon' => [
+                    'code' => $advanced->code,
+                    'name' => $advanced->name,
+                    'type' => $advanced->discount_type,
+                    'discount_amount' => (float) $advanced->discount_value,
+                    'discount' => round(min($discount, (float) $request->subtotal), 2),
+                ],
+            ]);
+        }
+
+        $coupon = StoreCoupon::where('code', $code)
+            ->where('store_id', $storeId)
             ->where('status', true)
             ->first();
 
@@ -81,5 +122,32 @@ class CouponController extends Controller
                 'discount' => round($discount, 2)
             ]
         ]);
+    }
+
+    /**
+     * Map advanced-coupon validation error codes to human-readable messages.
+     */
+    private function advancedErrorMessage(array $errors): string
+    {
+        $messages = [
+            'coupon_not_found' => 'رمز الكوبون غير صحيح',
+            'coupon_disabled' => 'هذا الكوبون غير مفعّل',
+            'coupon_inactive_period' => 'هذا الكوبون غير نشط بعد أو انتهت صلاحيته',
+            'coupon_usage_limit_exceeded' => 'تم تجاوز الحد الأقصى لاستخدام الكوبون',
+            'coupon_per_customer_limit_exceeded' => 'لقد تجاوزت الحد الأقصى لاستخدام هذا الكوبون',
+            'coupon_minimum_not_met' => 'هذا الكوبون يتطلب حداً أدنى لمبلغ الطلب',
+            'coupon_not_valid_with_sale_items' => 'لا يمكن استخدام هذا الكوبون مع المنتجات المشمولة بالتخفيضات',
+            'coupon_not_valid_for_some_items' => 'هذا الكوبون غير صالح لبعض المنتجات في سلة التسوق',
+            'coupon_region_not_available' => 'هذا الكوبون غير متاح في منطقتك',
+            'coupon_first_order_only' => 'هذا الكوبون متاح للعملاء الجدد فقط',
+        ];
+
+        foreach ($errors as $error) {
+            if (isset($messages[$error])) {
+                return $messages[$error];
+            }
+        }
+
+        return 'رمز الكوبون غير صحيح';
     }
 }

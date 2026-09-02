@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { router } from '@inertiajs/react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/components/custom-toast';
@@ -535,31 +535,51 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     }
 
     try {
-      const response = await fetch(route('api.coupon.validate'), {
+      // Build full cart context so the server (authoritative) can evaluate
+      // advanced promotions: minimum order, product/category scoping, sale-item
+      // exclusions, quantity tiers, and BOGO rules.
+      const rawItems: any[] = cartFromContext?.cartItems || [];
+      const items = rawItems.map((it: any) => ({
+        product_id: Number(it.id ?? it.product_id ?? 0),
+        quantity: Number(it.quantity) || 1,
+        unit_price: Number(it.price ?? it.unit_price ?? 0),
+        sale_price: Number(it.sale_price ?? 0) || undefined,
+        category_id: Number(it.categoryId ?? it.category_id ?? 0) || undefined,
+      }));
+
+      const payload: any = {
+        code: couponCode,
+        store_id: store?.id,
+        subtotal: subtotal,
+      };
+      if (items.length > 0) payload.items = items;
+      if (customerInfo.email) payload.customer_email = customerInfo.email;
+      if (countryId) payload.country_id = countryId;
+      if (stateId) payload.state_id = stateId;
+      if (cityId) payload.city_id = cityId;
+
+      const response = await fetch(route('api.advanced-coupon.validate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
         },
-        body: JSON.stringify({
-          code: couponCode,
-          store_id: store?.id,
-          subtotal: subtotal
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
 
       if (response.ok && data.valid) {
+        const discountAmount = Number(data.discount_amount ?? data.discount?.discount_amount ?? 0) || 0;
         setAppliedCoupon({
-          code: data.coupon.code,
-          discount: data.coupon.discount,
-          type: data.coupon.type,
-          discount_amount: data.coupon.discount_amount
+          code: data.coupon?.code || couponCode,
+          discount: discountAmount,
+          type: data.coupon?.discount_type,
+          discount_amount: discountAmount
         });
         setCouponError('');
       } else {
-        setCouponError(data.error || 'رمز الكوبون غير صحيح');
+        setCouponError(data.message || data.error || 'رمز الكوبون غير صحيح');
         setAppliedCoupon(null);
       }
     } catch (error) {
@@ -568,6 +588,74 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
       setAppliedCoupon(null);
     }
   };
+
+  // Keep the latest applied coupon in a ref so the revalidation effect below
+  // never re-triggers itself while the cart stays the same.
+  const appliedCouponRef = useRef(appliedCoupon);
+  appliedCouponRef.current = appliedCoupon;
+
+  // The server is the single source of truth for a coupon's validity. When the
+  // cart mutates (subtotal/product-set changes) we revalidate the applied
+  // coupon; if it no longer qualifies (e.g. a minimum-order requirement was
+  // dropped below), the stale discount is cleared instead of trusting the
+  // browser's stored value.
+  const cartSignature = Array.isArray(cartFromContext?.cartItems)
+    ? cartFromContext.cartItems.map((it: any) => `${it.id}:${it.quantity}`).join('|')
+    : '';
+  useEffect(() => {
+    const current = appliedCouponRef.current;
+    if (!current || !current.code || !store?.id) return;
+
+    const rawItems: any[] = (cartFromContext?.cartItems) || [];
+    if (rawItems.length === 0) {
+      setAppliedCoupon(null);
+      setCouponError('تمت إزالة الكوبون بعد تحديث السلة.');
+      return;
+    }
+
+    const subtotalRaw = rawItems.reduce((sum: number, it: any) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0);
+    if (subtotalRaw <= 0) return;
+
+    const items = rawItems.map((it: any) => ({
+      product_id: Number(it.id ?? it.product_id ?? 0),
+      quantity: Number(it.quantity) || 1,
+      unit_price: Number(it.price ?? it.unit_price ?? 0),
+      sale_price: Number(it.sale_price ?? 0) || undefined,
+      category_id: Number(it.categoryId ?? it.category_id ?? 0) || undefined,
+    }));
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(route('api.advanced-coupon.validate'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+          },
+          body: JSON.stringify({
+            code: current.code,
+            store_id: store.id,
+            subtotal: subtotalRaw,
+            items,
+          }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.valid) {
+          setAppliedCoupon(null);
+          setCouponError(data.message || data.error || 'لم يعد هذا الكوبون ينطبق على السلة المحدّثة');
+        } else {
+          const discountAmount = Number(data.discount_amount ?? data.discount?.discount_amount ?? 0) || 0;
+          setAppliedCoupon((prev) => (prev ? { ...prev, discount: discountAmount, discount_amount: discountAmount } : prev));
+          setCouponError('');
+        }
+      } catch (error) {
+        console.error('Coupon revalidation error:', error);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartSignature]);
 
   const loadShippingMethods = async () => {
     if (!store?.id) return;

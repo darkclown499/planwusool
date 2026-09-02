@@ -74,6 +74,61 @@ class CartCalculationService
         $advancedCouponDiscountType = null;
         $advancedCouponId = null;
 
+        // Automatic promotions (Sections 5 & 8): when no coupon code is supplied,
+        // deterministically auto-apply the BEST eligible automatic promotion.
+        // The automatic-promotion block falls through to the explicit-coupon
+        // handling below when a code IS provided.
+        $autoDiscountType = null;
+        if (!$couponCode) {
+            try {
+                $engine = app(\App\Services\PromotionEngineService::class);
+                $itemsForEngine = $cartItems->map(function ($item) {
+                    return [
+                        'product_id' => $item->product_id,
+                        'parent_product_id' => $item->product_id,
+                        'quantity' => $item->quantity,
+                        'unit_price' => (float) ($item->product->price ?? 0),
+                        'sale_price' => (float) ($item->product->sale_price ?? null),
+                        'category_id' => $item->product->category_id,
+                    ];
+                })->toArray();
+                $customerIdentifier = $extraContext['customer_email'] ?? null;
+                if (auth()->guard('customer')->check()) {
+                    $customerIdentifier = $customerIdentifier ?: auth()->guard('customer')->user()->email;
+                }
+                $autoResult = $engine->resolveAutomaticPromotion($storeId, [
+                    'subtotal' => $subtotal,
+                    'shipping_cost' => 0,
+                    'customer_id' => $extraContext['customer_id'] ?? (auth()->guard('customer')->id() ?: null),
+                    'customer_identifier' => $customerIdentifier,
+                    'is_first_order' => $extraContext['is_first_order'] ?? self::isFirstOrder($storeId, $customerIdentifier),
+                    'item_product_ids' => $cartItems->pluck('product_id')->toArray(),
+                    'has_on_sale_items' => $cartItems->contains(fn ($i) => !is_null($i->product->sale_price)),
+                    'items' => $itemsForEngine,
+                ]);
+                if (!empty($autoResult['applied']) && $autoResult['coupon']) {
+                    $autoCoupon = $autoResult['coupon'];
+                    $discount = max(0, (float) $autoResult['discount_amount']);
+                    $appliedAdvancedCoupon = true;
+                    $advancedCouponDiscountType = $autoResult['discount_type'];
+                    $advancedCouponId = $autoCoupon->id;
+                    $freeShippingApplied = $autoResult['free_shipping'];
+                    $autoDiscountType = $autoResult['discount_type'];
+                    $coupon = [
+                        'id' => $autoCoupon->id,
+                        'code' => $autoCoupon->code,
+                        'name' => $autoCoupon->name,
+                        'type' => $autoResult['discount_type'],
+                        'discount_amount' => $autoResult['discount_amount'],
+                        'is_advanced' => true,
+                        'is_automatic' => true,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Automatic promotion resolution failed', ['store_id' => $storeId, 'error' => $e->getMessage()]);
+            }
+        }
+
         if ($couponCode) {
             // 1) Try AdvancedCoupon (new system)
             $advancedCoupon = AdvancedCoupon::where('store_id', $storeId)

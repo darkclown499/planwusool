@@ -27,12 +27,15 @@ class AdvancedCouponService
             'bogo_product_id' => $coupon->bogo_product_id,
             'bogo_quantity' => (int) $coupon->bogo_quantity,
             'bogo_free_quantity' => (int) $coupon->bogo_free_quantity,
+            'quantity_tiers' => $coupon->quantity_tiers ?: [],
             'minimum_order_amount' => (float) $coupon->minimum_order_amount,
             'usage_limit' => $coupon->usage_limit,
             'per_customer_limit' => $coupon->per_customer_limit,
             'used_count' => (int) $coupon->used_count,
             'exclude_on_sale_items' => (bool) $coupon->exclude_on_sale_items,
             'first_order_only' => (bool) $coupon->first_order_only,
+            'audience' => $coupon->audience ?: 'everyone',
+            'stackable' => (bool) $coupon->stackable,
             'starts_at' => $coupon->starts_at,
             'expires_at' => $coupon->expires_at,
             'status' => (bool) $coupon->status,
@@ -228,6 +231,7 @@ class AdvancedCouponService
             'fixed' => (clone $all)->where('discount_type', 'fixed')->count(),
             'free_shipping' => (clone $all)->where('discount_type', 'free_shipping')->count(),
             'bogo' => (clone $all)->where('discount_type', 'buy_one_get_one')->count(),
+            'quantity' => (clone $all)->where('discount_type', 'quantity')->count(),
             'total_used' => CouponUsage::whereIn('coupon_id', function ($q) use ($storeId) {
                 $q->select('id')->from('advanced_coupons')->where('store_id', $storeId);
             })->count(),

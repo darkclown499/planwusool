@@ -19,6 +19,7 @@ class AdvancedCoupon extends Model
     public const TYPE_PERCENTAGE = 'percentage';
     public const TYPE_FREE_SHIPPING = 'free_shipping';
     public const TYPE_BUY_ONE_GET_ONE = 'buy_one_get_one';
+    public const TYPE_QUANTITY = 'quantity';
 
     protected $fillable = [
         'store_id',
@@ -32,12 +33,15 @@ class AdvancedCoupon extends Model
         'bogo_product_id',    // منتج محدد في عرض BOGO
         'bogo_quantity',      // الكمية المطلوب شراؤها
         'bogo_free_quantity', // الكمية المجانية
+        'quantity_tiers',     // طبقات الخصم على الكمية (Buy X+ -> Y%)
         'minimum_order_amount',
         'usage_limit',
         'per_customer_limit',
         'used_count',
         'exclude_on_sale_items', // استثناء المنتجات المخفضة
         'first_order_only',      // طلبات أولى فقط
+        'audience',              // everyone | registered | first_order | repeat
+        'stackable',             // سياسة التكديس (coexist مع خصم السلع)
         'starts_at',
         'expires_at',
         'status',
@@ -50,11 +54,13 @@ class AdvancedCoupon extends Model
         'minimum_order_amount'  => 'decimal:2',
         'bogo_quantity'         => 'integer',
         'bogo_free_quantity'    => 'integer',
+        'quantity_tiers'        => 'array',
         'usage_limit'           => 'integer',
         'per_customer_limit'    => 'integer',
         'used_count'            => 'integer',
         'exclude_on_sale_items' => 'boolean',
         'first_order_only'      => 'boolean',
+        'stackable'             => 'boolean',
         'status'                => 'boolean',
         'starts_at'             => 'datetime',
         'expires_at'            => 'datetime',
@@ -283,6 +289,12 @@ class AdvancedCoupon extends Model
             }
         }
 
+        // فحص شريحة الجمهور (Segment eligibility foundation)
+        $audienceError = $this->validateAudience($context);
+        if ($audienceError) {
+            $errors[] = $audienceError;
+        }
+
         // استثناء المنتجات المخفضة حالياً
         if ($this->exclude_on_sale_items && ($context['has_on_sale_items'] ?? false)) {
             $errors[] = 'coupon_not_valid_with_sale_items';
@@ -381,6 +393,72 @@ class AdvancedCoupon extends Model
         return false;
     }
 
+    /**
+     * التحقق من شريحة الجمهور (Audience/Segment eligibility).
+     *
+     * الشرائح المدعومة في أساس المرحلة الأولى:
+     *  - everyone: متاح للجميع (ضيوف ومسجلين).
+     *  - registered: يتطلب عميلاً مسجلاً (auth guard customer).
+     *  - first_order: الطلب الأول المسجل فقط (متطلب تسجيل).
+     *  - repeat: عملاء سبق لهم طلب صالح واحد على الأقل في نفس المتجر.
+     *
+     * لا نُخمّن هوية الضيوف؛ المتطلبات المتعلقة بالحساب تُقيَّد بالعملاء المسجلين فقط.
+     *
+     * @return string|null كود الخطأ أو null عند القبول
+     */
+    public function validateAudience(array $context = []): ?string
+    {
+        $audience = (string) ($this->audience ?: 'everyone');
+        $customerId = $context['customer_id'] ?? null;
+        $customerIdentifier = $context['customer_identifier'] ?? null;
+        $registered = $this->isRegisteredCustomer($context);
+
+        switch ($audience) {
+            case 'registered':
+                if (!$registered) {
+                    return 'coupon_registered_only';
+                }
+                return null;
+
+            case 'first_order':
+                // يتطلب التسجيل لضمان حسم معتبر لـ "أول طلب"
+                if (!$registered) {
+                    return 'coupon_registered_only';
+                }
+                if (!(bool) ($context['is_first_order'] ?? false)) {
+                    return 'coupon_first_order_only';
+                }
+                return null;
+
+            case 'repeat':
+                if (!$registered) {
+                    return 'coupon_repeat_customers_only';
+                }
+                if ((bool) ($context['is_first_order'] ?? true)) {
+                    return 'coupon_repeat_customers_only';
+                }
+                return null;
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * هل العميل مسجل (auth guard customer) داخل نفس المتجر؟
+     */
+    protected function isRegisteredCustomer(array $context = []): bool
+    {
+        $customerId = (int) ($context['customer_id'] ?? 0);
+        if (!$customerId) {
+            return false;
+        }
+        $customer = \App\Models\Customer::find($customerId);
+        return $customer !== null
+            && (int) $customer->store_id === (int) $this->store_id
+            && (int) $customer->id === $customerId;
+    }
+
     // =========================================================================
     // احتساب الخصم
     // =========================================================================
@@ -431,6 +509,9 @@ class AdvancedCoupon extends Model
 
             case self::TYPE_BUY_ONE_GET_ONE:
                 return $this->calculateBogoDiscount($context);
+
+            case self::TYPE_QUANTITY:
+                return $this->calculateQuantityDiscount($context);
 
             default:
                 return [
@@ -494,6 +575,100 @@ class AdvancedCoupon extends Model
     }
 
     /**
+     * حساب خصم الكمية (Quantity discount) بناءً على طبقات الكمية لكل منتج.
+     *
+     * Business rule: quantities of variants that belong to the SAME parent
+     * product are aggregated; the tier discount is selected by the highest
+     * matching min_qty and applied only over the merchandise of the eligible
+     * matching products (not the whole cart).
+     *
+     * quantity_tiers JSON shape:
+     *   [{ "min_qty": 2, "discount_value": 5, "max_discount_amount": null }, ...]
+     */
+    protected function calculateQuantityDiscount(array $context = []): array
+    {
+        if (empty($this->quantity_tiers) || !is_array($this->quantity_tiers)) {
+            return [
+                'discount_type' => self::TYPE_QUANTITY,
+                'discount_amount' => 0,
+                'message' => 'Quantity discount not configured',
+            ];
+        }
+
+        // Aggregate quantities by parent product id (variants collapse to parent).
+        $items = $context['items'] ?? [];
+        $productQty = [];
+        $productValue = [];
+        $categoryIds = $this->categories()->pluck('categories.id')->all();
+        $hasProductBinding = $this->allProducts()->exists();
+
+        foreach ($items as $item) {
+            $parentId = (int) ($item['parent_product_id'] ?? $item['product_id'] ?? 0);
+            $qty = max(0, (int) ($item['quantity'] ?? 0));
+            $unitPrice = (float) ($item['sale_price'] ?? $item['unit_price'] ?? 0);
+
+            // Respect product/category scoping for the quantity discount.
+            $productId = (int) ($item['product_id'] ?? 0);
+            if ($this->bogo_product_id && $productId !== (int) $this->bogo_product_id) {
+                continue;
+            }
+            if (!empty($categoryIds)) {
+                $itemCategoryId = $item['category_id'] ?? null;
+                if (!in_array($itemCategoryId, $categoryIds)) {
+                    continue;
+                }
+            } elseif ($hasProductBinding) {
+                $included = $this->products()->pluck('products.id')->all();
+                if (!in_array($productId, $included)) {
+                    continue;
+                }
+            }
+
+            $productQty[$parentId] = ($productQty[$parentId] ?? 0) + $qty;
+            $productValue[$parentId] = ($productValue[$parentId] ?? 0) + ($unitPrice * $qty);
+        }
+
+        // Sort tiers by required quantity ascending, pick highest qualifying.
+        $tiers = collect($this->quantity_tiers)
+            ->filter(fn ($t) => isset($t['min_qty']) && (int) $t['min_qty'] > 1)
+            ->sortBy(fn ($t) => (int) $t['min_qty'])
+            ->values()
+            ->toArray();
+
+        $totalDiscount = 0.0;
+        $appliedFor = 0;
+        foreach ($tiers as $tier) {
+            $minQty = (int) $tier['min_qty'];
+            $rate = (float) ($tier['discount_value'] ?? 0);
+            $tierTotal = 0.0;
+            foreach ($productQty as $pid => $qty) {
+                if ($qty >= $minQty) {
+                    $tierTotal += (float) ($productValue[$pid] ?? 0);
+                }
+            }
+            if ($tierTotal <= 0) {
+                continue;
+            }
+            $tierDiscount = ($tierTotal * $rate) / 100;
+            if (isset($tier['max_discount_amount']) && $tier['max_discount_amount'] !== null) {
+                $tierDiscount = min($tierDiscount, (float) $tier['max_discount_amount']);
+            }
+            $totalDiscount = max($totalDiscount, $tierDiscount);
+            $appliedFor = $minQty;
+        }
+
+        $totalDiscount = min($totalDiscount, (float) ($context['subtotal'] ?? 0));
+        $totalDiscount = round($totalDiscount, 2);
+
+        return [
+            'discount_type' => self::TYPE_QUANTITY,
+            'discount_amount' => $totalDiscount,
+            'tier_min_qty' => $appliedFor,
+            'message' => $totalDiscount > 0 ? "Quantity discount applied from {$appliedFor}+ units" : 'Quantity discount not reached',
+        ];
+    }
+
+    /**
      * تسجيل استخدام جديد للكوبون.
      */
     public function recordUsage(array $data = []): CouponUsage
@@ -510,8 +685,8 @@ class AdvancedCoupon extends Model
         return $usage;
     }
 
-    /**
-     * توليد كود تلقائي فريد داخل المتجر.
+/**
+     * ولّد كود تلقائي فريد داخل المتجر.
      */
     public static function generateUniqueCode(int $storeId): string
     {
@@ -520,6 +695,39 @@ class AdvancedCoupon extends Model
         } while (static::where('store_id', $storeId)->where('code', $code)->exists());
 
         return $code;
+    }
+
+    /**
+     * أعد نسخة جديدة (غير محفوظة) من الكوبون مع الاحتفاظ بالإعدادات.
+     *
+     * تُستخدم لعرض/نسخ العروض: تُنشأ نسخة نظيفة من الحقول القابلة للتعبئة
+     * مع إعادة تعيين قيم الاستخدام والحالة والمفتاح الأساسي.
+     *
+     * الاسم مختلف عن Eloquent `replicate()` لتفادي التعارض مع إمضاء الميثود.
+     */
+    public function replicateForDuplication(): AdvancedCoupon
+    {
+        $copy = new AdvancedCoupon();
+
+        foreach ($this->fillable as $field) {
+            $value = $this->attributes[$field] ?? null;
+            if ($value === null) {
+                continue;
+            }
+            // استخدام الـ accessor لتطبيق الـ cast على الحقول (مثل quantity_tiers array)
+            $copy->$field = $this->$field;
+        }
+
+        $copy->id = null;
+        $copy->used_count = 0;
+        $copy->status = false;
+
+        // كوبونات الكود التلقائي تُحدَّث بكود جديد عند الحفظ (لا ننسخ نفس الكود).
+        if ($copy->code_type === 'auto') {
+            $copy->code = null;
+        }
+
+        return $copy;
     }
 }
 

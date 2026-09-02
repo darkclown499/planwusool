@@ -49,6 +49,7 @@ class EventServiceProvider extends ServiceProvider
             SendUniversalNotification::class . '@handleOrderStatusChanged',
             HandleWebhooks::class . '@handleOrderStatusChanged',
             CreateMerchantNotifications::class . '@onOrderStatusChanged',
+            \App\Listeners\AwardLoyaltyOnDelivery::class,
         ],
         CustomerCreated::class => [
             SendUniversalNotification::class . '@handleCustomerCreated',

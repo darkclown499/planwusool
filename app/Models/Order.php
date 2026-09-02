@@ -72,6 +72,10 @@ class Order extends Model
         'coupon_code',
         'coupon_discount',
         'post_order_extras_at',
+        'promotion_type',
+        'promotion_name',
+        'promotion_id',
+        'promotion_snapshot',
     ];
 
     protected $casts = [
@@ -82,6 +86,7 @@ class Order extends Model
         'total_amount' => 'decimal:2',
         'coupon_discount' => 'decimal:2',
         'delivery_fee' => 'decimal:2',
+        'promotion_snapshot' => 'array',
         'stock_restored' => 'boolean',
         'payment_details' => 'array',
         'shipped_at' => 'datetime',

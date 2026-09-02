@@ -326,6 +326,7 @@ export function getMerchantContextNav(
             const items: ContextNavItem[] = [];
             if (hasPermission('manage-coupon-system')) items.push({ title: t('Coupons'), href: tryRoute('coupon-system.index', '/coupon-system') });
             if (hasPermission('manage-advanced-coupons')) items.push({ title: t('Advanced Coupons'), href: tryRoute('advanced-coupons.index', '/advanced-coupons') });
+            if (hasPermission('manage-advanced-coupons')) items.push({ title: t('Promotions'), href: tryRoute('promotions.index', '/promotions'), activePaths: ['/promotions'] });
             if (hasPermission('manage-abandoned-carts')) {
                 const href = sid ? `/stores/${sid}/abandoned-carts` : tryRoute('abandoned-carts.index', '/abandoned-carts');
                 items.push({ title: t('Abandoned Carts'), href, activePaths: sid ? [`/stores/${sid}/abandoned-carts`, '/abandoned-carts'] : ['/abandoned-carts'] });

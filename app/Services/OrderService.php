@@ -83,6 +83,13 @@ class OrderService
                 'notes' => $orderData['notes'] ?? null,
                 'coupon_code' => $orderData['coupon_code'] ?? null,
                 'coupon_discount' => $orderData['coupon_discount'] ?? 0,
+
+                // Immutable promotion snapshot (Section 10) — historical totals
+                // must not depend on live promotion records.
+                'promotion_type' => $orderData['promotion_type'] ?? null,
+                'promotion_name' => $orderData['promotion_name'] ?? null,
+                'promotion_id' => $orderData['promotion_id'] ?? null,
+                'promotion_snapshot' => $orderData['promotion_snapshot'] ?? null,
             ]);
 
             // Create order items and update inventory — canonical variant-aware with row locking
@@ -1192,13 +1199,11 @@ class OrderService
                 Log::warning('Failed to mark abandoned cart as recovered', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             }
 
-            // Award loyalty points for the order
-            try {
-                $loyaltyService = app(LoyaltyService::class);
-                $loyaltyService->earnPointsForOrder($order);
-            } catch (\Exception $e) {
-                Log::warning('Failed to award loyalty points', ['order_id' => $order->id, 'error' => $e->getMessage()]);
-            }
+            // Loyalty points are NOT awarded here. Points are earned only when
+            // the order reaches the canonical DELIVERED state, via the
+            // AwardLoyaltyOnDelivery listener on OrderStatusChanged (Section 20).
+            // This prevents premature/double point grants on created/confirmed/
+            // processing/shipped and on offline payment confirmation.
 
             // Record advanced coupon usage if applicable
             if ($order->coupon_code) {

@@ -22,6 +22,13 @@ class LoyaltyService
             return;
         }
 
+        // Loyalty points are only earned once an order is actually delivered.
+        // Orders still pending/confirmed/processing/shipped — or cancelled/failed/
+        // refunded/returned — do not accrue points.
+        if ($order->status !== 'delivered') {
+            return;
+        }
+
         $settings = LoyaltySetting::forStore($store->id);
 
         if (!$settings->is_enabled) {

@@ -402,6 +402,35 @@ class OrderController extends Controller
                 }
             }
 
+            // Immutable promotion snapshot (Section 10). Captured at order
+            // creation so historical totals survive later promotion edits/deletes.
+            $promoType = null;
+            $promoName = null;
+            $promoId = null;
+            $couponInfo = $calculation['coupon'] ?? null;
+            if (!empty($calculation['applied_advanced_coupon']) && $couponInfo && is_array($couponInfo)) {
+                $promoType = $couponInfo['type'] ?? $calculation['advanced_coupon_discount_type'] ?? null;
+                $promoName = $couponInfo['name'] ?? null;
+                $promoId = $couponInfo['id'] ?? $calculation['advanced_coupon_id'] ?? null;
+            } elseif ($couponInfo instanceof \App\Models\StoreCoupon) {
+                $promoType = $couponInfo->type;
+                $promoName = $couponInfo->name;
+                $promoId = $couponInfo->id;
+            }
+            $orderData['promotion_type'] = $promoType;
+            $orderData['promotion_name'] = $promoName;
+            $orderData['promotion_id'] = $promoId ? (int) $promoId : null;
+            $orderData['promotion_snapshot'] = $promoId ? [
+                'id' => (int) $promoId,
+                'name' => $promoName,
+                'code' => $request->coupon_code,
+                'discount_type' => $promoType,
+                'discount_amount' => (float) ($calculation['discount'] ?? 0),
+                'shipping_discount' => (float) ($calculation['free_shipping_applied'] ? $calculation['shipping'] : 0),
+                'currency' => $orderData['currency'] ?? null,
+                'code_type' => is_array($couponInfo) ? ($couponInfo['is_advanced'] ? 'manual' : 'auto') : null,
+            ] : null;
+
             // Create order ΓÇö atomic, catches duplicate idempotency race via DB unique index
             try {
                 $order = $this->orderService->createOrder($orderData, $cartItems);

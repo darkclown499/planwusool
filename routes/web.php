@@ -1042,6 +1042,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('advanced-coupons/{advancedCoupon}', [\App\Http\Controllers\AdvancedCouponController::class, 'destroy'])->middleware('permission:delete-advanced-coupons')->name('advanced-coupons.destroy');
         });
 
+        // Promotions center (Marketing → العروض والخصومات) — guided management layer
+        // over the canonical AdvancedCoupon engine.
+        Route::middleware('permission:manage-advanced-coupons')->group(function () {
+            Route::get('promotions', [\App\Http\Controllers\PromotionsController::class, 'index'])->name('promotions.index');
+            Route::get('promotions/create', [\App\Http\Controllers\PromotionsController::class, 'create'])->middleware('permission:create-advanced-coupons')->name('promotions.create');
+            Route::post('promotions', [\App\Http\Controllers\PromotionsController::class, 'store'])->middleware('permission:create-advanced-coupons')->name('promotions.store');
+            Route::get('promotions/{promotion}/edit', [\App\Http\Controllers\PromotionsController::class, 'edit'])->middleware('permission:edit-advanced-coupons')->name('promotions.edit');
+            Route::put('promotions/{promotion}', [\App\Http\Controllers\PromotionsController::class, 'update'])->middleware('permission:edit-advanced-coupons')->name('promotions.update');
+            Route::post('promotions/{promotion}/toggle-status', [\App\Http\Controllers\PromotionsController::class, 'toggleStatus'])->name('promotions.toggle-status');
+            Route::post('promotions/{promotion}/duplicate', [\App\Http\Controllers\PromotionsController::class, 'duplicate'])->name('promotions.duplicate');
+            Route::get('promotions/{promotion}/analytics', [\App\Http\Controllers\PromotionsController::class, 'analytics'])->name('promotions.analytics');
+            Route::delete('promotions/{promotion}', [\App\Http\Controllers\PromotionsController::class, 'destroy'])->middleware('permission:delete-advanced-coupons')->name('promotions.destroy');
+        });
+
         // Advanced COD Payment routes (cash on delivery tracking & collection)
         Route::middleware('permission:manage-cod-payments')->group(function () {
             Route::get('cod-payments', [CodPaymentController::class, 'index'])->name('cod-payments.index');
