@@ -21,6 +21,7 @@ interface TemplateRow {
 
 interface StoreMeta {
   id: number;
+  name?: string;
 }
 
 interface Props {
