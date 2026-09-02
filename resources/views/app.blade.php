@@ -39,7 +39,7 @@
     // the request and the resolved store, producing title/meta/canonical/robots
     // OpenGraph + JSON-LD. It only does real work on store routes.
     $seo = app(\App\Services\StorefrontSeoService::class)->resolve(request());
-    $store = $request->attributes->get('resolved_store')
+    $store = request()->attributes->get('resolved_store')
         ?? session('currentStore')
         ?? (request()->routeIs('store.*') ? request()->route('store') : null)
         ?? $seo->getStore();
