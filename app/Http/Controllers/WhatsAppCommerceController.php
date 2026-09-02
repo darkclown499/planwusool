@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\StoreConfiguration;
 use App\Models\WhatsAppTemplate;
+use App\Services\PhoneNormalizer;
+use App\Services\Payment\PaymentSettingsService;
 use App\Services\WhatsAppCommerceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -52,9 +55,11 @@ class WhatsAppCommerceController extends Controller
             }
         }
 
-        $storePhone = $this->whatsAppCommerce->phoneDigits(
-            getPaymentMethodConfig('whatsapp', $store->user_id, $store->id)['number'] ?? null
-        );
+        // Canonical store WhatsApp number lives in the payment settings
+        // (whatsapp_number key, scoped by user_id + store_id). We reuse that
+        // single source of truth — the page shows it, and edits it directly.
+        $rawPhone = getPaymentMethodConfig('whatsapp', $store->user_id, $store->id)['number'] ?? null;
+        $storePhoneE164 = $this->whatsAppCommerce->phoneDigits($rawPhone);
 
         return Inertia::render('stores/whatsapp-commerce', [
             'store' => $store,
@@ -62,7 +67,10 @@ class WhatsAppCommerceController extends Controller
                 'enabled' => $this->whatsAppCommerce->isEnabled($store->id),
                 'customer_actions_enabled' => (bool) filter_var($config[WhatsAppCommerceService::KEY_CUSTOMER_ACTIONS_ENABLED] ?? true, FILTER_VALIDATE_BOOLEAN),
                 'product_share_enabled' => (bool) filter_var($config[WhatsAppCommerceService::KEY_PRODUCT_SHARE_ENABLED] ?? true, FILTER_VALIDATE_BOOLEAN),
-                'store_phone' => $storePhone,
+                'store_phone' => $storePhoneE164,
+                'store_phone_raw' => $rawPhone,
+                'store_phone_configured' => $storePhoneE164 !== null,
+                'store_name' => $store->name,
             ],
             'templates' => $templates,
             'placeholders' => WhatsAppCommerceService::PLACEHOLDERS,
@@ -89,6 +97,10 @@ class WhatsAppCommerceController extends Controller
             'enabled' => 'nullable',
             'customer_actions_enabled' => 'nullable',
             'product_share_enabled' => 'nullable',
+            // The canonical store number is edited here but persisted into the
+            // same payment-settings key used everywhere else (single source of
+            // truth). Optional: only written when a non-empty value is sent.
+            'store_phone' => 'nullable|string|max:20',
             'templates' => 'nullable|array',
             'templates.*' => 'required|array:key,locale,body',
             'templates.*.key' => ['required', Rule::in(WhatsAppTemplate::keys())],
@@ -109,6 +121,23 @@ class WhatsAppCommerceController extends Controller
         }
         if ($settingsToSave) {
             StoreConfiguration::updateConfiguration($store->id, $settingsToSave);
+        }
+
+        // Persist the canonical WhatsApp number into the payment settings
+        // source of truth (reused by orders, product share, and the storefront).
+        // Server-side validation + normalization consistent with wa.me helper.
+        $storePhone = $request->input('store_phone');
+        if (is_string($storePhone) && trim($storePhone) !== '') {
+            $normalized = PhoneNormalizer::normalize(trim($storePhone));
+            if ($normalized === null) {
+                return back()
+                    ->withErrors(['store_phone' => __('رقم واتساب غير صالح، تأكد من استخدام رقم دولي صحيح مثل +970591234567.')])
+                    ->withInput();
+            }
+
+            $settingsService = app(PaymentSettingsService::class);
+            $settingsService->updatePaymentSetting('whatsapp_number', $normalized, $store->user_id, $store->id);
+            Cache::forget('payment_settings.' . $store->user_id . '.' . $store->id);
         }
 
         // Persist templates (upsert by store+key+locale).
