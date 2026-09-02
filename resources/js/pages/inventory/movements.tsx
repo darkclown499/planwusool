@@ -44,6 +44,7 @@ export default function InventoryMovements() {
                                 <tr className="border-b border-border bg-muted/30 text-start text-xs uppercase text-muted-foreground">
                                     <th className="px-4 py-3 text-start font-medium">{t('Date')}</th>
                                     <th className="px-4 py-3 text-start font-medium">{t('Product')}</th>
+                                    <th className="px-4 py-3 text-start font-medium">{t('Variant')}</th>
                                     <th className="px-4 py-3 text-start font-medium">{t('Movement Type')}</th>
                                     <th className="px-4 py-3 text-end font-medium">{t('Before')}</th>
                                     <th className="px-4 py-3 text-end font-medium">{t('Delta')}</th>
@@ -59,6 +60,7 @@ export default function InventoryMovements() {
                                         <tr key={m.id} className="border-b border-border/60 last:border-0 hover:bg-muted/20">
                                             <td className="px-4 py-3 text-start text-muted-foreground whitespace-nowrap">{fmtTime(m.created_at)}</td>
                                             <td className="px-4 py-3 text-start font-medium">{m.product_name || '-'}</td>
+                                            <td className="px-4 py-3 text-start text-muted-foreground">{m.variant_label || m.variant_combination_id || '-'}</td>
                                             <td className="px-4 py-3 text-start"><Badge variant={info.variant}>{info.label}</Badge></td>
                                             <td className="px-4 py-3 text-end text-muted-foreground">{m.before ?? '-'}</td>
                                             <td className={`px-4 py-3 text-end font-semibold ${m.delta > 0 ? 'text-green-600' : m.delta < 0 ? 'text-destructive' : ''}`}>
@@ -71,7 +73,7 @@ export default function InventoryMovements() {
                                     );
                                 })}
                                 {movements.length === 0 && (
-                                    <tr><td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
+                                    <tr><td colSpan={9} className="px-4 py-10 text-center text-muted-foreground">
                                         {t('No movements recorded yet')}
                                     </td></tr>
                                 )}
