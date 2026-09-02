@@ -50,26 +50,52 @@
     <table class="grid-metrics">
         <tr>
             <td>
-                <div class="metric-label">إجمالي الإيرادات (الفترة)</div>
-                <div class="metric-value">{{ $currency($metrics['revenue']['current']) }}</div>
-                <div class="metric-label">{{ $metrics['revenue']['change'] }}٪ التغيير</div>
+                <div class="metric-label">إجمالي المبيعات الصالحة (الفترة)</div>
+                @foreach ($gmv as $code => $amount)
+                    <div class="metric-value">{{ $currency($amount) }}</div>
+                @endforeach
             </td>
             <td>
-                <div class="metric-label">إجمالي الطلبات</div>
-                <div class="metric-value">{{ number_format($metrics['orders']['current']) }}</div>
-                <div class="metric-label">التغيير: {{ $metrics['orders']['change'] }}</div>
+                <div class="metric-label">المُحصّل</div>
+                @foreach ($collected as $code => $amount)
+                    <div class="metric-value">{{ $currency($amount) }}</div>
+                @endforeach
             </td>
             <td>
-                <div class="metric-label">إجمالي العملاء</div>
-                <div class="metric-value">{{ number_format($metrics['customers']['total']) }}</div>
-                <div class="metric-label">جدد: {{ number_format($metrics['customers']['new']) }}</div>
+                <div class="metric-label">التحصيلات المعلقة</div>
+                @foreach ($pending as $code => $amount)
+                    <div class="metric-value">{{ $currency($amount) }}</div>
+                @endforeach
             </td>
             <td>
-                <div class="metric-label">نسبة التحويل</div>
-                <div class="metric-value">{{ $metrics['conversion']['rate'] }}٪</div>
-                <div class="metric-label">التغيير: {{ $metrics['conversion']['change'] }}٪</div>
+                <div class="metric-label">متوسط قيمة الطلب</div>
+                @foreach ($aov as $code => $amount)
+                    <div class="metric-value">{{ $currency($amount) }}</div>
+                @endforeach
             </td>
         </tr>
+    </table>
+
+    <h2>الطلبات والعملاء</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>الطلبات الصالحة</th>
+                <th>الطلبات الملغاة</th>
+                <th>إجمالي العملاء</th>
+                <th>العملاء المتكررون</th>
+                <th>عملاء جدد</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ number_format($validOrders) }}</td>
+                <td>{{ number_format($cancelledOrders) }}</td>
+                <td>{{ number_format($totalCustomers) }}</td>
+                <td>{{ number_format($repeatCustomers) }}</td>
+                <td>{{ number_format($newCustomers) }}</td>
+            </tr>
+        </tbody>
     </table>
 
     <h2>المنتجات الأكثر مبيعاً</h2>
@@ -114,28 +140,6 @@
                         <td>{{ $customer['name'] }}</td>
                         <td>{{ $customer['orders'] }}</td>
                         <td>{{ $customer['spent'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-
-    <h2>الإيرادات اليومية</h2>
-    @if (count($revenueChart) === 0)
-        <p style="color:#9ca3af;">لا توجد بيانات متاحة حالياً</p>
-    @else
-        <table class="data">
-            <thead>
-                <tr>
-                    <th>التاريخ</th>
-                    <th>الإيرادات</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($revenueChart as $row)
-                    <tr>
-                        <td>{{ $row['date'] }}</td>
-                        <td>{{ $currency($row['revenue']) }}</td>
                     </tr>
                 @endforeach
             </tbody>

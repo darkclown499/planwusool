@@ -1105,7 +1105,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Analytics & Reporting routes
         Route::get('analytics', [\App\Http\Controllers\AnalyticsController::class, 'index'])->middleware('permission:manage-analytics')->name('analytics.index');
+        Route::get('analytics/products', [\App\Http\Controllers\AnalyticsController::class, 'products'])->middleware('permission:manage-analytics')->name('analytics.products');
+        Route::get('analytics/customers', [\App\Http\Controllers\AnalyticsController::class, 'customers'])->middleware('permission:manage-analytics')->name('analytics.customers');
         Route::get('analytics/export', [\App\Http\Controllers\AnalyticsController::class, 'export'])->middleware('permission:export-analytics')->name('analytics.export');
+        Route::get('analytics/export/products', [\App\Http\Controllers\AnalyticsController::class, 'exportProducts'])->middleware('permission:export-analytics')->name('analytics.export.products');
+        Route::get('analytics/export/customers', [\App\Http\Controllers\AnalyticsController::class, 'exportCustomers'])->middleware('permission:export-analytics')->name('analytics.export.customers');
         Route::get('analytics/export/pdf', [\App\Http\Controllers\AnalyticsController::class, 'exportPdf'])->middleware('permission:export-analytics')->name('analytics.export.pdf');
         
         // Payment Gateway routes

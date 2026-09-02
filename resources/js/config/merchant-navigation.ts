@@ -345,8 +345,25 @@ export function getMerchantContextNav(
             return { title: titleFor('marketing'), items };
         }
         case 'analytics': {
-            // Single item but still show context to keep IA consistent; no subnav needed but we provide one
-            return null;
+            const items: ContextNavItem[] = [];
+            if (hasPermission('manage-analytics')) {
+                items.push({
+                    title: t('Overview'),
+                    href: tryRoute('analytics.index', '/analytics'),
+                    activePaths: ['/analytics'],
+                });
+                items.push({
+                    title: t('Products'),
+                    href: tryRoute('analytics.products', '/analytics/products'),
+                    activePaths: ['/analytics/products'],
+                });
+                items.push({
+                    title: t('Customers'),
+                    href: tryRoute('analytics.customers', '/analytics/customers'),
+                    activePaths: ['/analytics/customers'],
+                });
+            }
+            return { title: titleFor('analytics'), items };
         }
         case 'settings': {
             const items: ContextNavItem[] = [];

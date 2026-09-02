@@ -2,454 +2,367 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use App\Models\Customer;
-use App\Models\OrderItem;
+use App\Services\AnalyticsCsvExporter;
+use App\Services\AnalyticsService;
+use App\Services\CustomerDirectoryService;
+use App\Support\AnalyticsPeriod;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Throwable;
 
+/**
+ * Merchant Analytics & Reporting (Phase 1).
+ *
+ * Every payload is built by the canonical AnalyticsService from SQL aggregates
+ * scoped to the authenticated user's current store. The store id NEVER comes
+ * from the client. Date ranges are resolved in the store's own timezone by the
+ * AnalyticsPeriod helper (default: Asia/Hebron) and only validated presets or
+ * a capped custom range are accepted.
+ */
 class AnalyticsController extends Controller
 {
+    public function __construct(
+        protected AnalyticsService $analytics,
+        protected CustomerDirectoryService $directory,
+        protected AnalyticsCsvExporter $csv
+    ) {
+    }
+
     public function index(Request $request)
     {
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
-        // Super admins have no store selected; for them the analytics page
-        // shows platform-wide numbers aggregated across every store.
-        $aggregate = $user->isSuperAdmin();
 
-        // A merchant without a selected store has nothing to aggregate yet.
-        if (!$aggregate && !$storeId) {
+        // Super admins (no selected store) and merchants without a store get an
+        // empty-state dashboard. Platform-wide aggregation is deliberately NOT
+        // offered here — analytics/reporting is a merchant (per-store) feature.
+        if (! $storeId) {
             return Inertia::render('analytics/index', [
-                'analytics' => $this->emptyAnalytics(),
+                'analytics' => $this->emptyPayload(),
+                'preset' => 'last_30_days',
                 'from' => null,
                 'to' => null,
             ]);
         }
 
-        $range = $this->resolveRange($request);
-
-        $analytics = [
-            'metrics' => $this->getKeyMetrics($storeId, $aggregate, $range),
-            'topProducts' => $this->getTopProducts($storeId, $aggregate, $range),
-            'topCustomers' => $this->getTopCustomers($storeId, $aggregate, $range),
-            'recentActivity' => $this->getRecentActivity($storeId, $aggregate, $range),
-            'revenueChart' => $this->getRevenueChartData($storeId, $aggregate, $range),
-            'salesChart' => $this->getSalesChartData($storeId, $aggregate, $range),
-        ];
+        [$period, $preset, $from, $to] = $this->resolvePeriod($request);
+        $primaryCurrency = $this->primaryCurrency($user->id, $storeId);
 
         return Inertia::render('analytics/index', [
-            'analytics' => $analytics,
-            'from' => $range['from'] ? $range['from']->format('Y-m-d') : null,
-            'to' => $range['to'] ? $range['to']->format('Y-m-d') : null,
+            'analytics' => $this->analytics->overview($storeId, $period, $primaryCurrency),
+            'preset' => $preset,
+            'from' => $from,
+            'to' => $to,
         ]);
     }
 
-    /**
-     * Normalise an optional from/to query range into a date window plus the
-     * immediately preceding window of equal length (used for the delta %).
-     */
-    private function resolveRange(Request $request): array
+    public function products(Request $request)
     {
-        $from = $request->filled('from') ? Carbon::parse($request->input('from'))->startOfDay() : null;
-        $to = $request->filled('to') ? Carbon::parse($request->input('to'))->endOfDay() : null;
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
 
-        if ($from && $to && $from->greaterThan($to)) {
-            [$from, $to] = [$to, $from];
+        if (! $storeId) {
+            return Inertia::render('analytics/products', [
+                'products' => ['products' => [], 'pagination' => ['current_page' => 1, 'last_page' => 1, 'per_page' => 20, 'total' => 0]],
+                'search' => '',
+                'preset' => 'last_30_days',
+                'from' => null,
+                'to' => null,
+            ]);
         }
 
-        $prevFrom = null;
-        $prevTo = null;
-        if ($from && $to) {
-            $length = $from->diffInDays($to) + 1;
-            $prevTo = $from->copy()->subDay();
-            $prevFrom = $from->copy()->subDays($length);
+        [$period, $preset, $from, $to] = $this->resolvePeriod($request);
+        $primaryCurrency = $this->primaryCurrency($user->id, $storeId);
+
+        return Inertia::render('analytics/products', [
+            'products' => $this->analytics->productPerformance(
+                $storeId,
+                $period,
+                $primaryCurrency,
+                (string) ($request->input('search') ?? ''),
+                max(1, (int) ($request->input('page') ?? 1)),
+                (int) ($request->input('per_page') ?? AnalyticsService::PRODUCTS_PER_PAGE_DEFAULT)
+            ),
+            'search' => (string) ($request->input('search') ?? ''),
+            'preset' => $preset,
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
+    public function customers(Request $request)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+
+        if (! $storeId) {
+            return Inertia::render('analytics/customers', [
+                'customerAnalytics' => $this->emptyCustomerPayload(),
+                'preset' => 'last_30_days',
+                'from' => null,
+                'to' => null,
+            ]);
         }
 
-        return compact('from', 'to', 'prevFrom', 'prevTo');
-    }
+        [$period, $preset, $from, $to] = $this->resolvePeriod($request);
+        $primaryCurrency = $this->primaryCurrency($user->id, $storeId);
 
-    /**
-     * Build an order query scoped to the current context.
-     *
-     * @param int|null $storeId
-     * @param bool $aggregate When true (super admin), ignore the store filter.
-     * @param bool $paidOnly Only count paid orders.
-     */
-    private function orderQuery($storeId, $aggregate, $paidOnly = false)
-    {
-        $query = Order::query();
-
-        if ($paidOnly) {
-            $query->where('payment_status', 'paid');
-        }
-
-        if (!$aggregate && $storeId) {
-            $query->where('store_id', $storeId);
-        }
-
-        return $query;
-    }
-
-    private function getKeyMetrics($storeId, $aggregate, array $range = [])
-    {
-        $from = $range['from'] ?? null;
-        $to = $range['to'] ?? null;
-        $prevFrom = $range['prevFrom'] ?? null;
-        $prevTo = $range['prevTo'] ?? null;
-
-        // With a requested range we compare against the preceding window of
-        // equal length; otherwise we keep the default month-over-month basis.
-        $currentStart = $from ?? Carbon::now()->startOfMonth();
-        $currentEnd = $to ?? Carbon::now();
-        $prevStart = $prevFrom ?? Carbon::now()->subMonth()->startOfMonth();
-        $prevEnd = $prevTo ?? $currentStart;
-
-        // Revenue (paid orders only)
-        $totalRevenue = $this->orderQuery($storeId, $aggregate, true)->sum('total_amount');
-        $currentMonthRevenue = $this->orderQuery($storeId, $aggregate, true)
-            ->whereBetween('created_at', [$currentStart, $currentEnd])
-            ->sum('total_amount');
-        $lastMonthRevenue = $this->orderQuery($storeId, $aggregate, true)
-            ->whereBetween('created_at', [$prevStart, $prevEnd])
-            ->sum('total_amount');
-
-        // Orders
-        $currentOrders = $this->orderQuery($storeId, $aggregate)
-            ->whereBetween('created_at', [$currentStart, $currentEnd])
-            ->count();
-        $lastMonthOrders = $this->orderQuery($storeId, $aggregate)
-            ->whereBetween('created_at', [$prevStart, $prevEnd])
-            ->count();
-
-        // Customers
-        $customerQuery = Customer::query();
-        if (!$aggregate && $storeId) {
-            $customerQuery->where('store_id', $storeId);
-        }
-        $totalCustomers = $customerQuery->count();
-        $newCustomers = (clone $customerQuery)
-            ->whereBetween('created_at', [$currentStart, $currentEnd])
-            ->count();
-
-        // Revenue growth (current window vs previous window)
-        $revenueGrowth = 0;
-        if ($lastMonthRevenue > 0) {
-            $revenueGrowth = (($currentMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100;
-        } elseif ($currentMonthRevenue > 0) {
-            $revenueGrowth = 100;
-        }
-
-        // Conversion rate proxy: paid orders placed in the window as % of total customers
-        $currentMonthPaid = $this->orderQuery($storeId, $aggregate, true)
-            ->whereBetween('created_at', [$currentStart, $currentEnd])
-            ->count();
-        $lastMonthPaid = $this->orderQuery($storeId, $aggregate, true)
-            ->whereBetween('created_at', [$prevStart, $prevEnd])
-            ->count();
-        $conversionRate = $totalCustomers > 0 ? round(($currentMonthPaid / $totalCustomers) * 100, 1) : 0;
-        $lastMonthRate = $totalCustomers > 0 ? round(($lastMonthPaid / $totalCustomers) * 100, 1) : 0;
-
-        return [
-            'revenue' => [
-                // "current" is this window's revenue so the "% (delta)" below
-                // it is meaningful and truthful.
-                'current' => round($currentMonthRevenue, 2),
-                // All-time revenue, shown as a secondary figure on the card.
-                'total' => round($totalRevenue, 2),
-                'change' => round($revenueGrowth, 1)
-            ],
-            'orders' => [
-                'current' => $currentOrders,
-                'change' => $currentOrders - $lastMonthOrders
-            ],
-            'customers' => [
-                'total' => $totalCustomers,
-                'new' => $newCustomers
-            ],
-            'conversion' => [
-                'rate' => $conversionRate,
-                'change' => round($conversionRate - $lastMonthRate, 1)
-            ]
-        ];
-    }
-
-    private function getTopProducts($storeId, $aggregate, array $range = [])
-    {
-        $from = $range['from'] ?? null;
-        $to = $range['to'] ?? null;
-
-        return OrderItem::select('product_name', 'product_id')
-            ->selectRaw('SUM(quantity) as total_sold')
-            ->selectRaw('SUM(total_price) as total_revenue')
-            ->whereHas('order', function ($query) use ($storeId, $aggregate, $from, $to) {
-                $query->where('payment_status', 'paid');
-                if (!$aggregate && $storeId) {
-                    $query->where('store_id', $storeId);
-                }
-                if ($from) {
-                    $query->where('orders.created_at', '>=', $from);
-                }
-                if ($to) {
-                    $query->where('orders.created_at', '<=', $to);
-                }
-            })
-            ->groupBy('product_id', 'product_name')
-            ->orderBy('total_revenue', 'desc')
-            ->limit(4)
-            ->get()
-            ->map(function ($item) use ($storeId) {
-                $user = Auth::user();
-                return [
-                    'name' => cleanUtf8((string) $item->product_name),
-                    'sales' => (int) $item->total_sold,
-                    'revenue' => formatStoreCurrency($item->total_revenue, $user->id, $storeId)
-                ];
-            });
-    }
-
-    private function getTopCustomers($storeId, $aggregate, array $range = [])
-    {
-        $from = $range['from'] ?? null;
-        $to = $range['to'] ?? null;
-
-        return Customer::select('customers.*')
-            ->selectRaw("COUNT(CASE WHEN orders.payment_status = 'paid' THEN 1 ELSE NULL END) as order_count")
-            ->selectRaw("SUM(CASE WHEN orders.payment_status = 'paid' THEN orders.total_amount ELSE 0 END) as total_spent")
-            ->leftJoin('orders', 'customers.id', '=', 'orders.customer_id')
-            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
-                $query->where('customers.store_id', $storeId);
-            })
-            ->when($from, fn ($query) => $query->where('orders.created_at', '>=', $from))
-            ->when($to, fn ($query) => $query->where('orders.created_at', '<=', $to))
-            ->groupBy('customers.id')
-            ->orderBy('total_spent', 'desc')
-            ->limit(4)
-            ->get()
-            ->map(function ($customer) use ($storeId) {
-                $user = Auth::user();
-                return [
-                    'name' => cleanUtf8(trim($customer->first_name . ' ' . $customer->last_name)),
-                    'orders' => (int) ($customer->order_count ?: 0),
-                    'spent' => formatStoreCurrency($customer->total_spent ?: 0, $user->id, $storeId)
-                ];
-            });
-    }
-
-    private function getRecentActivity($storeId, $aggregate, array $range = [])
-    {
-        $from = $range['from'] ?? null;
-        $to = $range['to'] ?? null;
-
-        return Order::query()
-            ->with('customer')
-            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
-                $query->where('store_id', $storeId);
-            })
-            ->when($from, fn ($query) => $query->where('created_at', '>=', $from))
-            ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
-            ->orderBy('created_at', 'desc')
-            ->limit(4)
-            ->get()
-            ->map(function ($order) use ($storeId) {
-                $user = Auth::user();
-                return [
-                    'type' => 'Order',
-                    'description' => cleanUtf8(
-                        'New order ' . $order->order_number . ' from ' . $order->customer_first_name . ' ' . $order->customer_last_name
-                    ),
-                    'amount' => formatStoreCurrency($order->total_amount, $user->id, $storeId),
-                    'time' => $order->created_at ? $order->created_at->diffForHumans() : ''
-                ];
-            });
-    }
-
-    private function getRevenueChartData($storeId, $aggregate, array $range = [])
-    {
-        $from = $range['from'] ?? Carbon::now()->subDays(30);
-        $to = $range['to'] ?? null;
-
-        return Order::query()
-            ->where('payment_status', 'paid')
-            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
-                $query->where('store_id', $storeId);
-            })
-            ->where('created_at', '>=', $from)
-            ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
-            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'date' => Carbon::parse($item->date)->format('M d'),
-                    'revenue' => (float) $item->revenue
-                ];
-            });
-    }
-
-    private function getSalesChartData($storeId, $aggregate, array $range = [])
-    {
-        $from = $range['from'] ?? Carbon::now()->subDays(30);
-        $to = $range['to'] ?? null;
-
-        return Order::query()
-            ->when(!$aggregate && $storeId, function ($query) use ($storeId) {
-                $query->where('store_id', $storeId);
-            })
-            ->where('created_at', '>=', $from)
-            ->when($to, fn ($query) => $query->where('created_at', '<=', $to))
-            ->selectRaw('DATE(created_at) as date, COUNT(*) as orders')
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'date' => Carbon::parse($item->date)->format('M d'),
-                    'orders' => (int) $item->orders
-                ];
-            });
-    }
-
-    private function emptyAnalytics()
-    {
-        return [
-            'metrics' => [
-                'revenue' => ['current' => 0, 'total' => 0, 'change' => 0],
-                'orders' => ['current' => 0, 'change' => 0],
-                'customers' => ['total' => 0, 'new' => 0],
-                'conversion' => ['rate' => 0, 'change' => 0]
-            ],
-            'topProducts' => [],
-            'topCustomers' => [],
-            'recentActivity' => [],
-            'revenueChart' => [],
-            'salesChart' => []
-        ];
+        return Inertia::render('analytics/customers', [
+            'customerAnalytics' => $this->analytics->customerOverview($storeId, $period, $primaryCurrency),
+            'preset' => $preset,
+            'from' => $from,
+            'to' => $to,
+        ]);
     }
 
     public function export(Request $request)
     {
-        $user = Auth::user();
-        $storeId = $user->current_store;
-        $aggregate = $user->isSuperAdmin();
+        [$period, $primaryCurrency, $storeId] = $this->exportContext($request);
 
-        // A merchant without a selected store cannot export anything.
-        if (!$aggregate && !$storeId) {
-            return response()->json(['error' => 'No store selected'], 400);
-        }
+        $analytics = $this->analytics->overview($storeId, $period, $primaryCurrency);
 
-        $range = $this->resolveRange($request);
+        $rows = [];
+        $rows[] = ['report' => 'Sales Report', 'scope' => 'Store ' . $storeId, 'timezone' => $period['timezone']];
+        $rows[] = ['period_from' => $period['from']->format('Y-m-d'), 'period_to' => $period['to']->copy()->subSecond()->format('Y-m-d')];
+        $rows[] = [];
 
-        $analytics = [
-            'metrics' => $this->getKeyMetrics($storeId, $aggregate, $range),
-            'topProducts' => $this->getTopProducts($storeId, $aggregate, $range),
-            'topCustomers' => $this->getTopCustomers($storeId, $aggregate, $range),
-            'revenueChart' => $this->getRevenueChartData($storeId, $aggregate, $range),
+        $moneyLabels = [
+            'gmv' => 'valid_sales_gmv',
+            'collected' => 'collected',
+            'pending_collection' => 'pending_collection',
+            'aov' => 'average_order_value',
         ];
-
-        $csvData = [];
-        $scopeLabel = $aggregate ? 'All Stores (Platform)' : 'Store ID: ' . $storeId;
-        $csvData[] = ['Analytics Export - ' . $scopeLabel];
-        $csvData[] = ['Generated on: ' . now()->format('Y-m-d H:i:s')];
-        if ($range['from'] && $range['to']) {
-            $csvData[] = ['Period: ' . $range['from']->format('Y-m-d') . ' to ' . $range['to']->format('Y-m-d')];
-        }
-        $csvData[] = [];
-
-        // Key Metrics
-        $csvData[] = ['KEY METRICS'];
-        $csvData[] = ['Metric', 'Current Value', 'Change'];
-        $csvData[] = ['Revenue', formatStoreCurrency($analytics['metrics']['revenue']['current'], $user->id, $storeId), number_format($analytics['metrics']['revenue']['change'], 1) . '%'];
-        $csvData[] = ['Orders', $analytics['metrics']['orders']['current'], $analytics['metrics']['orders']['change']];
-        $csvData[] = ['Total Customers', $analytics['metrics']['customers']['total'], ''];
-        $csvData[] = ['New Customers', $analytics['metrics']['customers']['new'], ''];
-        $csvData[] = [];
-
-        // Top Products
-        $csvData[] = ['TOP PRODUCTS'];
-        $csvData[] = ['Product Name', 'Units Sold', 'Revenue'];
-        foreach ($analytics['topProducts'] as $product) {
-            $csvData[] = [$product['name'], $product['sales'], $product['revenue']];
-        }
-        $csvData[] = [];
-
-        // Top Customers
-        $csvData[] = ['TOP CUSTOMERS'];
-        $csvData[] = ['Customer Name', 'Orders', 'Total Spent'];
-        foreach ($analytics['topCustomers'] as $customer) {
-            $csvData[] = [$customer['name'], $customer['orders'], $customer['spent']];
-        }
-        $csvData[] = [];
-
-        // Revenue Chart Data
-        $csvData[] = ['DAILY REVENUE'];
-        $csvData[] = ['Date', 'Revenue'];
-        foreach ($analytics['revenueChart'] as $data) {
-            $csvData[] = [$data['date'], formatStoreCurrency($data['revenue'], $user->id, $storeId)];
-        }
-
-        $filename = 'analytics-export-' . now()->format('Y-m-d') . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
-
-        $callback = function () use ($csvData) {
-            $file = fopen('php://output', 'w');
-            foreach ($csvData as $row) {
-                fputcsv($file, $row);
+        foreach ($moneyLabels as $key => $label) {
+            $metric = $analytics['metrics'][$key] ?? null;
+            if (! $metric) {
+                continue;
             }
-            fclose($file);
-        };
+            foreach ($metric['groups'] as $group) {
+                $prev = collect($metric['previous_groups'])->first(fn ($g) => $g['code'] === $group['code']);
+                $rows[] = [
+                    'metric' => $label,
+                    'amount_' . $group['code'] => $group['amount'],
+                    'previous_' . $group['code'] => $prev['amount'] ?? '0',
+                    'currency' => $group['code'],
+                ];
+            }
+        }
 
-        return response()->stream($callback, 200, $headers);
+        $rows[] = [];
+        $rows[] = ['orders', $analytics['metrics']['valid_orders']['current'], (int) ($analytics['metrics']['valid_orders']['previous'] ?? 0)];
+        $rows[] = ['cancelled_orders', $analytics['metrics']['cancelled_orders']['current'], (int) ($analytics['metrics']['cancelled_orders']['previous'] ?? 0)];
+        $rows[] = ['total_customers', $analytics['metrics']['total_customers']['current'], 0];
+        $rows[] = ['new_customers', $analytics['metrics']['new_customers']['current'], (int) ($analytics['metrics']['new_customers']['previous'] ?? 0)];
+
+        $rows[] = [];
+        $rows[] = ['order_status', 'count', 'percentage'];
+        foreach ($analytics['order_status_breakdown'] as $row) {
+            $rows[] = [$row['status'], $row['count'], $row['percentage'] . '%'];
+        }
+
+        $rows[] = [];
+        $rows[] = ['payment_method', 'orders', 'valid_orders', 'valid_value'];
+        foreach ($analytics['payment_method_breakdown'] as $row) {
+            $value = $row['valid_value_primary'];
+            $rows[] = [$row['method'], $row['orders'], $row['valid_orders'], $value ? number_format($value, 2) : '0.00'];
+        }
+
+        $rows[] = [];
+        $rows[] = ['top_products_by_value', 'units', 'orders'];
+        foreach ($analytics['top_products']['by_value'] as $product) {
+            $rows[] = [$product['name'], $product['units'], $product['orders']];
+        }
+
+        return $this->csv->download('analytics-report-' . $period['from']->format('Y-m-d') . '.csv', ['report_data'], $rows);
+    }
+
+    public function exportProducts(Request $request)
+    {
+        [$period, $primaryCurrency, $storeId] = $this->exportContext($request);
+
+        $products = $this->analytics->productRows($storeId, $period, $primaryCurrency);
+
+        $rows = [];
+        $rows[] = ['scope' => 'Store ' . $storeId, 'period_from' => $period['from']->format('Y-m-d'), 'period_to' => $period['to']->copy()->subSecond()->format('Y-m-d')];
+        $rows[] = [];
+        foreach ($products as $product) {
+            $rows[] = [$product['name'], $product['units'], $product['orders'], number_format($product['primary'], 2)];
+        }
+
+        return $this->csv->download('analytics-products-' . $period['from']->format('Y-m-d') . '.csv', ['product', 'units_sold', 'orders', 'revenue'], $rows);
+    }
+
+    public function exportCustomers(Request $request)
+    {
+        [$period, $primaryCurrency, $storeId] = $this->exportContext($request);
+
+        $analytics = $this->analytics->customerOverview($storeId, $period, $primaryCurrency);
+
+        $rows = [];
+        $rows[] = ['scope' => 'Store ' . $storeId, 'period_from' => $period['from']->format('Y-m-d'), 'period_to' => $period['to']->copy()->subSecond()->format('Y-m-d')];
+        $rows[] = ['total_customers' => $analytics['stats']['total_customers'], 'repeat_customers' => $analytics['stats']['repeat_customers'], 'new_customers' => $analytics['stats']['new_customers']['current'], 'returning_customers' => $analytics['stats']['returning_customers']['current']];
+        $rows[] = [];
+        $rows[] = ['customer', 'orders', 'spent'];
+        foreach ($analytics['top_customers'] as $customer) {
+            $primary = end($customer['spent']) ?: null;
+            $rows[] = [$customer['name'], $customer['orders'], $primary ? number_format($primary['amount'], 2) : '0.00'];
+        }
+
+        return $this->csv->download('analytics-customers-' . $period['from']->format('Y-m-d') . '.csv', ['customer', 'orders', 'spent'], $rows);
     }
 
     public function exportPdf(Request $request)
     {
-        $user = Auth::user();
-        $storeId = $user->current_store;
-        $aggregate = $user->isSuperAdmin();
+        [$period, $primaryCurrency, $storeId, $user] = $this->exportContext($request);
 
-        // A merchant without a selected store cannot export anything.
-        if (!$aggregate && !$storeId) {
-            abort(400, 'No store selected');
-        }
+        $analytics = $this->analytics->overview($storeId, $period, $primaryCurrency);
+        $metrics = $analytics['metrics'];
 
-        $range = $this->resolveRange($request);
+        $currency = fn ($amount) => formatStoreCurrency($amount, $user->id, $storeId);
 
-        $analytics = [
-            'metrics' => $this->getKeyMetrics($storeId, $aggregate, $range),
-            'topProducts' => $this->getTopProducts($storeId, $aggregate, $range),
-            'topCustomers' => $this->getTopCustomers($storeId, $aggregate, $range),
-            'revenueChart' => $this->getRevenueChartData($storeId, $aggregate, $range),
-        ];
+        $topProducts = collect($analytics['top_products']['by_value'])->take(5)->map(fn ($p) => [
+            'name' => $p['name'],
+            'sales' => $p['units'],
+            'revenue' => $currency($p['primary']),
+        ])->values()->all();
 
-        $currency = function ($amount) use ($user, $storeId) {
-            return formatStoreCurrency($amount, $user->id, $storeId);
-        };
+        $topCustomers = collect($analytics['top_customers'])->take(5)->map(fn ($c) => [
+            'name' => $c['name'],
+            'orders' => $c['orders'],
+            'spent' => $currency($c['primary_spent']),
+        ])->values()->all();
+
+        $changes = collect($metrics)->mapWithKeys(fn ($m, $key) => [
+            $key => is_array($m['change'] ?? null) ? $m['change']['change'] : 0.0,
+        ]);
 
         $data = [
             'generatedAt' => now()->format('Y-m-d H:i:s'),
-            'scopeLabel' => $aggregate ? 'All Stores (Platform)' : 'Store ID: ' . $storeId,
-            'periodLabel' => $range['from'] && $range['to']
-                ? $range['from']->format('Y-m-d') . ' - ' . $range['to']->format('Y-m-d')
-                : 'Last 30 days / this month',
-            'metrics' => $analytics['metrics'],
-            'topProducts' => $analytics['topProducts'],
-            'topCustomers' => $analytics['topCustomers'],
-            'revenueChart' => $analytics['revenueChart'],
+            'scopeLabel' => 'Store ID: ' . $storeId,
+            'periodLabel' => $period['from']->format('Y-m-d') . ' - ' . $period['to']->copy()->subSecond()->format('Y-m-d'),
+            'gmv' => collect($metrics['gmv']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
+            'collected' => collect($metrics['collected']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
+            'pending' => collect($metrics['pending_collection']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
+            'aov' => collect($metrics['aov']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
+            'validOrders' => $metrics['valid_orders']['current'],
+            'validOrdersChange' => $changes['valid_orders'],
+            'cancelledOrders' => $metrics['cancelled_orders']['current'],
+            'totalCustomers' => $metrics['total_customers']['current'],
+            'repeatCustomers' => $metrics['repeat_customers']['current'],
+            'newCustomers' => $metrics['new_customers']['current'],
+            'topProducts' => $topProducts,
+            'topCustomers' => $topCustomers,
             'currency' => $currency,
         ];
 
         $pdf = Pdf::loadView('pdf.analytics', $data);
         $pdf->setPaper('a4', 'portrait');
 
-        return $pdf->download('analytics-report-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->download('analytics-report-' . $period['from']->format('Y-m-d') . '.pdf');
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Resolve an AnalyticsPeriod from validated request input, guarding
+     * against malformed/oversized custom ranges.
+     *
+     * @return array{0:array<string,mixed>,1:string,2:?string,3:?string}
+     */
+    private function resolvePeriod(Request $request): array
+    {
+        $preset = (string) ($request->input('preset') ?? 'last_30_days');
+        if (! in_array($preset, AnalyticsPeriod::PRESETS, true)) {
+            $preset = 'last_30_days';
+        }
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+        if ($preset !== 'custom') {
+            $from = null;
+            $to = null;
+        }
+
+        try {
+            $period = (new AnalyticsPeriod($this->storeTimezone($request), now()))->resolve($preset, $from ? (string) $from : null, $to ? (string) $to : null);
+        } catch (Throwable) {
+            $preset = 'last_30_days';
+            $period = (new AnalyticsPeriod($this->storeTimezone($request), now()))->resolve($preset);
+        }
+
+        return [$period, $preset, $preset === 'custom' ? $from : null, $preset === 'custom' ? $to : null];
+    }
+
+    private function storeTimezone(Request $request): string
+    {
+        return (string) (settings(Auth::id(), getCurrentStoreId(Auth::user()))['defaultTimezone'] ?? 'Asia/Hebron');
+    }
+
+    private function primaryCurrency(int $userId, int $storeId): string
+    {
+        return strtoupper((string) (settings($userId, $storeId)['defaultCurrency'] ?? 'ILS'));
+    }
+
+    /**
+     * @return array{0:array<string,mixed>,1:string,2:int,3:mixed}
+     */
+    private function exportContext(Request $request): array
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+
+        if (! $storeId) {
+            abort(400, 'No store selected');
+        }
+
+        [$period] = $this->resolvePeriod($request);
+
+        return [$period, $this->primaryCurrency($user->id, $storeId), $storeId, $user];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function emptyPayload(): array
+    {
+        $now = now();
+        $tz = new AnalyticsPeriod('Asia/Hebron', $now);
+        $period = $tz->resolve('last_30_days');
+
+        return [
+            'has_no_store' => true,
+            'period' => [
+                'key' => 'last_30_days',
+                'timezone' => 'Asia/Hebron',
+                'from' => $period['from']->toISOString(),
+                'to' => $period['to']->toISOString(),
+                'from_label' => $period['labels']['from'],
+                'to_label' => $period['labels']['to'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function emptyCustomerPayload(): array
+    {
+        $now = now();
+        $tz = new AnalyticsPeriod('Asia/Hebron', $now);
+        $period = $tz->resolve('last_30_days');
+
+        return [
+            'has_no_store' => true,
+            'period' => [
+                'key' => 'last_30_days',
+                'timezone' => 'Asia/Hebron',
+                'from' => $period['from']->toISOString(),
+                'to' => $period['to']->toISOString(),
+                'from_label' => $period['labels']['from'],
+                'to_label' => $period['labels']['to'],
+            ],
+        ];
     }
 }
