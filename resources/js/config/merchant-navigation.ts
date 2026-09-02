@@ -57,7 +57,7 @@ export const MERCHANT_PRIMARY_AREAS: PrimaryArea[] = [
     { id: 'products', labelKey: 'Products', labelAr: 'المنتجات', icon: Package, permissionAny: ['manage-products', 'manage-categories', 'manage-product-reviews', 'manage-digital-downloads'] },
     { id: 'customers', labelKey: 'Customers', labelAr: 'العملاء', icon: Users, permissionAny: ['manage-customers', 'manage-loyalty'] },
     { id: 'store', labelKey: 'Store', labelAr: 'المتجر', icon: Store, permissionAny: ['manage-stores', 'settings-stores', 'manage-media'] },
-    { id: 'marketing', labelKey: 'Marketing', labelAr: 'التسويق', icon: Megaphone, permissionAny: ['manage-coupon-system', 'manage-advanced-coupons', 'manage-abandoned-carts', 'manage-express-checkout', 'manage-referral'] },
+    { id: 'marketing', labelKey: 'Marketing', labelAr: 'التسويق', icon: Megaphone, permissionAny: ['manage-coupon-system', 'manage-advanced-coupons', 'manage-abandoned-carts', 'manage-express-checkout', 'manage-referral', 'settings-stores'] },
     { id: 'analytics', labelKey: 'Analytics & Reporting', labelAr: 'التقارير', icon: BarChart3, permissionAny: ['manage-analytics'] },
     { id: 'settings', labelKey: 'Settings', labelAr: 'الإعدادات', icon: Settings },
 ];
@@ -90,6 +90,7 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     'Abandoned Carts': 'السلال المتروكة',
     'Express Checkout': 'روابط البيع السريع',
     'Referral Program': 'برنامج الإحالة',
+    'Product Feeds': 'خلاصات المنتجات',
     'Analytics & Reporting': 'التقارير',
     Settings: 'الإعدادات',
     General: 'عام',
@@ -166,6 +167,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     if (path.startsWith('/coupon-system') || path.startsWith('/advanced-coupons') || path.startsWith('/express-checkout') || path.startsWith('/referral') || path.startsWith('/partner')) {
         return 'marketing';
     }
+    if (path.startsWith('/product-feeds')) return 'marketing';
     if (path.startsWith('/abandoned-carts')) return 'marketing';
     if (sid && path.startsWith(`/stores/${sid}/abandoned-carts`)) return 'marketing';
 
@@ -339,6 +341,9 @@ export function getMerchantContextNav(
             }
             if (hasPermission('manage-referral')) {
                 items.push({ title: t('Referral Program'), href: tryRoute('referral.index', '/referral') });
+            }
+            if (hasPermission('settings-stores')) {
+                items.push({ title: t('Product Feeds') !== 'Product Feeds' ? t('Product Feeds') : 'خلاصات المنتجات', href: tryRoute('product-feeds.index', '/product-feeds'), activePaths: ['/product-feeds'] });
             }
             const partnerHref = isPartner ? tryRoute('partner.dashboard', '/partner/dashboard') : tryRoute('partner.apply', '/partner/apply');
             items.push({ title: t('Partner Program') !== 'Partner Program' ? t('Partner Program') : 'برنامج الشركاء', href: partnerHref, activePaths: ['/partner'] });

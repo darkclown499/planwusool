@@ -237,6 +237,10 @@ Route::domain('{storeSlug}.' . config('app.store_domain'))->middleware('store.st
     // Schema-driven theme engine: runtime `theme.config.json` for a niche theme
     Route::get('/theme-configs/{theme}.json', [ThemeController::class, 'themeConfig'])->name('store.theme-config');
 
+    // Product feeds (public): Google Merchant Center XML + generic CSV.
+    Route::get('/feeds/google.xml', [\App\Http\Controllers\FeedController::class, 'google'])->name('store.feeds.google');
+    Route::get('/feeds/products.csv', [\App\Http\Controllers\FeedController::class, 'csv'])->name('store.feeds.csv');
+
     // Catch-all: any unmatched GET on a store subdomain renders the store homepage
     // (mirrors the previous "unknown route -> home" behaviour for custom domains).
     // IMPORTANT: api/* paths must NOT be swallowed here — the storefront calls
@@ -1218,6 +1222,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('plan-requests/{planRequest}/reject', [PlanRequestController::class, 'reject'])->middleware('permission:reject-plan-requests')->name('plan-requests.reject');
 
 
+
+    // Product Feeds (Marketing) — feed URLs + Wusool feed eligibility diagnostics
+    Route::get('product-feeds', [\App\Http\Controllers\ProductFeedSettingsController::class, 'index'])->middleware('permission:settings-stores')->name('product-feeds.index');
 
     // Referral routes
     Route::middleware('permission:manage-referral')->group(function () {

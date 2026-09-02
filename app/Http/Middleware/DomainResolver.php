@@ -199,6 +199,18 @@ class DomainResolver
             return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
         }
 
+        if ($segments[0] === 'feeds' && isset($segments[1])) {
+            // Public product feeds on custom domains: Google Merchant XML / CSV.
+            $feed = $segments[1];
+            if ($feed === 'google.xml') {
+                return app(\App\Http\Controllers\FeedController::class)->google($request);
+            }
+            if ($feed === 'products.csv') {
+                return app(\App\Http\Controllers\FeedController::class)->csv($request);
+            }
+            abort(404);
+        }
+
         if ($segments[0] === 'products') {
             // Dedicated all-products listing page (server-side pagination + SEO).
             return app(\App\Http\Controllers\ThemeController::class)->products($store->slug, $request);
