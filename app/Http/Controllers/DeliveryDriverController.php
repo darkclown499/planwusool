@@ -48,10 +48,11 @@ class DeliveryDriverController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return Inertia::render('delivery/drivers/form', [
             'driver' => null,
+            'return_to' => $this->validatedReturnTo($request->input('return_to')),
         ]);
     }
 
@@ -68,6 +69,11 @@ class DeliveryDriverController extends Controller
         }
 
         DeliveryDriver::create($data);
+
+        $returnTo = $this->validatedReturnTo($request->input('return_to'));
+        if ($returnTo) {
+            return redirect($returnTo)->with('success', 'تم إضافة السائق بنجاح.');
+        }
 
         return redirect()->route('delivery.drivers.index')->with('success', 'تم إضافة السائق بنجاح.');
     }
@@ -189,5 +195,30 @@ class DeliveryDriverController extends Controller
             'vehicle_info' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:50',
         ]);
+    }
+
+    /**
+     * Resolve a merchant-return destination after creating a driver.
+     * Only known internal delivery paths are allowed — prevents open redirects.
+     */
+    private function validatedReturnTo($value): ?string
+    {
+        if (!is_string($value) || $value === '' || $value === null) {
+            return null;
+        }
+
+        $parsed = parse_url($value);
+        // Must be a relative internal path (no scheme / host / credentials).
+        if ($parsed === false || isset($parsed['scheme'], $parsed['host'])) {
+            return null;
+        }
+
+        $path = rtrim($parsed['path'] ?? '/' . parse_url($value, PHP_URL_PATH) . '', '/');
+
+        if (in_array($path, ['/delivery', '/delivery/drivers'], true)) {
+            return $value;
+        }
+
+        return null;
     }
 }
