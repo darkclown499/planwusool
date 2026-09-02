@@ -98,6 +98,19 @@ export default function Shipping() {
           <FeatureLockedOverlay featureName="Shipping Methods" requiredPlan="Growth" />
         ) : (
         <div className="space-y-4">
+          {/* Legacy handoff — canonical Delivery Hub */}
+          <Card className="border-blue-200 bg-blue-50/60">
+            <CardContent className="p-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div className="flex gap-3">
+                <Truck className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold">تم نقل إعدادات الشحن والتوصيل إلى مركز التوصيل</p>
+                  <p className="text-xs text-muted-foreground">الإعدادات هنا لا تزال تعمل للتوافق، لكن المركز الجديد هو نقطة الدخول الرئيسية.</p>
+                </div>
+              </div>
+              <Button size="sm" className="shrink-0" onClick={() => router.visit(route('delivery.index', { tab: 'methods' }))}>فتح مركز التوصيل</Button>
+            </CardContent>
+          </Card>
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
