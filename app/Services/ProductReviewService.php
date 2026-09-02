@@ -18,13 +18,12 @@ use App\Models\ProductReview;
 class ProductReviewService
 {
     /**
-     * Fulfillment states that prove a purchase actually happened. Pending and
-     * terminal/failure states (cancelled, failed, refunded, returned) do not.
+     * Fulfillment states that prove a purchase actually happened. Only a DELIVERED
+     * order qualifies — pending or terminal states (cancelled, failed, refunded,
+     * returned) never do, and confirmed/processing/shipped have not reached the
+     * customer yet, so their reviews cannot be verified purchases.
      */
     public const REVIEWABLE_STATUSES = [
-        OrderTransitionService::STATUS_CONFIRMED,
-        OrderTransitionService::STATUS_PROCESSING,
-        OrderTransitionService::STATUS_SHIPPED,
         OrderTransitionService::STATUS_DELIVERED,
     ];
 
@@ -68,7 +67,7 @@ class ProductReviewService
         }
 
         if (!in_array($order->status, self::REVIEWABLE_STATUSES, true)) {
-            return $fail('You can only review products after the order has been confirmed.');
+            return $fail('You can only review products after the order has been delivered.');
         }
 
         $orderItem = OrderItem::where('order_id', $order->id)

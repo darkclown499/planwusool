@@ -359,4 +359,55 @@ class PaymentOperationsPhase2Test extends TestCase
         $this->assertNull(CodSettlement::find($draft->id));
         $this->assertEquals(0, CodSettlement::where('store_id', $storeA->id)->count());
     }
+
+    /* ── Issue C regression: terminal order statuses (cancelled/failed/
+          refunded/returned) are never eligible for COD settlement, and the
+          pending-COD list excludes them. ── */
+    public function test_terminal_orders_are_excluded_from_cod_pending_and_settlement(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        // 1 valid pending order → should remain in codPending + be settleable.
+        $valid = $this->makeOrder($store, ['payment_method' => 'cod', 'payment_status' => 'pending', 'total_amount' => 100]);
+        $validCp = CodPayment::create(['order_id' => $valid->id, 'store_id' => $store->id, 'total_amount' => 100, 'cod_fee' => 0, 'amount_collected' => 0, 'amount_remaining' => 100, 'status' => 'pending']);
+
+        // 4 terminal orders → must never appear in codPending nor settle.
+        $terminalStatuses = ['cancelled', 'failed', 'refunded', 'returned'];
+        $terminalCps = [];
+        foreach ($terminalStatuses as $st) {
+            $o = $this->makeOrder($store, ['payment_method' => 'cod', 'payment_status' => 'pending', 'total_amount' => 50, 'status' => $st]);
+            $terminalCps[] = CodPayment::create(['order_id' => $o->id, 'store_id' => $store->id, 'total_amount' => 50, 'cod_fee' => 0, 'amount_collected' => 0, 'amount_remaining' => 50, 'status' => 'pending']);
+        }
+
+        // The pending-COD query (same as PaymentOperationsController::index)
+        // must return only the non-terminal order.
+        $codPending = CodPayment::where('store_id', $store->id)
+            ->where('status', 'pending')
+            ->whereHas('order', fn ($q) => $q->whereNotIn('status', CodPaymentService::TERMINAL_ORDER_STATUSES))
+            ->pluck('id')
+            ->all();
+        sort($codPending);
+        $this->assertEquals([$validCp->id], $codPending);
+
+        // createDraft must reject any terminal-order COD payment.
+        $service = app(CodSettlementService::class);
+        foreach ($terminalCps as $cp) {
+            try {
+                $service->createDraft($store->id, [$cp->id]);
+                $this->fail('terminal order must not enter a COD draft');
+            } catch (\Exception $e) {
+                $this->assertStringContainsString('لا تسمح بتحصيل قيمة الدفع', $e->getMessage());
+            }
+        }
+
+        // A draft built with only the valid order still fails at settle time if
+        // the order later becomes terminal (defence-in-depth on settle()).
+        $draft = $service->createDraft($store->id, [$validCp->id]);
+        $valid->update(['status' => 'cancelled']);
+        try {
+            $service->settle(CodSettlement::find($draft->id));
+            $this->fail('settle must reject a terminal order in the batch');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('لا تسمح بتحصيل قيمة الدفع', $e->getMessage());
+        }
+    }
 }

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class CodPaymentService
 {
+    /** Order terminal states that can never be COD-collected. */
+    public const TERMINAL_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', 'returned'];
+
     /**
      * Create a new COD payment record for an order.
      *

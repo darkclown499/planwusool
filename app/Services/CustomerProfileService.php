@@ -191,13 +191,15 @@ class CustomerProfileService
      */
     private function aggregateOrders($query)
     {
+        $nonValid = CustomerIdentityService::nonValidStatusesSql();
+
         return $query
             ->selectRaw(
                 "COALESCE(NULLIF(currency, ''), '') AS currency,
                  COUNT(*) AS orders_count,
-                 SUM(CASE WHEN status IN ('cancelled','failed','refunded') THEN 1 ELSE 0 END) AS cancelled_count,
-                 SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded') THEN 1 ELSE 0 END) AS valid_count,
-                 SUM(total_amount) AS total_value,
+                 SUM(CASE WHEN status IN ({$nonValid}) THEN 1 ELSE 0 END) AS cancelled_count,
+                 SUM(CASE WHEN status NOT IN ({$nonValid}) THEN 1 ELSE 0 END) AS valid_count,
+                 SUM(CASE WHEN status NOT IN ({$nonValid}) THEN total_amount ELSE 0 END) AS total_value,
                  MIN(created_at) AS first_order_at,
                  MAX(created_at) AS last_order_at"
             )
@@ -293,7 +295,7 @@ class CustomerProfileService
         return $metricsRows
             ->map(function (object $row): array {
                 $currency = ($row->currency ?: 'ILS');
-                $count = (int) $row->orders_count;
+                $count = (int) $row->valid_count;
                 $total = (float) $row->total_value;
 
                 return [

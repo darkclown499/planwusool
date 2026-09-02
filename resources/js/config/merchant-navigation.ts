@@ -316,9 +316,8 @@ export function getMerchantContextNav(
             if (hasPermission('manage-referral')) {
                 items.push({ title: t('Referral Program'), href: tryRoute('referral.index', '/referral') });
             }
-            if (isPartner) {
-                items.push({ title: t('Partner Program') !== 'Partner Program' ? t('Partner Program') : 'برنامج الشركاء', href: tryRoute('partner.dashboard', '/partner/dashboard') });
-            }
+            const partnerHref = isPartner ? tryRoute('partner.dashboard', '/partner/dashboard') : tryRoute('partner.apply', '/partner/apply');
+            items.push({ title: t('Partner Program') !== 'Partner Program' ? t('Partner Program') : 'برنامج الشركاء', href: partnerHref, activePaths: ['/partner'] });
             return { title: titleFor('marketing'), items };
         }
         case 'analytics': {

@@ -449,6 +449,30 @@ class StorefrontSeoService
         return (is_string($code) && $code !== '') ? $code : 'ILS';
     }
 
+    /**
+     * Proxy-aware scheme that never falls back to plain http when the app is
+     * served over https.
+     *
+     * Trusted proxies already let getScheme() resolve X-Forwarded-Proto, but on
+     * misconfigured proxy chains (e.g. Cloudflare -> nginx -> php-fpm without a
+     * complete trust list) the backend can still see http while the browser is
+     * on https. In that case canonical/JSON-LD/OG URLs would leak http:// and
+     * desync from the client-side https URLs, producing a duplicate canonical
+     * and an http JSON-LD. Mirror the upgrade rule from getSchemeAwareUrl() so
+     * the storefront always emits https when APP_URL is https.
+     *
+     * In tests APP_URL is http (e.g. http://127.0.0.1:8000) so the scheme is
+     * left untouched and existing http canonical assertions keep passing.
+     */
+    protected function schemeFor(Request $request): string
+    {
+        $scheme = $request->getScheme();
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            return 'https';
+        }
+        return $scheme;
+    }
+
     protected function absoluteImage($path, Request $request): string
     {
         $path = (string) $path;
@@ -459,8 +483,8 @@ class StorefrontSeoService
             return $path;
         }
         // Absolute URL from the request host so OG images never leak admin
-        // paths or a wrong domain.
-        return $request->getSchemeAndHttpHost() . '/' . ltrim($path, '/');
+        // paths or a wrong domain. Scheme is proxy-aware (see schemeFor).
+        return $this->schemeFor($request) . '://' . $request->getHttpHost() . '/' . ltrim($path, '/');
     }
 
     protected function breadcrumb(array $items, string $base): array
@@ -490,7 +514,9 @@ class StorefrontSeoService
      */
     public function canonical(Request $request): string
     {
-        $scheme = $request->getScheme();
+        // Proxy-aware, https-preserving scheme so the canonical never desyncs
+        // from the real (browser) URL behind a TLS proxy.
+        $scheme = $this->schemeFor($request);
         $host = $request->getHttpHost();
         $baseUrl = $scheme . '://' . $host;
         $path = '/' . ltrim($request->getPathInfo(), '/');
@@ -503,9 +529,9 @@ class StorefrontSeoService
     public function storeRootUrl(Request $request): string
     {
         // The store's root page on the current (real) host, e.g. subdomain or
-        // custom domain. Never a query/preview URL.
+        // custom domain. Never a query/preview URL. Proxy-aware scheme.
         $host = $request->getHttpHost();
-        return $request->getScheme() . '://' . rtrim($host, '/') . '/';
+        return $this->schemeFor($request) . '://' . rtrim($host, '/') . '/';
     }
 
     /**

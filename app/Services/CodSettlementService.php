@@ -47,6 +47,9 @@ class CodSettlementService
                 if ($cp->status !== 'pending') {
                     throw new \Exception('الطلب #' . ($cp->order?->order_number ?? $id) . ' لم يعد بانتظار التحصيل');
                 }
+                if (! $cp->order || in_array(strtolower((string) $cp->order->status), CodPaymentService::TERMINAL_ORDER_STATUSES, true)) {
+                    throw new \Exception('الطلب #' . ($cp->order?->order_number ?? $id) . ' في حالة لا تسمح بتحصيل قيمة الدفع عند الاستلام');
+                }
             }
 
             // DB unique(cod_payment_id) is the backstop; explicit check gives a friendly message.
@@ -127,6 +130,9 @@ class CodSettlementService
                 }
                 if ($cp->store_id !== $locked->store_id) {
                     throw new \Exception('أحد طلبات الدفعة يخص متجراً آخر — أعد إنشاء الدفعة');
+                }
+                if (! $item->order || in_array(strtolower((string) ($item->order->status ?? '')), CodPaymentService::TERMINAL_ORDER_STATUSES, true)) {
+                    throw new \Exception('الطلب ' . ($item->order?->order_number ?? '') . ' في حالة لا تسمح بتحصيل قيمة الدفع عند الاستلام — أعد إنشاء الدفعة');
                 }
             }
 

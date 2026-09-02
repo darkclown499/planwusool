@@ -233,7 +233,7 @@ class ProductReviewsVerifiedPurchaseTest extends TestCase
         $product = $this->makeProduct($store);
         $customer = $this->makeCustomer($store, 'g@' . uniqid() . '.com');
 
-        foreach (['pending', 'cancelled', 'failed', 'refunded', 'returned'] as $status) {
+        foreach (['pending', 'confirmed', 'processing', 'shipped', 'cancelled', 'failed', 'refunded', 'returned'] as $status) {
             $order = $this->makeOrder($store, $customer, $status);
             $this->addOrderItem($order, $product);
 
@@ -255,7 +255,7 @@ class ProductReviewsVerifiedPurchaseTest extends TestCase
         $product = $this->makeProduct($store);
         $customer = $this->makeCustomer($store, 'h@' . uniqid() . '.com');
 
-        foreach (['confirmed', 'processing', 'shipped', 'delivered'] as $status) {
+        foreach (['delivered'] as $status) {
             $order = $this->makeOrder($store, $customer, $status);
             $this->addOrderItem($order, $product);
 
@@ -305,7 +305,7 @@ class ProductReviewsVerifiedPurchaseTest extends TestCase
         [, $store] = $this->ownerWithStore();
         $product = $this->makeProduct($store);
         $customer = $this->makeCustomer($store, 'j@' . uniqid() . '.com');
-        $order = $this->makeOrder($store, $customer, 'confirmed');
+        $order = $this->makeOrder($store, $customer, 'delivered');
         $this->addOrderItem($order, $product);
 
         [$response] = $this->submitReview($customer, [
@@ -806,7 +806,7 @@ class ProductReviewsVerifiedPurchaseTest extends TestCase
         [, $store] = $this->ownerWithStore();
         $product = $this->makeProduct($store);
         $customer = $this->makeCustomer($store, 'flag@' . uniqid() . '.com');
-        $order = $this->makeOrder($store, $customer, 'shipped');
+        $order = $this->makeOrder($store, $customer, 'delivered');
         $this->addOrderItem($order, $product);
 
         [$response] = $this->submitReview($customer, [

@@ -186,6 +186,8 @@ export default function PartnerApply({ partner }: PartnerApplyProps) {
                     value={data.phone}
                     onChange={(e) => setData('phone', e.target.value)}
                     placeholder="+970"
+                    dir="ltr"
+                    className="text-left"
                   />
                   {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                 </div>
@@ -197,6 +199,8 @@ export default function PartnerApply({ partner }: PartnerApplyProps) {
                     value={data.website}
                     onChange={(e) => setData('website', e.target.value)}
                     placeholder="https://"
+                    dir="ltr"
+                    className="text-left"
                   />
                   {errors.website && <p className="text-xs text-destructive">{errors.website}</p>}
                 </div>
@@ -208,6 +212,8 @@ export default function PartnerApply({ partner }: PartnerApplyProps) {
                     value={data.social}
                     onChange={(e) => setData('social', e.target.value)}
                     placeholder={t('Instagram / LinkedIn / Facebook')}
+                    dir="ltr"
+                    className="text-left"
                   />
                   {errors.social && <p className="text-xs text-destructive">{errors.social}</p>}
                 </div>

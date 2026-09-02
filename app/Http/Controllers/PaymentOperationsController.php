@@ -40,6 +40,7 @@ class PaymentOperationsController extends Controller
 
         $codPending = CodPayment::where('store_id', $storeId)
             ->where('status', 'pending')
+            ->whereHas('order', fn ($q) => $q->whereNotIn('status', CodPaymentService::TERMINAL_ORDER_STATUSES))
             ->with(['order'])
             ->orderBy('created_at', 'desc')
             ->limit(200)
@@ -281,7 +282,7 @@ class PaymentOperationsController extends Controller
         $pm = strtolower((string) ($order->payment_method ?? ''));
         $ps = strtolower((string) ($order->payment_status ?? ''));
         $status = strtolower((string) $order->status);
-        $terminal = in_array($status, ['cancelled', 'failed', 'refunded'], true);
+        $terminal = in_array($status, CodPaymentService::TERMINAL_ORDER_STATUSES, true);
         $cod = $order->codPayment;
 
         return [

@@ -28,6 +28,24 @@ class CustomerIdentityService
     /** Statuses that MUST NOT count toward "valid" order metrics. */
     public const NON_VALID_ORDER_STATUSES = ['cancelled', 'failed', 'refunded'];
 
+    public function isValidOrderStatus(?string $status): bool
+    {
+        return $status !== null && !in_array($status, self::NON_VALID_ORDER_STATUSES, true);
+    }
+
+    /**
+     * SQL-safe comma-separated literal list of NON_VALID_ORDER_STATUSES, so every
+     * CRM aggregate query derives the "valid order" definition from THIS constant
+     * instead of duplicating status strings in SQL.
+     */
+    public static function nonValidStatusesSql(): string
+    {
+        return implode(',', array_map(
+            static fn (string $s): string => "'" . str_replace("'", "''", $s) . "'",
+            self::NON_VALID_ORDER_STATUSES
+        ));
+    }
+
     /** Re-use the canonical Wusool phone normalizer — do not invent a new policy. */
     public function normalizePhone(?string $raw): ?string
     {

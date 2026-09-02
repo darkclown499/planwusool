@@ -399,4 +399,38 @@ class StoreSeoPhase1Test extends TestCase
         $response = $this->get($this->storeUrl($store) . '/product/phase-one-product');
         $this->assertStringNotContainsString('aggregateRating', $response->getContent());
     }
+
+    /**
+     * Issue I regression: behind a TLS proxy the backend can see a plain-http
+     * request while the browser (and thus the client StoreHead) is on https.
+     * When APP_URL is https, the server must still emit https canonical,
+     * OpenGraph and JSON-LD URLs so no http:// value (duplicate canonical or
+     * http JSON-LD) ever desyncs from the client.
+     */
+    public function test_store_front_emits_https_when_app_url_is_https_even_if_proxied_http(): void
+    {
+        config(['app.url' => 'https://www.example.com']);
+
+        [$user, $store] = $this->merchantWithStore();
+
+        // Send the request over http as a misconfigured proxy would.
+        $response = $this->get($this->storeUrl($store) . '/');
+        $content = $response->getContent();
+
+        // The subdomain host is preserved, but the scheme is upgraded to https.
+        $this->assertStringContainsString(
+            '<link rel="canonical" href="https://' . $store->slug . '.' . config('app.store_domain') . '">',
+            $content
+        );
+        // The subdomain host is preserved, but the scheme is upgraded to https.
+        $httpsBase = 'https://' . $store->slug . '.' . config('app.store_domain');
+        $this->assertStringContainsString('<link rel="canonical" href="' . $httpsBase . '">', $content);
+        $this->assertStringContainsString('<meta property="og:url" content="' . $httpsBase . '">', $content);
+        // The JSON-LD @graph (Store url + breadcrumb item + breadcrumb url) must
+        // also be https, never http.
+        $this->assertStringNotContainsString('"url":"http://' . $store->slug, $content);
+        $this->assertStringNotContainsString('"item":"http://' . $store->slug, $content);
+        $this->assertStringContainsString('"url":"' . $httpsBase . '"', $content);
+        $this->assertStringContainsString('"item":"' . $httpsBase . '"', $content);
+    }
 }

@@ -159,15 +159,17 @@ class CustomerDirectoryService
      */
     private function aggregateCanonicalMetrics(int $storeId): array
     {
+        $nonValid = CustomerIdentityService::nonValidStatusesSql();
+
         $rows = Order::where('store_id', $storeId)
             ->whereNotNull('customer_id')
             ->selectRaw(
                 "customer_id,
                  COALESCE(NULLIF(currency, ''), '') AS currency,
                  COUNT(*) AS orders_count,
-                 SUM(CASE WHEN status IN ('cancelled','failed','refunded') THEN 1 ELSE 0 END) AS cancelled_count,
-                 SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded') THEN 1 ELSE 0 END) AS valid_count,
-                 SUM(total_amount) AS total_value,
+                 SUM(CASE WHEN status IN ({$nonValid}) THEN 1 ELSE 0 END) AS cancelled_count,
+                 SUM(CASE WHEN status NOT IN ({$nonValid}) THEN 1 ELSE 0 END) AS valid_count,
+                 SUM(CASE WHEN status NOT IN ({$nonValid}) THEN total_amount ELSE 0 END) AS total_value,
                  MIN(created_at) AS first_order_at,
                  MAX(created_at) AS last_order_at"
             )
@@ -193,6 +195,8 @@ class CustomerDirectoryService
      */
     private function aggregateGuestIdentities(int $storeId, string $search): array
     {
+        $nonValid = CustomerIdentityService::nonValidStatusesSql();
+
         $query = Order::where('store_id', $storeId)
             ->whereNull('customer_id')
             ->selectRaw(
@@ -202,9 +206,9 @@ class CustomerDirectoryService
                  COALESCE(NULLIF(customer_last_name, ''), '') AS last_name,
                  COALESCE(NULLIF(currency, ''), '') AS currency,
                  COUNT(*) AS orders_count,
-                 SUM(CASE WHEN status IN ('cancelled','failed','refunded') THEN 1 ELSE 0 END) AS cancelled_count,
-                 SUM(CASE WHEN status NOT IN ('cancelled','failed','refunded') THEN 1 ELSE 0 END) AS valid_count,
-                 SUM(total_amount) AS total_value,
+                 SUM(CASE WHEN status IN ({$nonValid}) THEN 1 ELSE 0 END) AS cancelled_count,
+                 SUM(CASE WHEN status NOT IN ({$nonValid}) THEN 1 ELSE 0 END) AS valid_count,
+                 SUM(CASE WHEN status NOT IN ({$nonValid}) THEN total_amount ELSE 0 END) AS total_value,
                  MIN(created_at) AS first_order_at,
                  MAX(created_at) AS last_order_at,
                  MIN(id) AS reference_order_id"
@@ -279,7 +283,7 @@ class CustomerDirectoryService
             $metrics['totals'][$currency] = ['currency' => $currency, 'total' => 0.0, 'count' => 0];
         }
         $metrics['totals'][$currency]['total'] += (float) $row->total_value;
-        $metrics['totals'][$currency]['count'] += (int) $row->orders_count;
+        $metrics['totals'][$currency]['count'] += (int) $row->valid_count;
 
         $first = $row->first_order_at ? strtotime((string) $row->first_order_at) : null;
         $last = $row->last_order_at ? strtotime((string) $row->last_order_at) : null;

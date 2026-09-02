@@ -352,7 +352,7 @@ export default function ProductReviews() {
                 </div>
                 <h3 className="mt-4 text-base font-semibold">{t('No product reviews yet')}</h3>
                 <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                  {t('Verified-purchase reviews from confirmed orders appear here automatically. Hide or reply to manage them.')}
+                  {t('Verified-purchase reviews from delivered orders appear here automatically. Hide or reply to manage them.')}
                 </p>
               </div>
             ) : (

@@ -375,4 +375,31 @@ class CustomerCrmPhase1Test extends TestCase
         // (one per aggregation, customers, tags) — no per-order / per-row N+1.
         $this->assertLessThan(10, $countedQueries, 'directory must not issue a per-row query for order rows');
     }
+
+    /* ── Issue B regression: cancelled/failed/refunded orders never inflate
+          the customer's financial totals (total_value / totals.total / count)
+          even though they still count toward orders_count and cancelled_count ── */
+    public function test_cancelled_failed_refunded_orders_do_not_inflate_financial_totals(): void
+    {
+        [$user,$store] = $this->companyWithStore();
+        // 2 valid (delivered) orders: 100 + 200
+        $this->makeOrder($store, ['customer_phone'=>'0594000000','total_amount'=>100]);
+        $this->makeOrder($store, ['customer_phone'=>'0594000000','total_amount'=>200]);
+        // 3 terminal orders that must be excluded from money metrics:
+        $this->makeOrder($store, ['customer_phone'=>'0594000000','total_amount'=>50,'status'=>'cancelled','payment_status'=>'failed']);
+        $this->makeOrder($store, ['customer_phone'=>'0594000000','total_amount'=>70,'status'=>'failed','payment_status'=>'failed']);
+        $this->makeOrder($store, ['customer_phone'=>'0594000000','total_amount'=>90,'status'=>'refunded','payment_status'=>'refunded']);
+
+        $directory = app(CustomerDirectoryService::class)->directory($store->id, []);
+        $guest = collect($directory['customers'])->first();
+
+        // All 5 orders count toward the raw order count / non-valid bucket…
+        $this->assertEquals(5, $guest['orders_count']);
+        $this->assertEquals(3, $guest['cancelled_count']);
+        // …but only the 2 valid orders contribute to money metrics.
+        $this->assertEquals(2, $guest['valid_count']);
+        $this->assertSame(300.0, (float) $guest['totals'][0]['total']);
+        $this->assertSame(2, (int) $guest['totals'][0]['count']);
+        $this->assertTrue($guest['is_repeat']);
+    }
 }

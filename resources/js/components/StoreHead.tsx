@@ -165,16 +165,21 @@ export default function StoreHead({ store, defaultTitle, defaultDescription, def
     };
   }, [store?.name, store?.store_url]);
 
+  // Canonical URL without query params. Matches the server-side canonical
+  // emitted by StorefrontSeoService (path-only, never preview/utm/query
+  // strings) so the client never produces a second, differing canonical or og:url.
+  const canonicalUrl = `${window.location.origin}${window.location.pathname}`;
+
   return (
     <Head title={title}>
       <meta name="description" content={description} />
       {keywords ? <meta name="keywords" content={keywords} /> : null}
-      <link rel="canonical" href={window.location.href} />
+      <link rel="canonical" href={canonicalUrl} />
       <link rel="icon" type="image/png" href={faviconHref} />
       <link rel="apple-touch-icon" href={faviconHref} />
       <meta property="og:site_name" content={store?.name || title} />
       <meta property="og:title" content={title} />
-      <meta property="og:url" content={window.location.href} />
+      <meta property="og:url" content={canonicalUrl} />
       {description ? <meta property="og:description" content={description} /> : null}
       <meta property="og:type" content="website" />
       {ogImage ? <meta property="og:image" content={ogImage} /> : null}
