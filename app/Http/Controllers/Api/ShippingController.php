@@ -37,4 +37,36 @@ class ShippingController extends Controller
             'shipping_methods' => $shippingMethods
         ]);
     }
+
+    /**
+     * Active delivery zones for a store (storefront checkout).
+     * Fees are informational only — the server re-resolves pricing at order time.
+     */
+    public function getDeliveryZones(Request $request)
+    {
+        $request->validate([
+            'store_id' => 'required|exists:stores,id'
+        ]);
+
+        $zones = \App\Models\DeliveryZone::where('store_id', $request->store_id)
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($zone) {
+                return [
+                    'id' => $zone->id,
+                    'name' => $zone->name,
+                    'description' => $zone->description,
+                    'fee' => (float) $zone->fee,
+                    'est_time_text' => $zone->est_time_text,
+                    'free_delivery_threshold' => $zone->free_delivery_threshold,
+                    'min_order_amount' => $zone->min_order_amount,
+                ];
+            });
+
+        return response()->json([
+            'delivery_zones' => $zones
+        ]);
+    }
 }

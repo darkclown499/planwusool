@@ -472,6 +472,9 @@ Route::post('api/advanced-coupon/validate', [\App\Http\Controllers\AdvancedCoupo
 // Shipping API routes
 Route::get('api/shipping-methods', [\App\Http\Controllers\Api\ShippingController::class, 'getMethods'])->name('api.shipping.methods');
 
+// Delivery zones API route (storefront checkout)
+Route::get('api/delivery-zones', [\App\Http\Controllers\Api\ShippingController::class, 'getDeliveryZones'])->name('api.delivery-zones');
+
 // Payment API routes
 Route::get('api/payment-methods', [\App\Http\Controllers\Api\PaymentController::class, 'getMethods'])->name('api.payment.methods');
 
@@ -911,6 +914,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 return redirect()->route('shipping.index');
             })->name('store.payment-methods');
         
+        // Delivery OS routes — zones, drivers, operations board (store-scoped)
+            Route::get('delivery', [\App\Http\Controllers\DeliveryController::class, 'index'])->middleware('permission:manage-orders')->name('delivery.index');
+            Route::post('delivery/orders/{id}/assign', [\App\Http\Controllers\DeliveryController::class, 'assign'])->middleware('permission:manage-orders')->name('delivery.orders.assign');
+            Route::post('delivery/orders/{id}/reassign', [\App\Http\Controllers\DeliveryController::class, 'reassign'])->middleware('permission:manage-orders')->name('delivery.orders.reassign');
+            Route::post('delivery/orders/{id}/unassign', [\App\Http\Controllers\DeliveryController::class, 'unassign'])->middleware('permission:manage-orders')->name('delivery.orders.unassign');
+            Route::post('delivery/orders/{id}/transition', [\App\Http\Controllers\DeliveryController::class, 'transition'])->middleware('permission:manage-orders')->name('delivery.orders.transition');
+
+            // Delivery Zones CRUD
+            Route::get('delivery/zones', [\App\Http\Controllers\DeliveryZoneController::class, 'index'])->middleware('permission:manage-shipping')->name('delivery.zones.index');
+            Route::get('delivery/zones/create', [\App\Http\Controllers\DeliveryZoneController::class, 'create'])->middleware('permission:manage-shipping')->name('delivery.zones.create');
+            Route::post('delivery/zones', [\App\Http\Controllers\DeliveryZoneController::class, 'store'])->middleware('permission:manage-shipping')->name('delivery.zones.store');
+            Route::get('delivery/zones/{id}/edit', [\App\Http\Controllers\DeliveryZoneController::class, 'edit'])->middleware('permission:manage-shipping')->name('delivery.zones.edit');
+            Route::put('delivery/zones/{id}', [\App\Http\Controllers\DeliveryZoneController::class, 'update'])->middleware('permission:manage-shipping')->name('delivery.zones.update');
+            Route::delete('delivery/zones/{id}', [\App\Http\Controllers\DeliveryZoneController::class, 'destroy'])->middleware('permission:manage-shipping')->name('delivery.zones.destroy');
+            Route::post('delivery/zones/{id}/toggle-status', [\App\Http\Controllers\DeliveryZoneController::class, 'toggleStatus'])->middleware('permission:manage-shipping')->name('delivery.zones.toggle-status');
+            Route::post('delivery/zones/reorder', [\App\Http\Controllers\DeliveryZoneController::class, 'reorder'])->middleware('permission:manage-shipping')->name('delivery.zones.reorder');
+
+            // Delivery Drivers CRUD
+            Route::get('delivery/drivers', [\App\Http\Controllers\DeliveryDriverController::class, 'index'])->middleware('permission:manage-orders')->name('delivery.drivers.index');
+            Route::get('delivery/drivers/create', [\App\Http\Controllers\DeliveryDriverController::class, 'create'])->middleware('permission:manage-orders')->name('delivery.drivers.create');
+            Route::post('delivery/drivers', [\App\Http\Controllers\DeliveryDriverController::class, 'store'])->middleware('permission:manage-orders')->name('delivery.drivers.store');
+            Route::get('delivery/drivers/{id}/edit', [\App\Http\Controllers\DeliveryDriverController::class, 'edit'])->middleware('permission:manage-orders')->name('delivery.drivers.edit');
+            Route::put('delivery/drivers/{id}', [\App\Http\Controllers\DeliveryDriverController::class, 'update'])->middleware('permission:manage-orders')->name('delivery.drivers.update');
+            Route::delete('delivery/drivers/{id}', [\App\Http\Controllers\DeliveryDriverController::class, 'destroy'])->middleware('permission:manage-orders')->name('delivery.drivers.destroy');
+            Route::post('delivery/drivers/{id}/toggle-status', [\App\Http\Controllers\DeliveryDriverController::class, 'toggleStatus'])->middleware('permission:manage-orders')->name('delivery.drivers.toggle-status');
+            Route::get('delivery/drivers/{id}', [\App\Http\Controllers\DeliveryDriverController::class, 'show'])->middleware('permission:manage-orders')->name('delivery.drivers.show');
+
         // Customer Management routes with permissions
             Route::get('customers', [\App\Http\Controllers\CustomerController::class, 'index'])->middleware('permission:manage-customers')->name('customers.index');
             Route::get('customers/export', [\App\Http\Controllers\CustomerController::class, 'export'])->middleware(['permission:export-customers','throttle:5,60'])->name('customers.export');

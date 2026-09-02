@@ -103,6 +103,7 @@ class OrderController extends Controller
                 'billing_country' => 'required|max:100',
                 'payment_method' => 'required|string',
                 'shipping_method_id' => 'nullable|exists:shippings,id',
+                'delivery_zone_id' => 'nullable|exists:delivery_zones,id',
                 'notes' => 'nullable|string',
                 'coupon_code' => 'nullable|string',
                 'bank_transfer_receipt' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
@@ -152,6 +153,21 @@ class OrderController extends Controller
                         'success' => false,
                         'message' => 'طريقة الشحن المحددة غير صالحة لهذا المتجر.',
                         'errors' => ['shipping_method_id' => ['طريقة الشحن غير صالحة.']]
+                    ], 422);
+                }
+            }
+
+            // Store isolation: delivery zone (if selected) must belong to the same store.
+            if ($request->delivery_zone_id) {
+                $zoneValid = \App\Models\DeliveryZone::where('id', $request->delivery_zone_id)
+                    ->where('store_id', $request->store_id)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$zoneValid) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'منطقة التوصيل المحددة غير صالحة لهذا المتجر.',
+                        'errors' => ['delivery_zone_id' => ['منطقة التوصيل غير صالحة.']]
                     ], 422);
                 }
             }
@@ -210,8 +226,18 @@ class OrderController extends Controller
                 $request->store_id,
                 session()->getId(),
                 $request->coupon_code,
-                $request->shipping_method_id
+                $request->shipping_method_id,
+                $request->delivery_zone_id
             );
+
+            // A selected delivery zone must be eligible (meets min order, active, store-scoped).
+            if (!empty($request->delivery_zone_id) && empty($calculation['delivery_zone_eligible'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'منطقة التوصيل غير مناسبة لطلبك الحالي.',
+                    'errors' => ['delivery_zone_id' => ['منطقة التوصيل غير مناسبة لطلبك الحالي.']]
+                ], 422);
+            }
 
             if ($calculation['items']->isEmpty()) {
                 return response()->json([
@@ -319,6 +345,9 @@ class OrderController extends Controller
                 'total_amount' => $calculation['total'],
                 'payment_method' => $request->payment_method,
                 'shipping_method_id' => $request->shipping_method_id,
+                'delivery_zone_id' => $request->delivery_zone_id,
+                'delivery_zone_name' => $calculation['delivery_zone']['name'] ?? null,
+                'delivery_fee' => $calculation['delivery_zone']['fee'] ?? 0,
                 'notes' => $request->notes,
                 'coupon_code' => $request->coupon_code,
                 'coupon_discount' => $calculation['discount'],

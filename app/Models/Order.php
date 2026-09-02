@@ -59,6 +59,12 @@ class Order extends Model
         'payment_details',
         'bank_transfer_receipt',
         'shipping_method_id',
+        'delivery_zone_id',
+        'delivery_driver_id',
+        'delivery_zone_name',
+        'delivery_fee',
+        'delivery_status',
+        'delivery_assigned_at',
         'tracking_number',
         'shipped_at',
         'delivered_at',
@@ -75,11 +81,13 @@ class Order extends Model
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'coupon_discount' => 'decimal:2',
+        'delivery_fee' => 'decimal:2',
         'stock_restored' => 'boolean',
         'payment_details' => 'array',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
         'post_order_extras_at' => 'datetime',
+        'delivery_assigned_at' => 'datetime',
         'paid_at' => 'datetime',
         'refunded_at' => 'datetime',
     ];
@@ -102,6 +110,27 @@ class Order extends Model
     public function shippingMethod(): BelongsTo
     {
         return $this->belongsTo(Shipping::class, 'shipping_method_id');
+    }
+
+    public function deliveryZone(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryZone::class, 'delivery_zone_id');
+    }
+
+    public function deliveryDriver(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryDriver::class, 'delivery_driver_id');
+    }
+
+    public function deliveryAssignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DeliveryAssignment::class, 'order_id');
+    }
+
+    public function activeDeliveryAssignment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(DeliveryAssignment::class, 'order_id')
+            ->orderByDesc('id');
     }
 
     public function returns(): HasMany

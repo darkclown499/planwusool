@@ -152,7 +152,7 @@ class OrderController extends Controller
         
         $order = Order::where('store_id', $storeId)
             ->where('id', $id)
-            ->with(['items.product', 'shippingMethod.courierIntegration', 'shippingMethod'])
+            ->with(['items.product', 'shippingMethod.courierIntegration', 'shippingMethod', 'deliveryDriver:id,name,phone', 'deliveryAssignments' => fn($q) => $q->orderByDesc('id')])
             ->firstOrFail();
 
         // Load shipments
@@ -277,6 +277,38 @@ class OrderController extends Controller
             'allowed_actions' => \App\Services\OrderTransitionService::allowedActions($order),
             'allowed_payment_actions' => \App\Services\OrderTransitionService::allowedPaymentActions($order),
             'can_edit' => !in_array(strtolower($order->status), ['cancelled','failed','refunded'], true),
+            'delivery' => [
+                'zone_id' => $order->delivery_zone_id,
+                'zone_name' => $order->delivery_zone_name,
+                'fee' => (float) $order->delivery_fee,
+                'status' => $order->delivery_status,
+                'status_label' => \App\Services\DeliveryLifecycleService::label($order->delivery_status),
+                'assigned_at' => $order->delivery_assigned_at?->format('Y-m-d H:i'),
+                'driver' => $order->deliveryDriver ? [
+                    'id' => $order->deliveryDriver->id,
+                    'name' => $order->deliveryDriver->name,
+                    'phone' => $order->deliveryDriver->phone,
+                ] : null,
+                'cod' => (strtolower($order->payment_method ?? '') === 'cod') ? [
+                    'amount_expected' => (float) $order->total_amount,
+                    'delivery_complete' => strtolower((string) $order->delivery_status) === 'delivered',
+                    'collection_status' => strtolower((string) $order->payment_status),
+                ] : null,
+                'assignments' => $order->deliveryAssignments->map(fn($a) => [
+                    'id' => $a->id,
+                    'driver_id' => $a->driver_id,
+                    'zone_name' => $a->zone_name_snapshot,
+                    'delivery_fee' => (float) $a->delivery_fee_snapshot,
+                    'status' => $a->delivery_status,
+                    'assigned_at' => $a->assigned_at?->format('Y-m-d H:i'),
+                    'delivered_at' => $a->delivered_at?->format('Y-m-d H:i'),
+                    'failed_at' => $a->failed_at?->format('Y-m-d H:i'),
+                    'fail_reason' => $a->fail_reason,
+                    'cancelled_at' => $a->cancelled_at?->format('Y-m-d H:i'),
+                    'cancel_reason' => $a->cancel_reason,
+                ])->values(),
+                'allowed_transitions' => $this->deliveryAllowedTransitions($order->delivery_status),
+            ],
         ];
         
         // Returns for this order
@@ -366,6 +398,23 @@ class OrderController extends Controller
             'locale' => $locale,
             'actions' => $actions,
         ];
+    }
+
+    /**
+     * Allowed delivery state transitions for an order (authoritative list).
+     */
+    private function deliveryAllowedTransitions(?string $status): array
+    {
+        $status = strtolower((string) $status);
+        if (empty($status)) $status = \App\Models\DeliveryAssignment::STATUS_UNASSIGNED;
+
+        $allowed = \App\Services\DeliveryLifecycleService::ALLOWED[$status] ?? [];
+
+        $out = [];
+        foreach ($allowed as $to) {
+            $out[] = ['status' => $to, 'label' => \App\Services\DeliveryLifecycleService::label($to)];
+        }
+        return $out;
     }
 
     private function buildFulfillmentTimeline($order, $shipment, string $fulfillmentType): array
@@ -731,6 +780,15 @@ class OrderController extends Controller
         $target = $map[$action];
         try {
             $fresh = \App\Services\OrderTransitionService::transition($order, $target);
+            // Keep the delivery lifecycle consistent: cancelling an order invalidates
+            // any active delivery assignment.
+            if ($target === 'cancelled') {
+                try {
+                    \App\Services\DeliveryLifecycleService::cancelActiveAssignment($fresh, 'إلغاء الطلب');
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Delivery cancel on order cancel failed', ['order_id' => $fresh->id, 'error' => $e->getMessage()]);
+                }
+            }
             return response()->json(['message'=>'تم تحديث حالة الطلب','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
         } catch (\Exception $e) {
             return response()->json(['message'=>$e->getMessage(),'errors'=>['status'=>[$e->getMessage()]]], 422);

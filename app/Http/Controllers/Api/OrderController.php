@@ -115,6 +115,31 @@ class OrderController extends Controller
         if ($order->shipped_at) $timeline[] = ['key' => 'shipped', 'label' => 'تم الشحن', 'at' => $order->shipped_at->toISOString(), 'done' => true];
         if ($order->delivered_at) $timeline[] = ['key' => 'delivered', 'label' => 'تم التسليم', 'at' => $order->delivered_at->toISOString(), 'done' => true];
 
+        // Safe local-delivery tracking — exposes only zone name and an abstract
+        // delivery status. NEVER exposes driver phone, notes, or internal IDs here.
+        $deliveryLabels = [
+            'unassigned' => 'قيد المعالجة',
+            'assigned' => 'تم تجهيز الشحنة',
+            'picked_up' => 'تم الاستلام',
+            'out_for_delivery' => 'قيد التوصيل',
+            'delivered' => 'تم التوصيل',
+            'delivery_failed' => 'تعذر التوصيل',
+            'returned' => 'تم الإرجاع',
+            'cancelled' => 'ملغي',
+        ];
+        $deliveryStatus = (string) $order->delivery_status;
+        $deliveryTracking = [
+            'status' => $deliveryStatus,
+            'status_label' => $deliveryLabels[$deliveryStatus] ?? ($deliveryStatus !== '' && !empty($deliveryStatus) ? $deliveryStatus : null),
+            'zone_name' => $order->delivery_zone_name,
+            'assigned_at' => $order->delivery_assigned_at?->toISOString(),
+        ];
+        // Only surface tracking info once delivery is actually underway or done
+        // (nothing sensitive pre-assignment beyond order creation).
+        if (!in_array($deliveryStatus, ['', 'unassigned', 'cancelled', 'null'], true)) {
+            $timeline[] = ['key' => 'delivery', 'label' => ($statusLabels['shipped'] ?? 'تم الشحن'), 'at' => ($order->delivery_assigned_at?->toISOString() ?? $order->created_at->toISOString()), 'done' => true];
+        }
+
         return response()->json([
             'order' => [
                 'id' => $order->order_number,
@@ -122,6 +147,7 @@ class OrderController extends Controller
                 'status' => $order->status,
                 'status_label' => $statusLabels[$rawStatus] ?? ucfirst($order->status),
                 'timeline' => $timeline,
+                'delivery' => $deliveryTracking,
                 'tracking_number' => $order->tracking_number,
                 'shipped_at' => $order->shipped_at?->toISOString(),
                 'delivered_at' => $order->delivered_at?->toISOString(),

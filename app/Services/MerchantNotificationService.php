@@ -95,11 +95,89 @@ class MerchantNotificationService
     }
 
     /**
+     * Create a notification when a delivery driver is assigned to an order.
+     */
+    public static function deliveryDriverAssigned(Order $order, string $driverName): void
+    {
+        $store = $order->store;
+        if (!$store || !$store->user) {
+            return;
+        }
+
+        self::create([
+            'user_id' => $store->user_id,
+            'store_id' => $order->store_id,
+            'type' => 'delivery_driver_assigned',
+            'title' => 'تم تعيين سائق',
+            'body' => "تم تعيين السائق {$driverName} للطلب #{$order->order_number}",
+            'icon' => 'Truck',
+            'color' => 'blue',
+            'action_url' => route('orders.show', $order->id, false),
+            'related_id' => $order->id,
+            'related_type' => 'order',
+            'data' => ['order_number' => $order->order_number, 'driver_name' => $driverName],
+            'is_urgent' => false,
+        ]);
+    }
+
+    /**
+     * Create a notification when a delivery fails.
+     */
+    public static function deliveryFailed(Order $order, ?string $reason = null): void
+    {
+        $store = $order->store;
+        if (!$store || !$store->user) {
+            return;
+        }
+
+        self::create([
+            'user_id' => $store->user_id,
+            'store_id' => $order->store_id,
+            'type' => 'delivery_failed',
+            'title' => 'فشل التوصيل',
+            'body' => "فشل توصيل الطلب #{$order->order_number}" . ($reason ? ": {$reason}" : ''),
+            'icon' => 'AlertTriangle',
+            'color' => 'red',
+            'action_url' => route('orders.show', $order->id, false),
+            'related_id' => $order->id,
+            'related_type' => 'order',
+            'data' => ['order_number' => $order->order_number, 'reason' => $reason],
+            'is_urgent' => true,
+        ]);
+    }
+
+    /**
+     * Create a notification when delivery completes.
+     * NOTE: this does NOT touch payment status — COD collection stays separate.
+     */
+    public static function deliveryCompleted(Order $order): void
+    {
+        $store = $order->store;
+        if (!$store || !$store->user) {
+            return;
+        }
+
+        self::create([
+            'user_id' => $store->user_id,
+            'store_id' => $order->store_id,
+            'type' => 'delivery_completed',
+            'title' => 'تم التسليم',
+            'body' => "تم تسليم الطلب #{$order->order_number}",
+            'icon' => 'CheckCircle',
+            'color' => 'green',
+            'action_url' => route('orders.show', $order->id, false),
+            'related_id' => $order->id,
+            'related_type' => 'order',
+            'data' => ['order_number' => $order->order_number],
+            'is_urgent' => false,
+        ]);
+    }
+
+    /**
      * Create a notification for a cancelled order.
      */
     public static function orderCancelled(Order $order, string $reason = 'طلب ملغي'): void
-    {
-        $store = $order->store;
+    {        $store = $order->store;
         if (!$store || !$store->user) {
             return;
         }

@@ -2,7 +2,7 @@ import { useCheckoutContext } from '@/contexts/CheckoutContext';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePage } from '@inertiajs/react';
-import { Check, CheckCircle2, CreditCard, Gift, Package, Truck, User, Wallet, X } from 'lucide-react';
+import { Check, CheckCircle2, CreditCard, Gift, MapPin, Package, Truck, User, Wallet, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useStorefrontCore } from '@/templates-v2/shared/contexts';
 import CheckoutLoyaltyDeduction from '@/components/storefront/CheckoutLoyaltyDeduction';
@@ -39,6 +39,9 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
         selectedPayment,
         shippingMethods,
         loadingShipping,
+        selectedDeliveryZone,
+        deliveryZones,
+        setSelectedDeliveryZone,
         paymentMethods,
         loadingPayments,
         emailError,
@@ -508,6 +511,58 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Delivery zone selector */}
+                                {deliveryZones.length > 0 && (
+                                    <div
+                                        className="rounded-2xl border p-4"
+                                        style={{ borderColor: 'var(--twc-border, #e5e7eb)', background: 'var(--twc-background, #ffffff)' }}
+                                    >
+                                        <h4 className="mb-3 flex items-center gap-2 font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                                            <MapPin className="h-4 w-4" /> منطقة التوصيل
+                                        </h4>
+                                        <div className="space-y-2">
+                                            {deliveryZones.map((zone: any) => {
+                                                const active = selectedDeliveryZone === zone.id.toString();
+                                                const effectiveFee =
+                                                    zone.free_delivery_threshold && subtotal >= Number(zone.free_delivery_threshold)
+                                                        ? 0
+                                                        : Number(zone.fee || 0);
+                                                return (
+                                                    <label
+                                                        key={zone.id}
+                                                        className="flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition hover:opacity-95"
+                                                        style={{
+                                                            borderColor: active ? primary : 'var(--twc-border, #e5e7eb)',
+                                                            background: active ? 'var(--twc-primary-50, #ecfdf5)' : 'var(--twc-background, #ffffff)',
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="delivery_zone"
+                                                            checked={active}
+                                                            onChange={() => setSelectedDeliveryZone(zone.id.toString())}
+                                                            className="accent-green-600"
+                                                        />
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-semibold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
+                                                                {zone.name}
+                                                            </p>
+                                                            {zone.est_time_text && (
+                                                                <p className="text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
+                                                                    {zone.est_time_text}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-sm font-bold" style={{ color: primary }}>
+                                                            {effectiveFee === 0 ? 'مجاني' : formatCurrency(effectiveFee, storeSettings, currencies)}
+                                                        </span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Totals */}
                                 <div

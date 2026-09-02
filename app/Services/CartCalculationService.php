@@ -18,11 +18,12 @@ class CartCalculationService
      * @param string      $sessionId
      * @param string|null $couponCode
      * @param int|null    $shippingId
+     * @param int|null    $deliveryZoneId Optional local delivery zone selection.
      * @param array       $extraContext  Optional extra context: customer_id, customer_email, country_id, state_id, city_id
      *
      * @return array
      */
-    public static function calculateCartTotals($storeId, $sessionId, $couponCode = null, $shippingId = null, array $extraContext = [])
+    public static function calculateCartTotals($storeId, $sessionId, $couponCode = null, $shippingId = null, $deliveryZoneId = null, array $extraContext = [])
     {
         // Get cart items with product and tax relationships
         $query = CartItem::where('store_id', $storeId)
@@ -209,11 +210,32 @@ class CartCalculationService
         // ─── Shipping ───
         $shipping = 0;
         $shippingMethod = null;
+        $deliveryZone = null;
+        $deliveryZoneEligible = false;
+
+        // Local Delivery Zone is the authoritative rate when selected.
+        // Client-submitted fees are never trusted — resolved from persisted zone row.
+        if ($deliveryZoneId) {
+            try {
+                $zoneResult = app(\App\Services\DeliveryZoneService::class)->resolveForCheckout($storeId, $deliveryZoneId, (float) $subtotal);
+                if ($zoneResult['zone'] && $zoneResult['eligible']) {
+                    $deliveryZone = $zoneResult['zone'];
+                    $deliveryZoneEligible = true;
+                    $shipping = $zoneResult['fee'];
+                } elseif ($zoneResult['zone'] && !$zoneResult['eligible']) {
+                    // Zone exists but order doesn't meet its minimum — invalid selection below
+                    $deliveryZone = $zoneResult['zone'];
+                    $deliveryZoneEligible = false;
+                }
+            } catch (\Throwable $e) {
+                // Invalid zone selection → not eligible
+            }
+        }
 
         if ($freeShippingApplied) {
             // Advanced Free Shipping coupon applied — shipping is free
             $shipping = 0;
-        } elseif ($shippingId) {
+        } elseif (!$deliveryZoneEligible && $shippingId) {
             $shippingMethod = Shipping::where('store_id', $storeId)
                 ->where('id', $shippingId)
                 ->where('is_active', true)
@@ -303,6 +325,12 @@ class CartCalculationService
             'free_shipping_applied' => $freeShippingApplied,
             'advanced_coupon_discount_type' => $advancedCouponDiscountType,
             'advanced_coupon_id' => $advancedCouponId,
+            'delivery_zone' => $deliveryZone ? [
+                'id' => $deliveryZone->id,
+                'name' => $deliveryZone->name,
+                'fee' => round($shipping, 2),
+            ] : null,
+            'delivery_zone_eligible' => $deliveryZoneEligible,
         ];
     }
 

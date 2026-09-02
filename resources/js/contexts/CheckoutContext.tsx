@@ -251,6 +251,9 @@ export interface CheckoutContextType {
   selectedPayment: string;
   shippingMethods: any[];
   loadingShipping: boolean;
+  selectedDeliveryZone: string;
+  deliveryZones: any[];
+  setSelectedDeliveryZone: (id: string) => void;
   paymentMethods: any[];
   loadingPayments: boolean;
   emailError: string;
@@ -332,6 +335,8 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   const [selectedPayment, setSelectedPayment] = useState('');
   const [shippingMethods, setShippingMethods] = useState<any[]>([]);
   const [loadingShipping, setLoadingShipping] = useState(false);
+  const [selectedDeliveryZone, setSelectedDeliveryZone] = useState('');
+  const [deliveryZones, setDeliveryZones] = useState<any[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [emailError, setEmailError] = useState('');
@@ -586,6 +591,19 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     }
   };
 
+  const loadDeliveryZones = async () => {
+    if (!store?.id) return;
+    try {
+      const response = await fetch(`${route('api.delivery-zones')}?store_id=${store.id}`, {
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setDeliveryZones(data.delivery_zones || []);
+      }
+    } catch {}
+  };
+
   const loadPaymentMethods = async () => {
     if (!store?.id) return;
 
@@ -746,6 +764,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
         billing_country: (countryId || customerInfo.country)?.toString(),
         payment_method: selectedPayment,
         shipping_method_id: selectedShipping ? parseInt(selectedShipping) : undefined,
+        delivery_zone_id: selectedDeliveryZone ? parseInt(selectedDeliveryZone) : undefined,
         notes: '',
         coupon_code: appliedCoupon?.code || undefined,
         whatsapp_number: selectedPayment === 'whatsapp' ? whatsappNumber : undefined,
@@ -974,6 +993,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
   useEffect(() => {
     if (step === 2) {
       loadShippingMethods();
+      loadDeliveryZones();
     }
     if (step === 3) {
       loadPaymentMethods();
@@ -990,6 +1010,9 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
     selectedPayment,
     shippingMethods,
     loadingShipping,
+    selectedDeliveryZone,
+    deliveryZones,
+    setSelectedDeliveryZone,
     paymentMethods,
     loadingPayments,
     emailError,

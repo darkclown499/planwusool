@@ -70,6 +70,7 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     Dashboard: 'الرئيسية',
     Orders: 'الطلبات',
     Returns: 'المرتجعات',
+    Delivery: 'التوصيل',
     'COD Payments': 'التحصيل عند الاستلام',
     Products: 'المنتجات',
     Categories: 'التصنيفات',
@@ -146,8 +147,8 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     // Dashboard
     if (path === '/dashboard' || path === '/' ) return 'dashboard';
 
-    // Orders area: /orders, /returns, /cod-payments, /payments/operations, /pos
-    if (path.startsWith('/orders') || path.startsWith('/returns') || path.startsWith('/cod-payments') || path.startsWith('/payments/operations') || path.startsWith('/pos')) {
+    // Orders area: /orders, /returns, /cod-payments, /payments/operations, /pos, /delivery
+    if (path.startsWith('/orders') || path.startsWith('/returns') || path.startsWith('/cod-payments') || path.startsWith('/payments/operations') || path.startsWith('/pos') || path.startsWith('/delivery')) {
         return 'orders';
     }
 
@@ -269,6 +270,7 @@ export function getMerchantContextNav(
             if (hasPermission('manage-orders')) {
                 items.push({ title: t('Orders'), href: tryRoute('orders.index', '/orders') });
                 items.push({ title: t('Returns') !== 'Returns' ? t('Returns') : 'المرتجعات', href: tryRoute('returns.index', '/returns') });
+                items.push({ title: t('Delivery') !== 'Delivery' ? t('Delivery') : 'التوصيل', href: tryRoute('delivery.index', '/delivery'), activePaths: ['/delivery', '/delivery/zones', '/delivery/drivers'] });
             }
             if (hasPermission('manage-cod-payments')) {
                 items.push({ title: t('COD Payments'), href: tryRoute('cod-payments.index', '/cod-payments') });

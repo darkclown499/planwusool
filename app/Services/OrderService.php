@@ -72,6 +72,12 @@ class OrderService
                 
                 // Shipping info
                 'shipping_method_id' => $orderData['shipping_method_id'] ?? null,
+
+                // Local Delivery snapshot (zone name + fee frozen at order time)
+                'delivery_zone_id' => $orderData['delivery_zone_id'] ?? null,
+                'delivery_zone_name' => $orderData['delivery_zone_name'] ?? null,
+                'delivery_fee' => $orderData['delivery_fee'] ?? 0,
+                'delivery_status' => $orderData['delivery_status'] ?? 'unassigned',
                 
                 // Additional info
                 'notes' => $orderData['notes'] ?? null,
