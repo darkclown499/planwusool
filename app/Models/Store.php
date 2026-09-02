@@ -325,6 +325,16 @@ protected $fillable = [
      */
     private function getProtocol($request = null): string
     {
+        // Canonical source of truth: when the app is configured to be served
+        // over HTTPS (APP_URL=https://...), always emit https://. This mirrors
+        // StorefrontSeoService::schemeFor() so the feed links / images use the
+        // same canonical HTTPS semantics as the storefront SEO (canonical,
+        // JSON-LD, breadcrumb). Behind a TLS proxy (Cloudflare/CDN) the backend
+        // may still see a plain-HTTP request; without this guard the URLs would
+        // leak http:// and desync from the canonical storefront.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            return 'https://';
+        }
         if ($request) {
             return $request->isSecure() ? 'https://' : 'http://';
         }
