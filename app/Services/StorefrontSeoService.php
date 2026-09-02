@@ -542,6 +542,7 @@ class StorefrontSeoService
         if (!$this->store) {
             return null;
         }
+        $ref = urldecode($ref);
         return Product::where('store_id', $this->store->id)
             ->where('is_active', true)
             ->when(
