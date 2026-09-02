@@ -232,6 +232,12 @@ export default function DeliveryIndex() {
         title="لوحة التوصيل"
         description="إدارة طلبات التوصيل والسائقين والمناطق."
         url="/delivery"
+        actions={hasPermission('manage-orders') ? [{
+          label: 'إدارة السائقين',
+          icon: <Truck className="h-4 w-4" />,
+          variant: 'default' as const,
+          onClick: () => router.visit(route('delivery.drivers.index')),
+        }] : []}
         breadcrumbs={[
           { title: 'لوحة التحكم', href: route('dashboard') },
           { title: 'لوحة التوصيل' },
@@ -406,25 +412,65 @@ export default function DeliveryIndex() {
           <DialogHeader>
             <DialogTitle>{assignDialog?.type === 'assign' ? 'تعيين سائق' : 'إعادة تعيين السائق'}</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-              <SelectTrigger>
-                <SelectValue placeholder="اختر السائق" />
-              </SelectTrigger>
-              <SelectContent>
-                {activeDrivers.map((d: Driver) => (
-                  <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setAssignDialog(null); setSelectedDriver(''); }}>إلغاء</Button>
-            <Button onClick={doAssign} disabled={!selectedDriver || loading}>
-              {loading && <Loader2 className="h-4 w-4 me-2 animate-spin" />}
-              تأكيد
-            </Button>
-          </DialogFooter>
+          {activeDrivers.length === 0 ? (
+            <div className="py-6 text-center" dir="rtl">
+              <UserPlus className="h-12 w-12 mx-auto text-muted-foreground opacity-40" />
+              <h3 className="mt-4 text-lg font-medium">لا يوجد سائقون بعد</h3>
+              <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
+                أضف سائقًا أولاً حتى تتمكن من تعيينه لهذا الطلب.
+              </p>
+              {hasPermission('manage-orders') && (
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={() => {
+                      const addUrl = route('delivery.drivers.create') + '?return_to=' + encodeURIComponent(route('delivery.index'));
+                      setAssignDialog(null);
+                      setSelectedDriver('');
+                      router.visit(addUrl);
+                    }}
+                  >
+                    <UserPlus className="h-4 w-4 me-2" /> إضافة سائق جديد
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() => {
+                      setAssignDialog(null);
+                      setSelectedDriver('');
+                      router.visit(route('delivery.drivers.index', {
+                        return_to: route('delivery.index'),
+                      }));
+                    }}
+                  >
+                    إدارة السائقين
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="py-4">
+                <Select value={selectedDriver} onValueChange={setSelectedDriver}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر السائق" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeDrivers.map((d: Driver) => (
+                      <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => { setAssignDialog(null); setSelectedDriver(''); }}>إلغاء</Button>
+                <Button onClick={doAssign} disabled={!selectedDriver || loading}>
+                  {loading && <Loader2 className="h-4 w-4 me-2 animate-spin" />}
+                  تأكيد
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </>

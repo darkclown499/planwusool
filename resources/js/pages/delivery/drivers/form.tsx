@@ -13,8 +13,10 @@ import InputError from '@/components/input-error';
 
 export default function DeliveryDriverForm() {
   const { t } = useTranslation();
-  const { driver, errors } = usePage().props as any;
+  const { driver, return_to, errors } = usePage().props as any;
   const isEdit = !!driver;
+
+  const backTarget = typeof return_to === 'string' && return_to ? return_to : route('delivery.drivers.index');
 
   const [formData, setFormData] = React.useState({
     name: driver?.name || '',
@@ -44,7 +46,10 @@ export default function DeliveryDriverForm() {
     if (isEdit) {
       router.put(route('delivery.drivers.update', driver.id), payload);
     } else {
-      router.post(route('delivery.drivers.store'), payload);
+      const createPayload = backTarget !== route('delivery.drivers.index')
+        ? { ...payload, return_to: backTarget }
+        : payload;
+      router.post(route('delivery.drivers.store'), createPayload);
     }
   };
 
@@ -53,7 +58,7 @@ export default function DeliveryDriverForm() {
       title={isEdit ? 'تعديل بيانات السائق' : 'إضافة سائق جديد'}
       description={isEdit ? `تعديل بيانات "${driver.name}"` : 'إضافة سائق توصيل جديد'}
       url={isEdit ? `/delivery/drivers/${driver.id}/edit` : '/delivery/drivers/create'}
-      backUrl={route('delivery.drivers.index')}
+      backUrl={backTarget}
       actions={[{
         label: 'حفظ',
         icon: <Save className="h-4 w-4" />,
@@ -153,7 +158,7 @@ export default function DeliveryDriverForm() {
             <Save className="h-4 w-4 me-2" />
             {isEdit ? 'تحديث البيانات' : 'إضافة السائق'}
           </Button>
-          <Button type="button" variant="outline" onClick={() => router.visit(route('delivery.drivers.index'))}>إلغاء</Button>
+          <Button type="button" variant="outline" onClick={() => router.visit(backTarget)}>إلغاء</Button>
         </div>
       </form>
     </PageTemplate>
