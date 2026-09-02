@@ -328,6 +328,7 @@ class ThemeController extends Controller
                 'storeName' => $store['name'] ?? 'gadgets',
                 'logo' => $brandingLogo,
                 'favicon' => $brandingFavicon,
+                'storeUrl' => $storeModel ? $storeModel->getStoreUrl() : '',
                 'phoneNumber' => $storeSettings['phone'] ?? '',
                 'currency' => $storeSettings['currency_symbol'] ?? '$',
                 'address' => $configuration['address'] ?? '',

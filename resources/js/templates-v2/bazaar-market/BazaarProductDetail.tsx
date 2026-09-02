@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Gift, Heart, Minus, Plus, X } from 'lucide-react';
+import { Gift, Heart, Minus, Plus, Share2, X } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
+import { productShareWhatsAppUrl } from '@/utils/whatsapp-share';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../shared/hooks';
 import { ensureBazaarInteractionsStyle, triggerBazaarWishlistPop } from './bazaarInteractions';
 import { ProductReviews } from '@/components/storefront/ProductReviews';
@@ -25,7 +26,7 @@ interface BazaarProductDetailProps {
  *  - backdrop fade, body scroll lock, reduced-motion
  */
 export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ product, onClose }) => {
-  const { cart, wishlist, auth } = useStorefrontCore() as any;
+  const { cart, wishlist, auth, config } = useStorefrontCore() as any;
   const formatPrice = usePriceFormatter();
 
   const images: string[] = useMemo(() => {
@@ -360,6 +361,9 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
           <button ref={wishBtnRef} type="button" onClick={handleWishlist} aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'} data-testid={`bazaar-wishlist-detail-${String(product.id)}`} className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-white shadow-sm transition ${wished ? 'border-rose-300 bg-rose-500 !text-white' : 'border-slate-200 text-slate-500 hover:border-rose-200 hover:text-rose-500'}`}>
             <Heart className="h-4 w-4" fill={wished ? 'currentColor' : 'none'} />
           </button>
+          <a href={productShareWhatsAppUrl(config?.storeUrl, product)} target="_blank" rel="noopener noreferrer" aria-label="شارك المنتج على واتساب" data-testid="bazaar-share-whatsapp" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-emerald-300 hover:text-emerald-600">
+            <Share2 className="h-4 w-4" />
+          </a>
           <button type="button" onClick={handleAdd} disabled={missingGroups.length > 0 || outOfStock || isSelectedOOS} className="bazaar-btn flex flex-1 items-center justify-center gap-2 rounded-full py-3 text-sm font-black text-white shadow disabled:bg-slate-200 disabled:text-slate-400" style={{ background: 'var(--store-primary, #0d9488)' } as any} data-testid="bazaar-add-to-cart">
             {outOfStock || isSelectedOOS ? 'غير متوفر' : missingGroups.length > 0 ? `اختر ${missingGroups.map((g: any) => g.name).join(' و')}` : adding ? 'جارٍ الإضافة…' : `أضف للسلة · ${formatPrice((Number(displayPrice) || 0) * qty)}`}
           </button>

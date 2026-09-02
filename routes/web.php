@@ -798,6 +798,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');
         Route::get('stores/{id}/marketing', [\App\Http\Controllers\StoreSettingsController::class, 'marketing'])->middleware('permission:settings-stores')->name('stores.marketing');
 
+        // WhatsApp Commerce (Phase 1 — wa.me deep links only, no messaging API)
+        Route::get('stores/{id}/whatsapp-commerce', [\App\Http\Controllers\WhatsAppCommerceController::class, 'index'])->middleware('permission:settings-stores')->name('stores.whatsapp-commerce');
+        Route::put('stores/{id}/whatsapp-commerce', [\App\Http\Controllers\WhatsAppCommerceController::class, 'update'])->middleware('permission:settings-stores')->name('stores.whatsapp-commerce.update');
+
         // Merchant WhatsApp Order Notifications — per-store, encrypted, honest status, rate limited
         Route::get('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'index'])->middleware('auth')->name('stores.notifications.whatsapp');
         Route::put('stores/{id}/notifications/whatsapp', [\App\Http\Controllers\Settings\MerchantWhatsAppController::class, 'update'])->middleware('auth')->name('stores.notifications.whatsapp.update');

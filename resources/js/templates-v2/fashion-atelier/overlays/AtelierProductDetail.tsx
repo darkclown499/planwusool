@@ -1,8 +1,9 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState, useRef } from 'react';
-import { Check, Gift, Heart, Minus, Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, Gift, Heart, Minus, Plus, Share2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { getImageUrl, getOptimizedImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
+import { productShareWhatsAppUrl } from '@/utils/whatsapp-share';
 import { discountPercent, isVariableProduct, lowStockRemaining, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
 import { calcEarnedPoints, getLoyaltySettingsFromPage } from '@/utils/loyalty';
 import { ProductReviews } from '@/components/storefront/ProductReviews';
@@ -221,6 +222,7 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
 
   const waPhone = String((config as any)?.socialMedia?.whatsapp || '').replace(/[^0-9]/g, '');
   const askUrl = createWhatsAppUrl(waPhone, `مرحباً، لدي استفسار عن المنتج: ${product.name}${variable ? ` (${Object.values(selection).join(' / ')})` : ''}`);
+  const shareUrl = productShareWhatsAppUrl(config?.storeUrl, product);
 
   // Audit truthful service claims: hide unsupported hardcoded benefits
   // COD only if store behavior enables COD (checked via behavior config if available)
@@ -524,6 +526,10 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
                   </a>
                 )}
 
+                <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center text-[13px] font-medium text-[#128C4B] hover:underline">
+                  شارك المنتج على واتساب
+                </a>
+
                 <div className="mt-7 border-t border-stone-200 pt-5">
                   <ProductReviews productId={product.id} />
                 </div>
@@ -548,6 +554,15 @@ export const AtelierProductDetail: React.FC<AtelierProductDetailProps> = ({ prod
             >
               <Heart className="h-[18px] w-[18px]" fill={wished ? 'currentColor' : 'none'} strokeWidth={1.8} />
             </button>
+            <a
+              href={shareUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="شارك المنتج على واتساب"
+              className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[14px] border border-stone-300 bg-white text-stone-500 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600"
+            >
+              <Share2 className="h-[18px] w-[18px]" strokeWidth={1.8} />
+            </a>
             <button
               type="button"
               onClick={handleAdd}

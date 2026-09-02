@@ -29,7 +29,7 @@ export type PrimaryId =
 // Taxes, Email, Domains, Integrations under a given store. These pages drop the
 // heavy desktop secondary sidebar and surface their sub-nav as horizontal
 // in-page tabs instead.
-const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations|marketing)(\/|$)/;
+const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations|marketing|whatsapp-commerce)(\/|$)/;
 
 // Merchant store-shipping & tax settings land on the global /shipping and /tax
 // routes (the /stores/{id}/shipping and /stores/{id}/taxes canonical routes
@@ -102,6 +102,23 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     'Meta Pixel': 'ميتا بيكسل',
     'TikTok Pixel': 'تيك توك بيكسل',
     'Google Analytics': 'جوجل أناليتكس',
+    'WhatsApp Commerce': 'واتساب التجاري',
+    'WhatsApp messages your team sends are deep links to the WhatsApp app — nothing is sent automatically, no messaging API is used.': 'رسائل واتساب التي يرسلها فريقك هي روابط مباشرة إلى تطبيق واتساب — لا يتم إرسال أي شيء تلقائياً ولا تُستخدم أي واجهة برمجة رسائل.',
+    'Enabled': 'مفعّل',
+    'Disabled': 'معطّل',
+    'Store WhatsApp Number': 'رقم واتساب المتجر',
+    'Order Actions': 'إجراءات الطلبات',
+    'Customer Actions': 'إجراءات العملاء',
+    'Customer Follow-up': 'متابعة العملاء',
+    'Product Share': 'مشاركة المنتجات',
+    'Product Share Button': 'زر مشاركة المنتجات',
+    'Template': 'القالب',
+    'Message Template': 'قالب الرسالة',
+    'Placeholders': 'البدائل',
+    'Available placeholders': 'البدائل المتاحة',
+    'Live Preview': 'معاينة مباشرة',
+    'Arabic': 'العربية',
+    'English': 'الإنجليزية',
     'Your store sends conversion, page-view, product-view and search events to the connected advertising pixels. Events include the selected currency, product IDs and order numbers for accurate ad attribution.': 'يرسل متجرك أحداث التحويل ومشاهدة الصفحات والمنتجات والبحث إلى بكسلات الإعلانات المتصلة. تشمل الأحداث العملة المحددة ومعرّفات المنتجات وأرقام الطلبات لقياس دقيق لأداء الإعلانات.',
     'Social Commerce improves when you connect your advertising pixels.': 'تحسين مركز التسويق عند ربط بكسلات الإعلانات.',
     'Your plan does not include advanced tracking. Upgrade to Growth or Professional to connect Meta, TikTok and Google Analytics.': 'خطتك الحالية لا تتضمن التتبع المتقدم. قم بالترقية إلى خطة النمو أو الاحترافية لربط ميتا وتيك توك وجوجل أناليتكس.',
@@ -181,6 +198,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
         path.startsWith(`/stores/${sid}/integrations`) ||
         path.startsWith(`/stores/${sid}/erp`) ||
         path.startsWith(`/stores/${sid}/marketing`) ||
+        path.startsWith(`/stores/${sid}/whatsapp-commerce`) ||
         path.startsWith(`/stores/${sid}/settings`)
     )) return 'settings';
 
@@ -199,7 +217,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
         return 'settings';
     }
     // Fallback for /stores/{id}/settings and /stores/{id}/domains etc already handled
-    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|marketing|notifications|settings)/)) {
+    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|marketing|whatsapp-commerce|notifications|settings)/)) {
         return 'settings';
     }
 
@@ -335,6 +353,7 @@ export function getMerchantContextNav(
                 items.push({ title: t('Domain') !== 'Domain' ? t('Domain') : 'الدومين', href: `/stores/${sid}/domains`, activePaths: [`/stores/${sid}/domains`] });
                 items.push({ title: t('Integrations'), href: `/stores/${sid}/integrations`, activePaths: [`/stores/${sid}/integrations`, `/stores/${sid}/integrations/erp`] });
                 items.push({ title: t('Social Commerce') !== 'Social Commerce' ? t('Social Commerce') : 'التسويق والتتبع', href: `/stores/${sid}/marketing`, activePaths: [`/stores/${sid}/marketing`] });
+                items.push({ title: t('WhatsApp Commerce') !== 'WhatsApp Commerce' ? t('WhatsApp Commerce') : 'واتساب التجاري', href: `/stores/${sid}/whatsapp-commerce`, activePaths: [`/stores/${sid}/whatsapp-commerce`] });
             }
             if (hasPermission('manage-users')) {
                 items.push({ title: t('Users & Roles') !== 'Users & Roles' ? t('Users & Roles') : 'الفريق والصلاحيات', href: tryRoute('users.index', '/users') });

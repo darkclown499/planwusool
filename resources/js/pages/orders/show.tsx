@@ -26,6 +26,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 
 function StatusBadge({ status, kind }: { status: string; kind?: 'order' | 'payment' }) {
   const safe = String(status ?? '').trim();
@@ -45,6 +47,9 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
   const returns = (initialReturns ?? (usePage().props as any).returns ?? []) as any[];
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState<null | { action: string; title: string; desc: string; next: string; destructive?: boolean }>(null);
+  const [waOpen, setWaOpen] = useState(false);
+  const [waAction, setWaAction] = useState<any>(null);
+  const [waMessage, setWaMessage] = useState('');
   React.useEffect(()=>setOrder(initialOrder), [initialOrder]);
 
   const fulfillment = order.fulfillment || {};
@@ -335,6 +340,11 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                {(order.whatsapp?.enabled && Array.isArray(order.whatsapp.actions) && order.whatsapp.actions.length > 0) && (
+                  <Button variant="outline" size="sm" className="h-9 gap-1 border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100" onClick={() => { setWaAction(order.whatsapp.actions[0] ?? null); setWaMessage(order.whatsapp.actions[0]?.message ?? ''); setWaOpen(true); }}>
+                    <MessageCircle className="h-4 w-4"/> واتساب
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -527,6 +537,50 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                 }}
               >
                 {actionLoading ? 'جارٍ التنفيذ...' : 'تأكيد'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* WhatsApp compose — deep link only, never auto-sends */}
+        <Dialog open={waOpen} onOpenChange={setWaOpen}>
+          <DialogContent dir="rtl" className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><MessageCircle className="h-5 w-5 text-emerald-600"/> إرسال عبر واتساب</DialogTitle>
+              <DialogDescription>يُفتح الرابط في محادثة واتساب العميل مع رسالة جاهزة للتعديل — لا يُرسل شيء تلقائياً.</DialogDescription>
+            </DialogHeader>
+            {Array.isArray(order.whatsapp?.actions) && order.whatsapp.actions.length > 1 && (
+              <div className="flex flex-wrap gap-1.5">
+                {order.whatsapp.actions.map((a: any) => (
+                  <button
+                    key={a?.key}
+                    type="button"
+                    onClick={() => { setWaAction(a); setWaMessage(a?.message ?? ''); }}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${waAction?.key === a?.key ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-300'}`}
+                  >
+                    {a?.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            <Textarea
+              dir={order.whatsapp?.locale === 'en' ? 'ltr' : 'rtl'}
+              value={waMessage}
+              onChange={(e) => setWaMessage(e.target.value)}
+              rows={6}
+              placeholder="نص الرسالة..."
+            />
+            <DialogFooter className="gap-2 sm:justify-between">
+              <Button variant="outline" onClick={() => setWaOpen(false)}>إغلاق</Button>
+              <Button
+                className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+                disabled={!waMessage?.trim()}
+                onClick={() => {
+                  const url = createWhatsAppUrl(order.whatsapp?.phone ?? '', waMessage);
+                  window.open(url, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                <MessageCircle className="h-4 w-4"/> فتح واتساب
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -3,6 +3,7 @@ import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { createSafeHtml } from '@/utils/xss-protection';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
+import { productShareWhatsAppUrl } from '@/utils/whatsapp-share';
 import { usePage } from '@inertiajs/react';
 import { Gift, Heart, MessageCircle, Minus, PackageCheck, Plus, Share2, ShoppingCart, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -277,7 +278,7 @@ export const TemplateProductDetailModal: React.FC<TemplateProductDetailModalProp
                                 </button>
                                 {/* Share this product on WhatsApp */}
                                 <a
-                                    href={`https://wa.me/?text=${encodeURIComponent(`${product?.name} — ${window.location.origin}/product/${product?.seoUrlSlug || product?.id}`)}`}
+                                    href={productShareWhatsAppUrl(config?.storeUrl, product)}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="شارك المنتج على واتساب"

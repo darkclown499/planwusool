@@ -143,6 +143,16 @@ class AbandonedCartController extends Controller
             $perPage = $request->get('per_page', 15);
             $carts = $query->latest('last_activity_at')->paginate($perPage);
 
+            // Attach the WhatsApp recovery deep-link action per cart (Phase 1:
+            // wa.me only — the merchant opens a prefilled compose dialog).
+            $whatsAppCommerce = app(\App\Services\WhatsAppCommerceService::class);
+            $carts->getCollection()->transform(function ($cart) use ($whatsAppCommerce, $currentStoreId) {
+                $cart->whatsapp_action = $currentStoreId && (int) $cart->store_id === (int) $currentStoreId
+                    ? $whatsAppCommerce->abandonedCartAction((int) $cart->id)
+                    : null;
+                return $cart;
+            });
+
             $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId) : [];
 
             $currencySymbol = '₪';

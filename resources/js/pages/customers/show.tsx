@@ -10,6 +10,15 @@ import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
+import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 interface Note { id: number; note: string; created_at?: string | null; created_by_name?: string | null; }
 interface Tag { id: number; name: string; }
@@ -75,6 +84,10 @@ export default function ShowCustomer() {
   const [noteLoading, setNoteLoading] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [tagLoading, setTagLoading] = useState(false);
+  const [followupOpen, setFollowupOpen] = useState(false);
+  const [followupMessage, setFollowupMessage] = useState('');
+
+  const followup = (profile as any).whatsapp as null | { message?: string; phone?: string; label?: string } | undefined;
 
   const canManage = hasPermission('edit-customers');
   const refToken = profile?.identity?.ref_token || '';
@@ -172,6 +185,18 @@ export default function ShowCustomer() {
                      className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700">
                     <MessageCircle className="h-4 w-4" /> تواصل عبر واتساب
                   </a>
+                )}
+                {followup && (
+                  <Button
+                    variant="outline"
+                    className="border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 gap-2"
+                    onClick={() => {
+                      setFollowupMessage(followup?.message ?? '');
+                      setFollowupOpen(true);
+                    }}
+                  >
+                    <MessageCircle className="h-4 w-4" /> {followup?.label || 'متابعة عبر واتساب'}
+                  </Button>
                 )}
                 {profile.identity.call_url && (
                   <a href={profile.identity.call_url}
@@ -350,6 +375,36 @@ export default function ShowCustomer() {
           </CardContent>
         </Card>
       </div>
+
+      {/* WhatsApp follow-up compose — deep link only, never auto-sends */}
+      <Dialog open={followupOpen} onOpenChange={setFollowupOpen}>
+        <DialogContent dir="rtl" className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><MessageCircle className="h-5 w-5 text-emerald-600" /> متابعة عبر واتساب</DialogTitle>
+            <DialogDescription>يُفتح الرابط في محادثة واتساب العميل مع رسالة جاهزة للتعديل — لا يُرسل شيء تلقائياً.</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            dir="rtl"
+            value={followupMessage}
+            onChange={(e) => setFollowupMessage(e.target.value)}
+            rows={6}
+            placeholder="نص الرسالة..."
+          />
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button variant="outline" onClick={() => setFollowupOpen(false)}>إغلاق</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+              disabled={!followupMessage?.trim()}
+              onClick={() => {
+                const url = createWhatsAppUrl(String(followup?.phone ?? ''), followupMessage);
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }}
+            >
+              <MessageCircle className="h-4 w-4" /> فتح واتساب
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageTemplate>
   );
 }

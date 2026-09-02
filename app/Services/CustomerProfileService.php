@@ -224,6 +224,14 @@ class CustomerProfileService
         $noteIds = $notes->pluck('created_by')->filter()->unique()->values()->all();
         $creators = User::whereIn('id', $noteIds)->get()->pluck('name', 'id');
 
+        // WhatsApp Commerce deep-link follow-up action for this customer
+        // (Phase 1: wa.me only, edited by merchant before opening).
+        $whatsapp = app(WhatsAppCommerceService::class)->customerAction(
+            (int) $storeId,
+            $phoneE164,
+            $identity['full_name']
+        );
+
         $totals = $this->buildTotals($metricsRows);
         $ordersCount = 0;
         $validCount = 0;
@@ -250,6 +258,7 @@ class CustomerProfileService
                 'created_at' => $identity['created_at'],
                 'legacy_note' => $identity['legacy_note'],
             ],
+            'whatsapp' => $whatsapp,
             'overview' => [
                 'orders_count' => $ordersCount,
                 'valid_count' => $validCount,

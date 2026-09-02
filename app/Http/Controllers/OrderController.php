@@ -295,10 +295,77 @@ class OrderController extends Controller
             ];
         });
 
+        // WhatsApp Commerce — contextual deep-link actions for this order.
+        // Phase 1: wa.me links only; the page lets the merchant edit the message
+        // before opening. Never automated.
+        $formattedOrder['whatsapp'] = $this->buildWhatsAppOrderBlock($order, $storeId);
+
         return Inertia::render('orders/show', [
             'order' => $formattedOrder,
             'returns' => $returns,
         ]);
+    }
+
+    /**
+     * Build the order->whatsapp block: feature flag + available deep-link
+     * actions scoped by order status/payment status. Uses the store locale.
+     *
+     * @return array{enabled: bool, phone: string|null, locale: string, actions: list<array<string,mixed>>}
+     */
+    private function buildWhatsAppOrderBlock(Order $order, int $storeId): array
+    {
+        $service = app(\App\Services\WhatsAppCommerceService::class);
+        $storeModel = \App\Models\Store::find($storeId);
+        $locale = 'ar';
+        if ($storeModel) {
+            $cfg = \App\Models\StoreConfiguration::getConfiguration($storeId);
+            $locale = in_array(($cfg['language'] ?? 'ar'), ['ar', 'en'], true)
+                ? (string) $cfg['language']
+                : 'ar';
+        }
+
+        $enabled = $service->areOrderActionsEnabled($storeId);
+        $phoneE164 = \App\Services\PhoneNormalizer::normalize((string) ($order->customer_phone ?? ''));
+        $overallEnabled = $enabled && $phoneE164 !== null;
+
+        $actionKeys = [];
+        $status = strtolower((string) $order->status);
+        $payment = strtolower((string) $order->payment_status);
+
+        // Generic confirmations are always useful.
+        $actionKeys[] = 'order_confirmed';
+        if ($status === 'pending' || $payment === 'unpaid' || $payment === 'pending') {
+            $actionKeys[] = 'payment_reminder';
+        }
+        if (in_array($status, ['confirmed', 'processing', 'preparing'], true)) {
+            $actionKeys[] = 'preparing';
+            $actionKeys[] = 'order_received';
+        }
+        if ($status === 'shipped') {
+            $actionKeys[] = 'shipped';
+        }
+        if ($status === 'delivered') {
+            $actionKeys[] = 'delivered';
+        }
+        if ($status === 'cancelled' || $status === 'failed') {
+            $actionKeys[] = 'order_received';
+        }
+        $actionKeys = array_values(array_unique($actionKeys));
+
+        $actions = [];
+        foreach ($actionKeys as $key) {
+            $action = $service->orderAction($order, $key, $locale);
+            if ($action) {
+                $actions[] = $action;
+            }
+        }
+
+        return [
+            'enabled' => $overallEnabled,
+            'phone' => $phoneE164,
+            'locale' => $locale,
+            'actions' => $actions,
+        ];
     }
 
     private function buildFulfillmentTimeline($order, $shipment, string $fulfillmentType): array

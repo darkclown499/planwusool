@@ -11,6 +11,8 @@ import { router, usePage } from '@inertiajs/react';
 import { ShoppingCart, ShoppingBag, Download, Trash2, Send, CheckCircle, DollarSign, Search, MessageCircle, Loader2 } from 'lucide-react';
 import { hasPermission } from '@/utils/permissions';
 import { toast } from '@/components/custom-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 
 const STATUS_MAP: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
   new: { label: 'جديدة', variant: 'default' },
@@ -27,6 +29,8 @@ export default function AbandonedCarts() {
   const { carts = { data: [] }, stats = { total: 0, new: 0, draft: 0, abandoned: 0, reminder_sent: 0, recovered: 0, expired: 0, pending: 0, recovered_amount: 0, total_abandoned_amount: 0, recovery_rate: 0 }, filters = {}, currency_symbol, activeStoreId, errors = {} } = usePage().props as any;
   const [cartToDelete, setCartToDelete] = useState<number | null>(null);
   const [cartToRecover, setCartToRecover] = useState<number | null>(null);
+  const [waCart, setWaCart] = useState<any>(null);
+  const [waMessage, setWaMessage] = useState('');
   const [search, setSearch] = useState(filters.search || '');
   const [status, setStatus] = useState(filters.status || 'all');
   const [loadingActions, setLoadingActions] = useState<Record<number, string>>({});
@@ -388,6 +392,19 @@ export default function AbandonedCarts() {
                                     )}
                                   </Button>
                                 )}
+                                {cart.whatsapp_action && cart.status !== 'recovered' && cart.status !== 'expired' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setWaCart(cart.whatsapp_action);
+                                      setWaMessage(cart.whatsapp_action.message || '');
+                                    }}
+                                    title={t('Send via WhatsApp')}
+                                  >
+                                    <MessageCircle className="h-4 w-4 text-emerald-600" />
+                                  </Button>
+                                )}
                                 {hasPermission('delete-abandoned-carts') && (
                                   <Button
                                     variant="ghost"
@@ -441,6 +458,36 @@ export default function AbandonedCarts() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCartToRecover(null)}>{t('Cancel')}</Button>
             <Button onClick={handleMarkRecovered}>{t('Confirm')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp compose — deep link only, never auto-sends */}
+      <Dialog open={!!waCart} onOpenChange={(open) => !open && setWaCart(null)}>
+        <DialogContent dir="rtl" className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><MessageCircle className="h-5 w-5 text-emerald-600" /> {t('Send via WhatsApp')}</DialogTitle>
+            <DialogDescription>{t('Opens a WhatsApp chat with a ready-to-edit recovery message — nothing is sent automatically.')}</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            dir="rtl"
+            value={waMessage}
+            onChange={(e) => setWaMessage(e.target.value)}
+            rows={6}
+            placeholder="نص الرسالة..."
+          />
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button variant="outline" onClick={() => setWaCart(null)}>{t('Cancel')}</Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+              disabled={!waMessage?.trim()}
+              onClick={() => {
+                const url = createWhatsAppUrl(String(waCart?.phone ?? ''), waMessage);
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }}
+            >
+              <MessageCircle className="h-4 w-4" /> {t('Open WhatsApp')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
