@@ -360,6 +360,36 @@ class PaymentOperationsPhase2Test extends TestCase
         $this->assertEquals(0, CodSettlement::where('store_id', $storeA->id)->count());
     }
 
+    // ─────────── Regression: unqualified CodPaymentService resolution ───────────
+    // Reproduces the production failure `Class "App\Http\Controllers\CodPaymentService" not found`
+    // which crashed PaymentOperationsController::row() (line ~285) whenever the
+    // controllers namespace lacked a `use App\Services\CodPaymentService;` import.
+    public function test_operations_index_resolves_cod_payment_service_and_marks_terminal(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+
+        // A COD order with a pending COD record — this exercises row() line ~285.
+        $o1 = $this->makeOrder($store, ['payment_method' => 'cod', 'payment_status' => 'pending', 'total_amount' => 100]);
+        CodPayment::create(['order_id' => $o1->id, 'store_id' => $store->id, 'total_amount' => 100, 'cod_fee' => 0, 'amount_collected' => 0, 'amount_remaining' => 100, 'status' => 'pending']);
+
+        // A terminal (cancelled) COD order that must be flagged for exclusion.
+        $o2 = $this->makeOrder($store, ['payment_method' => 'cod', 'payment_status' => 'pending', 'status' => 'cancelled', 'total_amount' => 50]);
+
+        // Hitting the real controller action must NOT throw "class not found".
+        $res = $this->actingAs($user)->getJson(route('payments.operations'));
+        $this->assertContains($res->status(), [200, 403, 302]);
+
+        // The row builder must mark the terminal order as NOT collectible.
+        $b = new \ReflectionMethod(\App\Http\Controllers\PaymentOperationsController::class, 'row');
+        $b->setAccessible(true);
+        $fresh1 = Order::find($o1->id);
+        $fresh2 = Order::find($o2->id);
+        $row1 = $b->invoke(app(\App\Http\Controllers\PaymentOperationsController::class), $fresh1);
+        $row2 = $b->invoke(app(\App\Http\Controllers\PaymentOperationsController::class), $fresh2);
+        $this->assertTrue($row1['can_collect_cod']);
+        $this->assertFalse($row2['can_collect_cod'], 'cancelled order cannot be COD collected');
+    }
+
     /* ── Issue C regression: terminal order statuses (cancelled/failed/
           refunded/returned) are never eligible for COD settlement, and the
           pending-COD list excludes them. ── */
