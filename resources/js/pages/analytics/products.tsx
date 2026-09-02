@@ -56,7 +56,8 @@ function EmptyState({ hint }: { hint?: string }) {
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60">
         <Inbox className="h-6 w-6 text-muted-foreground" />
       </div>
-      <p className="text-sm font-medium text-muted-foreground">{hint || t('No data available yet')}</p>
+      <p className="text-sm font-medium text-muted-foreground">{hint || t('No data for this period')}</p>
+      {!hint && <p className="text-xs text-muted-foreground">{t('Try another period')}</p>}
     </div>
   );
 }
@@ -211,7 +212,7 @@ export default function AnalyticsProducts({ products, search, preset, from, to }
                   <TableHead>{t('Product')}</TableHead>
                   <TableHead className="text-end">{t('Units Sold')}</TableHead>
                   <TableHead className="text-end">{t('Orders')}</TableHead>
-                  <TableHead className="text-end">{t('Revenue')}</TableHead>
+                  <TableHead className="text-end">{t('Order Value')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

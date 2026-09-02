@@ -141,15 +141,22 @@ const fmtNum = (value: number) => Number(value || 0).toLocaleString('en-US');
 function ChangeBadge({ change, is_new, allTime }: { change: number | null; is_new: boolean; allTime?: boolean }) {
   const { t } = useTranslation();
   if (allTime) return null;
+  let badge: React.ReactNode;
   if (change === null) {
-    if (is_new) return <Badge variant="outline" className="bg-green-500/10 text-green-600">{t('New')}</Badge>;
-    return <span className="text-xs text-muted-foreground">—</span>;
+    badge = is_new ? <Badge variant="outline" className="bg-green-500/10 text-green-600">{t('New')}</Badge> : <span className="text-xs text-muted-foreground">—</span>;
+  } else {
+    const positive = change > 0;
+    badge = (
+      <span className={cn('text-xs font-medium tabular-nums', positive ? 'text-green-600' : 'text-red-600')}>
+        {positive ? '+' : ''}
+        {change.toFixed(1)}%
+      </span>
+    );
   }
-  const positive = change > 0;
   return (
-    <span className={cn('text-xs font-medium tabular-nums', positive ? 'text-green-600' : 'text-red-600')}>
-      {positive ? '+' : ''}
-      {change.toFixed(1)}%
+    <span className="flex items-center gap-1.5">
+      {badge}
+      <span className="text-[11px] text-muted-foreground">{t('Compared to previous period')}</span>
     </span>
   );
 }
@@ -162,6 +169,7 @@ function MetricCard({
   isNew,
   allTime,
   extra,
+  subtitle,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -170,6 +178,7 @@ function MetricCard({
   isNew?: boolean;
   allTime?: boolean;
   extra?: React.ReactNode;
+  subtitle?: string;
 }) {
   return (
     <Card>
@@ -183,6 +192,7 @@ function MetricCard({
           {change !== undefined && <ChangeBadge change={change ?? null} is_new={!!isNew} allTime={allTime} />}
           {extra}
         </div>
+        {subtitle && <p className="pt-1 text-xs leading-relaxed text-muted-foreground">{subtitle}</p>}
       </CardContent>
     </Card>
   );
@@ -206,8 +216,9 @@ function EmptyState({ hint }: { hint?: string }) {
         <Inbox className="h-6 w-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-muted-foreground">
-        {hint || t('No data available yet')}
+        {hint || t('No data for this period')}
       </p>
+      {!hint && <p className="text-xs text-muted-foreground">{t('Try another period')}</p>}
     </div>
   );
 }
@@ -285,7 +296,7 @@ function DateRangePicker({ preset, from, to }: { preset: string; from?: string |
           <div className="mt-3 space-y-2 border-t pt-3">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="mb-1 block text-xs text-muted-foreground">{t('From')}</label>
+                <label className="mb-1 block text-xs text-muted-foreground">{t('From date')}</label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -295,7 +306,7 @@ function DateRangePicker({ preset, from, to }: { preset: string; from?: string |
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs text-muted-foreground">{t('To')}</label>
+                <label className="mb-1 block text-xs text-muted-foreground">{t('To date')}</label>
                 <Input
                   type="date"
                   dir="ltr"
@@ -390,7 +401,7 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
   );
 
   const trendSeries = {
-    valid_value: { name: t('Valid Orders') + ' (' + (trend.currency || '') + ')', color: '#10b77f', dataKey: 'value' as const },
+    valid_value: { name: t('Order Value') + ' (' + (trend.currency || '') + ')', color: '#10b77f', dataKey: 'value' as const },
     collected: { name: t('Collected'), color: '#3b82f6', dataKey: 'collected' as const },
     orders: { name: t('Orders'), color: '#a855f7', dataKey: 'orders' as const },
   }[trendKey];
@@ -430,6 +441,7 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
                 change={metrics.gmv.change?.change}
                 isNew={metrics.gmv.change?.is_new}
                 extra={<MoneySubtext groups={metrics.gmv.groups} />}
+                subtitle={t('GMV subtitle')}
               />
               <MetricCard
                 title={t('Collected')}
@@ -438,6 +450,7 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
                 change={metrics.collected.change?.change}
                 isNew={metrics.collected.change?.is_new}
                 extra={<MoneySubtext groups={metrics.collected.groups} />}
+                subtitle={t('Collected subtitle')}
               />
               <MetricCard
                 title={t('Valid Orders')}
@@ -508,7 +521,7 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
                       trendKey === key ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
                     )}
                   >
-                    {key === 'valid_value' ? t('GMV') : key === 'collected' ? t('Collected') : t('Orders')}
+                    {key === 'valid_value' ? t('Order Value') : key === 'collected' ? t('Collected') : t('Orders')}
                   </button>
                 ))}
               </div>

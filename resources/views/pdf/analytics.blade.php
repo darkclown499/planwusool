@@ -50,13 +50,13 @@
     <table class="grid-metrics">
         <tr>
             <td>
-                <div class="metric-label">إجمالي المبيعات الصالحة (الفترة)</div>
+                <div class="metric-label">إجمالي قيمة الطلبات (الفترة)</div>
                 @foreach ($gmv as $code => $amount)
                     <div class="metric-value">{{ $currency($amount) }}</div>
                 @endforeach
             </td>
             <td>
-                <div class="metric-label">المُحصّل</div>
+                <div class="metric-label">المبالغ المحصلة</div>
                 @foreach ($collected as $code => $amount)
                     <div class="metric-value">{{ $currency($amount) }}</div>
                 @endforeach
@@ -107,7 +107,7 @@
                 <tr>
                     <th>المنتج</th>
                     <th>الكمية المباعة</th>
-                    <th>الإيرادات</th>
+                    <th>قيمة الطلبات</th>
                 </tr>
             </thead>
             <tbody>

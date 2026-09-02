@@ -61,7 +61,8 @@ function EmptyState({ hint }: { hint?: string }) {
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60">
         <Inbox className="h-6 w-6 text-muted-foreground" />
       </div>
-      <p className="text-sm font-medium text-muted-foreground">{hint || t('No data available yet')}</p>
+      <p className="text-sm font-medium text-muted-foreground">{hint || t('No data for this period')}</p>
+      {!hint && <p className="text-xs text-muted-foreground">{t('Try another period')}</p>}
     </div>
   );
 }
@@ -175,9 +176,12 @@ function StatCard({ title, icon, value, change, isNew, suffix }: {
               <span className="text-xs text-muted-foreground">—</span>
             )
           ) : (
-            <span className={cn('text-xs font-medium tabular-nums', change > 0 ? 'text-green-600' : 'text-red-600')}>
-              {change > 0 ? '+' : ''}
-              {change.toFixed(1)}%
+            <span className="flex items-center gap-1.5">
+              <span className={cn('text-xs font-medium tabular-nums', change > 0 ? 'text-green-600' : 'text-red-600')}>
+                {change > 0 ? '+' : ''}
+                {change.toFixed(1)}%
+              </span>
+              <span className="text-[11px] text-muted-foreground">{t('Compared to previous period')}</span>
             </span>
           )}
         </div>
