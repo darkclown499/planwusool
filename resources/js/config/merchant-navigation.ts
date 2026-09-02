@@ -281,7 +281,7 @@ export function getMerchantContextNav(
                 items.push({ title: t('Payment Operations') !== 'Payment Operations' ? t('Payment Operations') : 'عمليات الدفع', href: tryRoute('payments.operations', '/payments/operations'), activePaths: ['/payments/operations'] });
             }
             if (hasPermission('manage-pos') && routeExists('pos.index')) {
-                items.push({ title: t('POS System'), href: tryRoute('pos.index', '/pos') });
+                items.push({ title: t('point_of_sale_short'), href: tryRoute('pos.index', '/pos') });
             }
             return { title: titleFor('orders'), items };
         }
