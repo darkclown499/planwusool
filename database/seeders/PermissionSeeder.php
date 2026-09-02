@@ -287,6 +287,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'send-notifications', 'module' => 'notifications', 'label' => 'Send Notifications', 'description' => 'Can send manual notifications to customers'],
             ['name' => 'delete-notifications', 'module' => 'notifications', 'label' => 'Delete Notifications', 'description' => 'Can delete notifications'],
 
+            // POS management
+            ['name' => 'manage-pos', 'module' => 'pos', 'label' => 'Manage POS', 'description' => 'Can manage in-store point of sale'],
+            ['name' => 'view-pos', 'module' => 'pos', 'label' => 'View POS', 'description' => 'Can view in-store point of sale'],
+            ['name' => 'process-transactions-pos', 'module' => 'pos', 'label' => 'Process POS Transactions', 'description' => 'Can process in-store POS transactions'],
+            ['name' => 'view-transactions-pos', 'module' => 'pos', 'label' => 'View POS Transactions', 'description' => 'Can view in-store POS transactions'],
+            ['name' => 'manage-settings-pos', 'module' => 'pos', 'label' => 'Manage POS Settings', 'description' => 'Can manage in-store POS settings'],
+
         ];
 
         foreach ($permissions as $permission) {
