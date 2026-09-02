@@ -772,6 +772,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('dashboard/redirect', [DashboardController::class, 'redirectToFirstAvailablePage'])->name('dashboard.redirect');
         Route::get('dashboard/export', [DashboardController::class, 'export'])->name('dashboard.export');
 
+        // Point of Sale (Phase 1)
+        Route::get('pos', [\App\Http\Controllers\PointOfSaleController::class, 'index'])->middleware('permission:manage-pos')->name('pos.index');
+        Route::get('pos/api/customers', [\App\Http\Controllers\PointOfSaleController::class, 'customers'])->middleware('permission:manage-pos')->name('pos.customers');
+        Route::get('pos/api/search', [\App\Http\Controllers\PointOfSaleController::class, 'search'])->middleware('permission:manage-pos')->name('pos.search');
+        Route::post('pos/sale', [\App\Http\Controllers\PointOfSaleController::class, 'store'])->middleware('permission:manage-pos')->name('pos.sale');
+        Route::get('pos/receipt/{order}', [\App\Http\Controllers\PointOfSaleController::class, 'receipt'])->middleware('permission:manage-pos')->name('pos.receipt');
+
+        // Unified Inventory (Phase 1)
+        Route::get('inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->middleware('permission:manage-pos')->name('inventory.index');
+        Route::post('inventory/adjust', [\App\Http\Controllers\InventoryController::class, 'adjust'])->middleware('permission:manage-pos')->name('inventory.adjust');
+        Route::get('inventory/movements', [\App\Http\Controllers\InventoryController::class, 'movements'])->middleware('permission:manage-pos')->name('inventory.movements');
+
         // Merchant notifications page (admin panel)
         Route::get('merchant-notifications', [MerchantNotificationController::class, 'index'])->name('merchant-notifications.index');
         

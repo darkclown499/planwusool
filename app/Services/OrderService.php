@@ -95,13 +95,18 @@ class OrderService
             // Create order items and update inventory — canonical variant-aware with row locking
             // Store_id needed for inventory isolation
             $storeIdForInventory = (int) $orderData['store_id'];
+            // Classify stock movement for the ledger: POS channel records POS_SALE, everything else ONLINE_SALE.
+            $movementType = strtolower((string) ($orderData['order_source'] ?? 'storefront')) === 'pos'
+                ? \App\Models\InventoryMovement::MOVEMENT_POS_SALE
+                : \App\Models\InventoryMovement::MOVEMENT_ONLINE_SALE;
+            $movementReference = ['type' => 'order', 'id' => $order->id, 'number' => $order->order_number];
             foreach ($cartItems as $cartItem) {
                 $unitPrice = $cartItem['sale_price'] ?? $cartItem['price'];
                 
                 // Decrement inventory via canonical service (locks product row, handles variant/product/backorder)
                 $decrementResult = null;
                 try {
-                    $decrementResult = \App\Services\InventoryService::decrementForCartLine($cartItem, $storeIdForInventory);
+                    $decrementResult = \App\Services\InventoryService::decrementForCartLine($cartItem, $storeIdForInventory, $movementType, $movementReference);
                 } catch (\Exception $e) {
                     throw $e;
                 }

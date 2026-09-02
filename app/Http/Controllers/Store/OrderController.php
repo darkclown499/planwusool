@@ -110,7 +110,7 @@ class OrderController extends Controller
                 'whatsapp_number' => 'nullable|string|max:20',
                 'loyalty_points' => 'nullable|integer|min:0',
                 'loyalty_points_used' => 'nullable|integer|min:0',
-                'order_source' => 'nullable|string|in:storefront,whatsapp',
+                'order_source' => 'nullable|string|in:storefront,whatsapp,pos',
                 'idempotency_key' => 'nullable|string|max:64',
             ];
             

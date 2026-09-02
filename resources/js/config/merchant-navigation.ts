@@ -153,7 +153,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     }
 
     // Products area
-    if (path.startsWith('/products') || path.startsWith('/categories') || path.startsWith('/product-reviews') || path.startsWith('/digital-downloads')) {
+    if (path.startsWith('/products') || path.startsWith('/categories') || path.startsWith('/product-reviews') || path.startsWith('/digital-downloads') || path.startsWith('/inventory')) {
         return 'products';
     }
     if (sid && path === `/stores/${sid}/categories`) return 'products';
@@ -295,6 +295,9 @@ export function getMerchantContextNav(
             }
             if (hasPermission('manage-product-reviews')) items.push({ title: t('Product Reviews'), href: tryRoute('product-reviews.index', '/product-reviews') });
             if (hasPermission('manage-digital-downloads')) items.push({ title: t('Digital Downloads'), href: tryRoute('digital-downloads.index', '/digital-downloads') });
+            if (hasPermission('manage-pos') && routeExists('inventory.index')) {
+                items.push({ title: t('Inventory'), href: tryRoute('inventory.index', '/inventory') });
+            }
             return { title: titleFor('products'), items };
         }
         case 'customers': {

@@ -222,9 +222,13 @@ class InventoryService
      * Atomic decrement for a single cart line. Must be called inside a DB transaction with lock.
      * Locks the product row first, then validates and mutates.
      *
-     * @return array{success: bool, message: string|null, combination_id: string|null, inventory_mode: string}
+     * Optionally records an auditable stock movement when $movementType is provided.
+     *
+     * @param string|null $movementType e.g. InventoryMovement::MOVEMENT_POS_SALE / ONLINE_SALE
+     * @param array{w?:int, type?:string, id?:?int, number?:?string}|null $reference optional reference/order info
+     * @return array{success: bool, message: string|null, combination_id: string|null, inventory_mode: string, variant_uuid: string|null}
      */
-    public static function decrementForCartLine(array $cartItem, int $storeId): array
+    public static function decrementForCartLine(array $cartItem, int $storeId, ?string $movementType = null, ?array $reference = null): array
     {
         $productId = $cartItem['product_id'];
         $qty = (int) $cartItem['quantity'];
@@ -286,22 +290,48 @@ class InventoryService
                 try { \App\Services\MerchantNotificationService::lowStock($product, $threshold); } catch (\Throwable $e) {}
             }
 
+            if ($movementType) {
+                \App\Services\InventoryMovementService::record(array_merge([
+                    'store_id' => $storeId,
+                    'product_id' => $product->id,
+                    'variant_uuid' => $combo['uuid'] ?? null,
+                    'variant_combination_id' => $combo['id'] ?? null,
+                    'quantity_delta' => -$qty,
+                    'movement_type' => $movementType,
+                    'before_quantity' => $stock,
+                    'after_quantity' => $newStock,
+                ], $reference ? ['reference_type'=>$reference['type']??null,'reference_id'=>$reference['id']??null,'reference_number'=>$reference['number']??null] : []));
+            }
+
             return ['success' => true, 'message' => null, 'combination_id' => $combo['id'] ?? null, 'variant_uuid' => $combo['uuid'] ?? null, 'inventory_mode' => 'variant'];
         }
 
         // Product-level atomic conditional decrement (still under lock, but keep conditional as defence)
         if ($backorder) {
             // Direct decrement may go negative
+            $beforeStock = (int) ($product->stock ?? 0);
             DB::table('products')->where('id', $product->id)->decrement('stock', $qty);
             $product->refresh();
+            $afterStock = (int) ($product->stock ?? 0);
             $threshold = (int) ($product->low_stock_warning ?: 5);
             if ($product->stock !== null && $product->stock <= $threshold) {
                 try { \App\Services\MerchantNotificationService::lowStock($product, $threshold); } catch (\Throwable $e) {}
+            }
+            if ($movementType) {
+                \App\Services\InventoryMovementService::record(array_merge([
+                    'store_id' => $storeId,
+                    'product_id' => $product->id,
+                    'quantity_delta' => -$qty,
+                    'movement_type' => $movementType,
+                    'before_quantity' => $beforeStock,
+                    'after_quantity' => $afterStock,
+                ], $reference ? ['reference_type'=>$reference['type']??null,'reference_id'=>$reference['id']??null,'reference_number'=>$reference['number']??null] : []));
             }
             return ['success' => true, 'message' => null, 'combination_id' => null, 'inventory_mode' => 'product'];
         }
 
         // Conditional atomic decrement — if stock insufficient at DB level, fail
+        $beforeStock = (int) ($product->stock ?? 0);
         $decremented = DB::table('products')
             ->where('id', $product->id)
             ->where('stock', '>=', $qty)
@@ -312,9 +342,21 @@ class InventoryService
         }
 
         $product->refresh();
+        $afterStock = (int) ($product->stock ?? 0);
         $threshold = (int) ($product->low_stock_warning ?: 5);
         if ($product->stock !== null && $product->stock <= $threshold) {
             try { \App\Services\MerchantNotificationService::lowStock($product, $threshold); } catch (\Throwable $e) {}
+        }
+
+        if ($movementType) {
+            \App\Services\InventoryMovementService::record(array_merge([
+                'store_id' => $storeId,
+                'product_id' => $product->id,
+                'quantity_delta' => -$qty,
+                'movement_type' => $movementType,
+                'before_quantity' => $beforeStock,
+                'after_quantity' => $afterStock,
+            ], $reference ? ['reference_type'=>$reference['type']??null,'reference_id'=>$reference['id']??null,'reference_number'=>$reference['number']??null] : []));
         }
 
         return ['success' => true, 'message' => null, 'combination_id' => null, 'inventory_mode' => 'product'];
@@ -370,6 +412,19 @@ class InventoryService
                 $combos[$idx]['stock'] = (string)($current + $qty);
                 $product->variant_combinations = $combos;
                 $product->save();
+                \App\Services\InventoryMovementService::record([
+                    'store_id' => $storeId,
+                    'product_id' => $product->id,
+                    'variant_uuid' => $combos[$idx]['uuid'] ?? null,
+                    'variant_combination_id' => $combos[$idx]['id'] ?? null,
+                    'quantity_delta' => $qty,
+                    'movement_type' => \App\Models\InventoryMovement::MOVEMENT_RETURN_RESTOCK,
+                    'reference_type' => 'order_return_item',
+                    'reference_id' => $item->id,
+                    'before_quantity' => $current,
+                    'after_quantity' => $current + $qty,
+                    'note' => 'Return restock (order item #' . $item->id . ')',
+                ]);
                 Log::info('Restocked variant qty', ['order_item_id'=>$item->id,'qty'=>$qty,'uuid'=>$variantUuid,'id'=>$comboId]);
                 return ['success'=>true,'message'=>null,'mode'=>'variant','combination_id'=>$comboId,'uuid'=>$variantUuid];
             }
@@ -377,7 +432,19 @@ class InventoryService
             return ['success'=>false,'message'=>'الخيار الأصلي لم يعد موجوداً، ولا يمكن إعادة الكمية للمخزون تلقائياً.'];
         }
 
+        $beforeStock = (int) ($product->stock ?? 0);
         DB::table('products')->where('id',$product->id)->increment('stock', $qty);
+        \App\Services\InventoryMovementService::record([
+            'store_id' => $storeId,
+            'product_id' => $product->id,
+            'quantity_delta' => $qty,
+            'movement_type' => \App\Models\InventoryMovement::MOVEMENT_RETURN_RESTOCK,
+            'reference_type' => 'order_return_item',
+            'reference_id' => $item->id,
+            'before_quantity' => $beforeStock,
+            'after_quantity' => $beforeStock + $qty,
+            'note' => 'Return restock (order item #' . $item->id . ')',
+        ]);
         Log::info('Restocked product qty', ['order_item_id'=>$item->id,'qty'=>$qty]);
         return ['success'=>true,'message'=>null,'mode'=>'product'];
     }
@@ -385,8 +452,10 @@ class InventoryService
     /**
      * Restore stock for an order item. Lock the product row.
      * Idempotent via caller checking stock_restored flag; this method itself is lock-safe.
+     *
+     * @param string|null $movementType defaults to ORDER_CANCEL_RESTOCK (hard failure/cancel)
      */
-    public static function restoreForOrderItem(\App\Models\OrderItem $item, int $storeId): bool
+    public static function restoreForOrderItem(\App\Models\OrderItem $item, int $storeId, ?string $movementType = null): bool
     {
         $productId = $item->product_id;
         if (!$productId) return false;
@@ -454,6 +523,19 @@ class InventoryService
                 $combos[$idx]['stock'] = (string) ($currentStock + $qty);
                 $product->variant_combinations = $combos;
                 $product->save();
+                \App\Services\InventoryMovementService::record([
+                    'store_id' => $storeId,
+                    'product_id' => $product->id,
+                    'variant_uuid' => $combos[$idx]['uuid'] ?? null,
+                    'variant_combination_id' => $combos[$idx]['id'] ?? null,
+                    'quantity_delta' => $qty,
+                    'movement_type' => $movementType ?? \App\Models\InventoryMovement::MOVEMENT_ORDER_CANCEL_RESTOCK,
+                    'reference_type' => 'order',
+                    'reference_id' => $item->order_id,
+                    'before_quantity' => $currentStock,
+                    'after_quantity' => $currentStock + $qty,
+                    'note' => 'Order restore (order #' . $item->order_id . ')',
+                ]);
                 Log::info('Stock restored (variant)', ['order_id' => $item->order_id, 'product_id' => $productId, 'combination_id' => $comboId, 'qty' => $qty]);
                 return true;
             }
@@ -465,9 +547,108 @@ class InventoryService
         }
 
         // Product-level restore
+        $beforeStock = (int) ($product->stock ?? 0);
         DB::table('products')->where('id', $product->id)->increment('stock', $qty);
+        \App\Services\InventoryMovementService::record([
+            'store_id' => $storeId,
+            'product_id' => $product->id,
+            'quantity_delta' => $qty,
+            'movement_type' => $movementType ?? \App\Models\InventoryMovement::MOVEMENT_ORDER_CANCEL_RESTOCK,
+            'reference_type' => 'order',
+            'reference_id' => $item->order_id,
+            'before_quantity' => $beforeStock,
+            'after_quantity' => $beforeStock + $qty,
+            'note' => 'Order restore (order #' . $item->order_id . ')',
+        ]);
         Log::info('Stock restored (product)', ['order_id' => $item->order_id, 'product_id' => $productId, 'qty' => $qty]);
         return true;
+    }
+
+    /**
+     * Controlled manual stock adjustment (increase/decrease) with audit.
+     *
+     * Direction is explicit and signed on the server: a positive $delta raises
+     * stock, a negative $delta lowers it. Resulting stock can never go below
+     * zero. Always writes a MANUAL_ADJUSTMENT ledger row so corrections are
+     * explained (reason/note) and attributable.
+     *
+     * @param int $delta signed movement (e.g. +10 received, -3 damaged)
+     * @param int $storeId validated merchant store
+     * @param string|null $variantUuid stable variant uuid (variant-tracked products)
+     * @param string|null $variantId combo id fallback
+     * @param string|null $note merchant reason (safe note)
+     * @param int|null $actorId acting merchant user
+     * @return array{success:bool,message:?string,mode:string,before:?int,after:?int}
+     */
+    public static function adjustStock(Product $product, int $delta, int $storeId, ?string $variantUuid = null, ?string $variantId = null, ?string $note = null, ?int $actorId = null): array
+    {
+        if ($delta === 0) return ['success'=>false,'message'=>'لا يوجد تغيير في الكمية'];
+        if ((int) $product->store_id !== (int) $storeId) {
+            return ['success'=>false,'message'=>'متجر غير مطابق'];
+        }
+
+        // Lock the product row so the read-modify-write is safe against concurrent sales.
+        $locked = Product::where('id', $product->id)
+            ->where('store_id', $storeId)
+            ->lockForUpdate()
+            ->first();
+        if (!$locked) return ['success'=>false,'message'=>'المنتج غير موجود'];
+
+        if (!$locked->track_inventory) {
+            return ['success'=>false,'message'=>'المنتج لا يتبع المخزون'];
+        }
+
+        $isVariant = self::isVariantInventory($locked);
+        if ($isVariant) {
+            $combos = $locked->variant_combinations ?? [];
+            $idx = null;
+            if ($variantUuid) {
+                foreach ($combos as $i => $c) if (($c['uuid'] ?? null) === $variantUuid) { $idx = $i; break; }
+            }
+            if ($idx === null && $variantId) {
+                foreach ($combos as $i => $c) if (($c['id'] ?? null) === $variantId) { $idx = $i; break; }
+            }
+            if ($idx === null) {
+                return ['success'=>false,'message'=>'الخيار المحدد غير موجود'];
+            }
+            $before = (int) self::comboStock($combos[$idx]);
+            $after = $before + $delta;
+            if ($after < 0) return ['success'=>false,'message'=>'لا يمكن خفض المخزون إلى أقل من صفر'];
+            $combos[$idx]['stock'] = (string) $after;
+            $locked->variant_combinations = $combos;
+            $locked->save();
+
+            \App\Services\InventoryMovementService::record([
+                'store_id' => $storeId,
+                'product_id' => $locked->id,
+                'variant_uuid' => $combos[$idx]['uuid'] ?? $variantUuid,
+                'variant_combination_id' => $combos[$idx]['id'] ?? $variantId,
+                'quantity_delta' => $delta,
+                'movement_type' => \App\Models\InventoryMovement::MOVEMENT_MANUAL_ADJUSTMENT,
+                'before_quantity' => $before,
+                'after_quantity' => $after,
+                'note' => $note,
+                'actor' => ['type' => 'user', 'id' => $actorId],
+            ]);
+            return ['success'=>true,'message'=>null,'mode'=>'variant','before'=>$before,'after'=>$after];
+        }
+
+        $before = (int) ($locked->stock ?? 0);
+        $after = $before + $delta;
+        if ($after < 0) return ['success'=>false,'message'=>'لا يمكن خفض المخزون إلى أقل من صفر'];
+
+        DB::table('products')->where('id', $locked->id)->update(['stock' => $after]);
+        \App\Services\InventoryMovementService::record([
+            'store_id' => $storeId,
+            'product_id' => $locked->id,
+            'quantity_delta' => $delta,
+            'movement_type' => \App\Models\InventoryMovement::MOVEMENT_MANUAL_ADJUSTMENT,
+            'before_quantity' => $before,
+            'after_quantity' => $after,
+            'note' => $note,
+            'actor' => ['type' => 'user', 'id' => $actorId],
+        ]);
+        return ['success'=>true,'message'=>null,'mode'=>'product','before'=>$before,'after'=>$after];
     }
 
     private static function findCombination(Product $product, $selection): array
