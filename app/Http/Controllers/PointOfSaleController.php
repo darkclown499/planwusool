@@ -173,7 +173,7 @@ class PointOfSaleController extends Controller
             'items.*.variant_id' => 'nullable|string|max:255',
             'items.*.variant_uuid' => 'nullable|string|max:255',
             'items.*.quantity' => 'required|integer|min:1|max:99999',
-            'payment_method' => 'required|string|in:cash,cod,bank,bank_transfer',
+            'payment_method' => 'required|string|in:cash,bank,bank_transfer',
             'customer_id' => 'nullable|integer',
             'notes' => 'nullable|string|max:1000',
         ]);

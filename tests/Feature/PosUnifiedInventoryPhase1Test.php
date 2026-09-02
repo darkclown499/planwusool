@@ -320,7 +320,8 @@ class PosUnifiedInventoryPhase1Test extends TestCase
         $cat = $this->category($store);
         $p = $this->product($store, $cat, ['stock' => 5]);
 
-        $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'cod', null, null, false);
+        // CASH not marked collected by the cashier -> stays pending (never auto-paid).
+        $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'cash', null, null, false);
 
         $this->assertSame('delivered', $order->status);
         $this->assertSame('pending', $order->payment_status);
@@ -337,6 +338,90 @@ class PosUnifiedInventoryPhase1Test extends TestCase
 
         $this->expectException(\Exception::class);
         app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'credit_card');
+    }
+
+    // Blocker 1 — POS payment semantics: only in-store CASH collected by the cashier is
+    // auto-paid; bank/bank_transfer stay pending until the authoritative manual confirm.
+    // COD is NOT exposed in Phase 1 POS.
+
+    public function test_pos_cash_collected_is_paid_and_confirmed(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $cat = $this->category($store);
+        $p = $this->product($store, $cat, ['stock' => 5]);
+
+        $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'cash', null, null, true);
+
+        $this->assertSame('paid', $order->payment_status);
+        $this->assertNotNull($order->paid_at);
+        $this->assertSame($user->id, $order->payment_confirmed_by);
+        $this->assertSame('delivered', $order->status);
+    }
+
+    public function test_pos_bank_transfer_is_never_auto_paid(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $cat = $this->category($store);
+        $p = $this->product($store, $cat, ['stock' => 5]);
+
+        // Even with $markCollected = true, a bank transfer is NEVER auto-paid at creation.
+        $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'bank_transfer', null, null, true);
+
+        $this->assertSame('pending', $order->payment_status);
+        $this->assertNull($order->paid_at);
+        $this->assertNull($order->payment_confirmed_by);
+    }
+
+    public function test_pos_bank_is_never_auto_paid(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $cat = $this->category($store);
+        $p = $this->product($store, $cat, ['stock' => 5]);
+
+        $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'bank', null, null, true);
+
+        $this->assertSame('pending', $order->payment_status);
+        $this->assertNull($order->paid_at);
+        $this->assertNull($order->payment_confirmed_by);
+    }
+
+    public function test_pos_rejects_cod_payment_method(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $cat = $this->category($store);
+        $p = $this->product($store, $cat, ['stock' => 5]);
+
+$this->expectException(\Exception::class);
+        app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'cod');
+    }
+
+    public function test_pos_bank_transfer_paid_only_via_authoritative_confirm(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $cat = $this->category($store);
+        $p = $this->product($store, $cat, ['stock' => 5]);
+
+        $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'bank_transfer', null, null, true);
+        $oid = $order->id;
+
+        // Creation must leave it pending — not auto-paid.
+        $this->assertSame('pending', $order->payment_status);
+        $this->assertNull($order->paid_at);
+
+        // The existing canonical manual confirm is the authoritative path that marks it paid.
+        $confirmed = \App\Services\OrderTransitionService::confirmBankTransfer($order);
+        $this->assertSame('paid', $confirmed->payment_status);
+        $this->assertNotNull($confirmed->paid_at);
+
+        // A later re-confirm stays exactly-once (no-op returning the already-paid order).
+        $again = \App\Services\OrderTransitionService::confirmBankTransfer($confirmed);
+        $this->assertSame('paid', $again->payment_status);
+        $this->assertSame($confirmed->paid_at?->toDateTimeString(), $again->paid_at?->toDateTimeString());
     }
 
     // ---------------------------------------------------------------------

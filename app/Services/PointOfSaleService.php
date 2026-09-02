@@ -28,10 +28,11 @@ class PointOfSaleService
      *
      * @param int $storeId validated merchant-owned store
      * @param array<int,array{product_id:int,variant_id?:?string,variant_uuid?:?string,quantity:int}> $lineItems
-     * @param string $paymentMethod cash | cod | bank (physical/manned methods only)
+     * @param string $paymentMethod cash | bank | bank_transfer (physical in-store methods; COD excluded)
      * @param int|null $customerId optional linked CRM customer (must belong to store)
      * @param string|null $notes
-     * @param bool $markCollected whether cashier physically collected payment (POS cash)
+     * @param bool $markCollected whether the cashier physically collected CASH at the register.
+     *        Only ever marks a CASH order paid; bank/bank_transfer always stay pending.
      * @return Order
      *
      * @throws \Exception with Arabic domain message on validation/insufficient stock
@@ -47,9 +48,17 @@ class PointOfSaleService
         if (empty($lineItems)) {
             throw new \Exception('لا يمكن إتمام بيع فارغ.');
         }
-        if (!in_array($paymentMethod, ['cash', 'cod', 'bank', 'bank_transfer'], true)) {
+        // Phase 1 POS is a physical in-store sale: cash is collected by the cashier at
+        // the register, or a bank transfer settles later (pending -> authoritative confirm).
+        // COD has no in-store meaning and is intentionally NOT exposed (delivery is out of
+        // scope); it must never be conflated with POS, COD or delivery.
+        if (!in_array($paymentMethod, ['cash', 'bank', 'bank_transfer'], true)) {
             throw new \Exception('طريقة الدفع غير مدعومة في نقطة البيع.');
         }
+        // Payment correctness: only cash collected by the cashier at the register may be
+        // marked paid immediately. Bank/bank_transfer can NEVER be auto-paid on creation —
+        // they stay pending until the highly-trusted manual confirm flow authorises them.
+        $cashCollected = ($paymentMethod === 'cash') && $markCollected;
 
         $currency = $this->storeCurrency($storeId);
         $walkInName = 'زبون مباشر';
@@ -167,8 +176,10 @@ class PointOfSaleService
             'status' => 'delivered',          // goods handed over at the register
             'delivered_at' => now(),
         ];
-        if ($markCollected) {
-            // Cashier physically collected (cash / manned methods): record as paid.
+        if ($cashCollected) {
+            // ONLY in-store CASH physically collected by the cashier is marked paid here.
+            // Bank/bank_transfer stays pending and is confirmed via the existing
+            // authoritative OrderTransitionService::confirmBankTransfer flow (never here).
             $posState['payment_status'] = 'paid';
             $posState['paid_at'] = now();
             $posState['payment_confirmed_by'] = Auth::guard('web')->id();

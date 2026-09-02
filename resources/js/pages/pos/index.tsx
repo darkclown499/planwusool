@@ -196,7 +196,6 @@ export default function PosIndex() {
 
     const payment: Record<string, string> = {
         cash: t('Cash'),
-        cod: t('Cash on Delivery'),
         bank: t('Bank'),
         bank_transfer: t('Bank Transfer'),
     };
@@ -311,7 +310,6 @@ export default function PosIndex() {
                                 <SelectTrigger className="w-full"><SelectValue placeholder={t('Payment Method')} /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="cash">{t('Cash')}</SelectItem>
-                                    <SelectItem value="cod">{t('Cash on Delivery')}</SelectItem>
                                     <SelectItem value="bank">{t('Bank')}</SelectItem>
                                     <SelectItem value="bank_transfer">{t('Bank Transfer')}</SelectItem>
                                 </SelectContent>
