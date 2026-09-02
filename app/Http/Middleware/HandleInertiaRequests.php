@@ -37,6 +37,35 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     /**
+     * Inertia URL resolver — guarantees a non-empty relative URL for every
+     * request. The stock inertia resolver does
+     * `Str::after(fullUrl, schemeAndHost)` which breaks behind a TLS
+     * terminator (Cloudflare Flexible): origin sees http:// while browser
+     * sees https://, so Str::after misses and returns the full absolute
+     * URL. If that edge produces "" the client `new URL(undefined)`
+     * crashes at `Bn` with `Cannot read properties of undefined
+     * (reading 'toString')` and kills every router.* navigation.
+     *
+     * Using getRequestUri() is host-agnostic, proxy-aware (honours
+     * trusted proxies / X-Forwarded-Proto), preserves query strings and
+     * works for custom domains/subdomains without hardcoding
+     * `wusool.ps` or `https://`.
+     */
+    public function urlResolver(): ?\Closure
+    {
+        return function (\Illuminate\Http\Request $request): string {
+            $uri = $request->getRequestUri(); // e.g. /customers?search=abc
+            if (!is_string($uri) || $uri === '') {
+                return '/';
+            }
+            if ($uri[0] !== '/') {
+                $uri = '/' . $uri;
+            }
+            return $uri;
+        };
+    }
+
+    /**
      * Determines the current asset version.
      * Uses hash of Vite manifest so Inertia forces full reload when frontend changes.
      * Falls back to parent if manifest missing. Never exposes secrets.
