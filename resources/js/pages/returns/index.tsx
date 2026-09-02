@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { RotateCcw, Search, X, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
-import { tOrderStatus, tPaymentStatus } from '@/utils/order-status';
+import { tReturnStatus, tReturnRefundStatus } from '@/utils/order-status';
 
 const RETURN_STATUS_TABS = [
   { key: '', label: 'الكل' },
@@ -58,6 +58,19 @@ export default function ReturnsIndex() {
     }
   };
 
+  const getReasonText = (reason: string | null | undefined): string => {
+    if (!reason) return '';
+    const reasons: Record<string, string> = {
+      not_suitable: 'المنتج غير مناسب',
+      wrong_size: 'المقاس غير مناسب',
+      damaged: 'وصل المنتج تالفاً',
+      different_description: 'المنتج مختلف عن الوصف',
+      wrong_product: 'وصل منتج خاطئ',
+      other: 'سبب آخر',
+    };
+    return reasons[reason] ?? reason;
+  };
+
   return (
     <PageTemplate
       title="المرتجعات"
@@ -65,6 +78,13 @@ export default function ReturnsIndex() {
       breadcrumbs={[{ title: 'الطلبات', href: route('orders.index') }, { title: 'المرتجعات' }]}
     >
       <div className="space-y-4">
+        {/* Page explanation */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="py-3 px-4 text-sm text-muted-foreground">
+            من هنا تتابع طلبات إرجاع المنتجات من العملاء، من وقت تقديم الطلب حتى استلام المنتج وإنهاء الإرجاع. يمكنك قبول طلب الإرجاع أو رفضه، ثم متابعة استلام المنتج وإعادة تخزينه أو تسجيل الاسترداد المالي.
+          </CardContent>
+        </Card>
+
         {/* Search */}
         <form onSubmit={handleSearchSubmit} className="flex gap-2">
           <div className="relative flex-1">
@@ -118,7 +138,7 @@ export default function ReturnsIndex() {
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">لا توجد طلبات إرجاع</h3>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                  ستظهر طلبات الإرجاع هنا بعد تقديمها من العملاء.
+                  عندما يقدّم أحد العملاء طلب إرجاع، سيظهر هنا لتتمكن من مراجعته ومتابعته حتى استلام المنتج وإنهاء الإرجاع.
                 </p>
               </CardContent>
             </Card>
@@ -134,19 +154,23 @@ export default function ReturnsIndex() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-bold text-sm">{r.return_number}</h3>
                       <Badge variant={getStatusVariant(r.status) as any} className="text-[10px]">
-                        {tOrderStatus(r.status)}
+                        {tReturnStatus(r.status)}
                       </Badge>
-                      {r.refund_status && (
+                      {r.refund_status && String(r.refund_status) !== 'none' && (
                         <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                           String(r.refund_status).toLowerCase() === 'refunded' ? 'bg-emerald-50 text-emerald-700' :
                           'bg-slate-100 text-slate-600'
                         }`}>
-                          {tPaymentStatus(r.refund_status)}
+                          {tReturnRefundStatus(r.refund_status)}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      الطلب: {r.order?.order_number ?? r.order_id} {r.reason ? `• ${r.reason}` : ''}
+                      الطلب الأصلي: {r.order?.order_number ?? r.order_id}
+                      {r.customer?.name || r.customer_email ? ` • ${r.customer?.name || r.customer_email}` : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {getReasonText(r.reason) ? `سبب الإرجاع: ${getReasonText(r.reason)}` : ''}
                     </p>
                     <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                       {r.refund_amount > 0 && (
