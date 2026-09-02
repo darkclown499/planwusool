@@ -1262,8 +1262,9 @@
     "Delivered": "تم تسليمها",
     "Delivered Orders": "طلبات تسليم",
     "Delivering exceptional multi-store management experience with enterprise-grade security, 99.9% uptime, and 24/7 dedicated support.": "تقديم تجربة استثنائية لإدارة المتاجر المتعددة مع أمان على مستوى المؤسسات ووقت تشغيل 99.9% ودعم مخصص على مدار الساعة.",
-    "Delivery": "التسليم",
+    "Delivery": "التوصيل",
     "Delivery Company": "شركة توصيل",
+    "Delivery Dashboard": "لوحة التوصيل",
     "Delivery Info": "معلومات التوصيل",
     "Delivery Information": "معلومات التوصيل",
     "Delivery Method": "طريقة التوصيل",
@@ -1364,6 +1365,7 @@
     "Drag and drop your images here, or click to browse": "اسحب واطرح صورك هنا، أو انقر للتصفح",
     "Drag blocks here to start building your landing page": "اسحب الكتل إلى هنا لبدء بناء صفحة الهبوط الخاصة بك",
     "Driver / staff name": "اسم السائق / الموظف",
+    "Drivers": "السائقون",
     "Drop files here": "ألقِ الملفات هنا",
     "Duration": "مدة",
     "Dynamic Variables": "المتغيرات الديناميكية",
@@ -2898,6 +2900,7 @@
     "Payment Method": "طريقة الدفع",
     "Payment Method: FPX (Online Banking)": "طريقة الدفع: FPX (خدمات البنوك عبر الإنترنت)",
     "Payment Methods": "طرق الدفع",
+    "Payments": "المدفوعات",
     "Payment Process:": "عملية الدفع:",
     "Payment Receipt": "استلام الدفع",
     "Payment Settings": "إعدادات الدفع",
@@ -4873,6 +4876,7 @@
     "Zain Cash Jordan": "زين كاش الأردن",
     "Zip/Post Code": "الرمز البريدي",
     "Zone Type": "نوع المنطقة",
+    "Zones": "المناطق",
     "[اسم البنك الخاص بك]": "[اسم البنك الخاص بك]",
     "[اسم صاحب الحساب]": "[اسم صاحب الحساب]",
     "[رقم الآيبان أو السويفت كود]": "[رقم الآيبان أو السويفت كود]",
@@ -5642,5 +5646,6 @@
     "Try another period": "جرّب اختيار فترة زمنية أخرى.",
     "From date": "من تاريخ",
     "To date": "إلى تاريخ",
-    "Product Feeds": "خلاصات المنتجات"
+    "Product Feeds": "ربط المنتجات مع Google",
+    "WhatsApp Commerce": "التواصل عبر واتساب"
 }

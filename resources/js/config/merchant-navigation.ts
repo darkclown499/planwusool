@@ -8,16 +8,22 @@ import {
     Megaphone,
     BarChart3,
     Settings,
+    Truck,
+    CreditCard,
+    DollarSign,
 } from 'lucide-react';
 import type { NavItem } from '@/types';
 
 // ─────────────────────────────────────────────────────────────
-// Primary merchant areas — compact Level-1 sidebar (8 max)
+// Primary merchant areas — compact Level-1 sidebar
 // Answers: "Which part of my business am I managing?"
 // ─────────────────────────────────────────────────────────────
 export type PrimaryId =
     | 'dashboard'
     | 'orders'
+    | 'delivery'
+    | 'payments'
+    | 'sales'
     | 'products'
     | 'customers'
     | 'store'
@@ -29,7 +35,7 @@ export type PrimaryId =
 // Taxes, Email, Domains, Integrations under a given store. These pages drop the
 // heavy desktop secondary sidebar and surface their sub-nav as horizontal
 // in-page tabs instead.
-const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations|marketing|whatsapp-commerce)(\/|$)/;
+const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations|marketing)(\/|$)/;
 
 // Merchant store-shipping & tax settings land on the global /shipping and /tax
 // routes (the /stores/{id}/shipping and /stores/{id}/taxes canonical routes
@@ -54,10 +60,13 @@ export interface PrimaryArea {
 export const MERCHANT_PRIMARY_AREAS: PrimaryArea[] = [
     { id: 'dashboard', labelKey: 'Dashboard', labelAr: 'الرئيسية', icon: LayoutDashboard },
     { id: 'orders', labelKey: 'Orders', labelAr: 'الطلبات', icon: ShoppingCart, permissionAny: ['manage-orders'] },
+    { id: 'delivery', labelKey: 'Delivery', labelAr: 'التوصيل', icon: Truck, permissionAny: ['manage-orders'] },
+    { id: 'payments', labelKey: 'Payments', labelAr: 'المدفوعات', icon: CreditCard, permissionAny: ['manage-cod-payments', 'manage-orders'] },
+    { id: 'sales', labelKey: 'Sales', labelAr: 'المبيعات', icon: DollarSign, permissionAny: ['manage-pos'] },
     { id: 'products', labelKey: 'Products', labelAr: 'المنتجات', icon: Package, permissionAny: ['manage-products', 'manage-categories', 'manage-product-reviews', 'manage-digital-downloads'] },
-    { id: 'customers', labelKey: 'Customers', labelAr: 'العملاء', icon: Users, permissionAny: ['manage-customers', 'manage-loyalty'] },
+    { id: 'customers', labelKey: 'Customers', labelAr: 'العملاء', icon: Users, permissionAny: ['manage-customers'] },
     { id: 'store', labelKey: 'Store', labelAr: 'المتجر', icon: Store, permissionAny: ['manage-stores', 'settings-stores', 'manage-media'] },
-    { id: 'marketing', labelKey: 'Marketing', labelAr: 'التسويق', icon: Megaphone, permissionAny: ['manage-coupon-system', 'manage-advanced-coupons', 'manage-abandoned-carts', 'manage-express-checkout', 'manage-referral', 'settings-stores'] },
+    { id: 'marketing', labelKey: 'Marketing', labelAr: 'التسويق', icon: Megaphone, permissionAny: ['manage-coupon-system', 'manage-advanced-coupons', 'manage-abandoned-carts', 'manage-express-checkout', 'manage-referral', 'manage-loyalty', 'settings-stores'] },
     { id: 'analytics', labelKey: 'Analytics & Reporting', labelAr: 'التقارير', icon: BarChart3, permissionAny: ['manage-analytics'] },
     { id: 'settings', labelKey: 'Settings', labelAr: 'الإعدادات', icon: Settings },
 ];
@@ -71,7 +80,13 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     Orders: 'الطلبات',
     Returns: 'المرتجعات',
     Delivery: 'التوصيل',
-    'COD Payments': 'التحصيل عند الاستلام',
+    'Delivery Dashboard': 'لوحة التوصيل',
+    Zones: 'المناطق',
+    Drivers: 'السائقون',
+    Payments: 'المدفوعات',
+    'COD Payments': 'الدفع عند الاستلام',
+    'Payment Operations': 'عمليات الدفع',
+    Sales: 'المبيعات',
     Products: 'المنتجات',
     Categories: 'التصنيفات',
     'Product Reviews': 'التقييمات',
@@ -90,7 +105,7 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     'Abandoned Carts': 'السلال المتروكة',
     'Express Checkout': 'روابط البيع السريع',
     'Referral Program': 'برنامج الإحالة',
-    'Product Feeds': 'خلاصات المنتجات',
+    'Product Feeds': 'ربط المنتجات مع Google',
     'Analytics & Reporting': 'التقارير',
     Settings: 'الإعدادات',
     General: 'عام',
@@ -104,7 +119,7 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     'Meta Pixel': 'ميتا بيكسل',
     'TikTok Pixel': 'تيك توك بيكسل',
     'Google Analytics': 'جوجل أناليتكس',
-    'WhatsApp Commerce': 'واتساب التجاري',
+    'WhatsApp Commerce': 'التواصل عبر واتساب',
     'WhatsApp messages your team sends are deep links to the WhatsApp app — nothing is sent automatically, no messaging API is used.': 'رسائل واتساب التي يرسلها فريقك هي روابط مباشرة إلى تطبيق واتساب — لا يتم إرسال أي شيء تلقائياً ولا تُستخدم أي واجهة برمجة رسائل.',
     'Enabled': 'مفعّل',
     'Disabled': 'معطّل',
@@ -133,6 +148,7 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     'Users & Roles': 'الفريق والصلاحيات',
     'My Plan': 'الخطة',
     'Platform Settings': 'إعدادات المنصة',
+    'Partner Program': 'برنامج الشركاء',
     // sub-labels for Level-2
     Overview: 'نظرة عامة',
 };
@@ -148,46 +164,52 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     // Dashboard
     if (path === '/dashboard' || path === '/' ) return 'dashboard';
 
-    // Orders area: /orders, /returns, /cod-payments, /payments/operations, /pos, /delivery
-    if (path.startsWith('/orders') || path.startsWith('/returns') || path.startsWith('/cod-payments') || path.startsWith('/payments/operations') || path.startsWith('/pos') || path.startsWith('/delivery')) {
-        return 'orders';
-    }
+    // Delivery area: /delivery, /delivery/zones, /delivery/drivers
+    if (path.startsWith('/delivery')) return 'delivery';
+
+    // Payments area: /cod-payments, /payments/operations
+    if (path.startsWith('/cod-payments') || path.startsWith('/payments/operations')) return 'payments';
+
+    // Sales area: /pos, /inventory
+    if (path.startsWith('/pos')) return 'sales';
+    if (path.startsWith('/inventory')) return 'sales';
+
+    // Orders area: /orders, /returns
+    if (path.startsWith('/orders') || path.startsWith('/returns')) return 'orders';
 
     // Products area
-    if (path.startsWith('/products') || path.startsWith('/categories') || path.startsWith('/product-reviews') || path.startsWith('/digital-downloads') || path.startsWith('/inventory')) {
+    if (path.startsWith('/products') || path.startsWith('/categories') || path.startsWith('/product-reviews') || path.startsWith('/digital-downloads')) {
         return 'products';
     }
     if (sid && path === `/stores/${sid}/categories`) return 'products';
 
     // Customers area
-    if (path.startsWith('/customers') || path.startsWith('/loyalty')) return 'customers';
+    if (path.startsWith('/customers')) return 'customers';
     if (sid && path.startsWith(`/stores/${sid}/customer-accounts`)) return 'customers';
 
-    // Marketing area — must be checked BEFORE store/settings because abandoned-carts lives under /stores/{id}/abandoned-carts but belongs to marketing
+    // Marketing area — must be checked BEFORE store/settings
     if (path.startsWith('/coupon-system') || path.startsWith('/advanced-coupons') || path.startsWith('/express-checkout') || path.startsWith('/referral') || path.startsWith('/partner')) {
         return 'marketing';
     }
     if (path.startsWith('/product-feeds')) return 'marketing';
     if (path.startsWith('/abandoned-carts')) return 'marketing';
     if (sid && path.startsWith(`/stores/${sid}/abandoned-carts`)) return 'marketing';
+    if (path.startsWith('/loyalty')) return 'marketing';
+    // WhatsApp Commerce page belongs to marketing navigation
+    if (sid && path.startsWith(`/stores/${sid}/whatsapp-commerce`)) return 'marketing';
 
     // Analytics
     if (path.startsWith('/analytics')) return 'analytics';
 
     // Store area: stores index, designer, features, themes/templates, media-library
     if (path === '/stores' || path.startsWith('/stores') && (path.endsWith('/designer') || path.includes('/designer') || path.includes('/features') || path.includes('/templates') || path.includes('/themes'))) {
-        // But need to distinguish settings-owned store routes that belong to settings
-        // Designer is store, settings is handled below
         if (sid && (path === `/stores/${sid}/designer` || path.startsWith(`/stores/${sid}/designer`))) return 'store';
         if (path.startsWith('/stores') && !sid) {
-            // fallback for stores index without sid context
             if (path === '/stores' || path.match(/^\/stores\/\d+\/designer/)) return 'store';
         }
     }
-    // More precise: /stores index and /stores/{id}/designer → store
     if (path === '/stores' || path.match(/^\/stores\/[^/]+\/designer/)) return 'store';
     if (path === '/media-library') return 'store';
-    // Store pages / content could be under store as well
     if (path.startsWith('/stores') && path.includes('/features')) return 'store';
 
     // Settings area: payments, shipping, taxes, email, domains, integrations, users, etc.
@@ -201,26 +223,19 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
         path.startsWith(`/stores/${sid}/integrations`) ||
         path.startsWith(`/stores/${sid}/erp`) ||
         path.startsWith(`/stores/${sid}/marketing`) ||
-        path.startsWith(`/stores/${sid}/whatsapp-commerce`) ||
         path.startsWith(`/stores/${sid}/settings`)
     )) return 'settings';
 
     if (path.startsWith('/shipping') && !path.startsWith('/shipping/') ) {
-        // generic /shipping → settings (will redirect to store-specific)
-        // but only if not already handled; treat as settings
         return 'settings';
     }
     if (path.startsWith('/tax') || path.startsWith('/shipping') || path.startsWith('/currencies') || path.startsWith('/notification-templates') || path.startsWith('/email-templates')) {
-        // legacy tax/shipping under global → settings
-        // currencies/templates are admin but map to settings for merchants if they see plan
-        // keep narrow: tax/shipping only
         if (path.startsWith('/tax') || path.startsWith('/shipping')) return 'settings';
     }
     if (path.startsWith('/users') || path.startsWith('/roles') || path.startsWith('/permissions') || path.startsWith('/notifications') || path.startsWith('/plans') || path.startsWith('/plan-')) {
         return 'settings';
     }
-    // Fallback for /stores/{id}/settings and /stores/{id}/domains etc already handled
-    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|marketing|whatsapp-commerce|notifications|settings)/)) {
+    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|marketing|notifications|settings)/)) {
         return 'settings';
     }
 
@@ -266,24 +281,43 @@ export function getMerchantContextNav(
 
     switch (primaryId) {
         case 'dashboard':
-            return null; // no secondary nav for dashboard
+            return null;
         case 'orders': {
             const items: ContextNavItem[] = [];
             if (hasPermission('manage-orders')) {
                 items.push({ title: t('Orders'), href: tryRoute('orders.index', '/orders') });
                 items.push({ title: t('Returns') !== 'Returns' ? t('Returns') : 'المرتجعات', href: tryRoute('returns.index', '/returns') });
-                items.push({ title: t('Delivery') !== 'Delivery' ? t('Delivery') : 'التوصيل', href: tryRoute('delivery.index', '/delivery'), activePaths: ['/delivery', '/delivery/zones', '/delivery/drivers'] });
+            }
+            return { title: titleFor('orders'), items };
+        }
+        case 'delivery': {
+            const items: ContextNavItem[] = [];
+            if (hasPermission('manage-orders')) {
+                items.push({ title: t('Delivery Dashboard') !== 'Delivery Dashboard' ? t('Delivery Dashboard') : 'لوحة التوصيل', href: tryRoute('delivery.index', '/delivery'), activePaths: ['/delivery'] });
+                items.push({ title: t('Zones') !== 'Zones' ? t('Zones') : 'المناطق', href: tryRoute('delivery.zones.index', '/delivery/zones'), activePaths: ['/delivery/zones'] });
+                items.push({ title: t('Drivers') !== 'Drivers' ? t('Drivers') : 'السائقون', href: tryRoute('delivery.drivers.index', '/delivery/drivers'), activePaths: ['/delivery/drivers'] });
+            }
+            return { title: titleFor('delivery'), items };
+        }
+        case 'payments': {
+            const items: ContextNavItem[] = [];
+            if (hasPermission('manage-orders')) {
+                items.push({ title: t('Payment Operations') !== 'Payment Operations' ? t('Payment Operations') : 'عمليات الدفع', href: tryRoute('payments.operations', '/payments/operations'), activePaths: ['/payments/operations'] });
             }
             if (hasPermission('manage-cod-payments')) {
                 items.push({ title: t('COD Payments'), href: tryRoute('cod-payments.index', '/cod-payments') });
             }
-            if (hasPermission('manage-orders')) {
-                items.push({ title: t('Payment Operations') !== 'Payment Operations' ? t('Payment Operations') : 'عمليات الدفع', href: tryRoute('payments.operations', '/payments/operations'), activePaths: ['/payments/operations'] });
-            }
+            return { title: titleFor('payments'), items };
+        }
+        case 'sales': {
+            const items: ContextNavItem[] = [];
             if (hasPermission('manage-pos') && routeExists('pos.index')) {
                 items.push({ title: t('point_of_sale_short'), href: tryRoute('pos.index', '/pos') });
             }
-            return { title: titleFor('orders'), items };
+            if (hasPermission('manage-pos') && routeExists('inventory.index')) {
+                items.push({ title: t('Inventory') !== 'Inventory' ? t('Inventory') : 'المخزون', href: tryRoute('inventory.index', '/inventory') });
+            }
+            return { title: titleFor('sales'), items };
         }
         case 'products': {
             const items: ContextNavItem[] = [];
@@ -297,9 +331,6 @@ export function getMerchantContextNav(
             }
             if (hasPermission('manage-product-reviews')) items.push({ title: t('Product Reviews'), href: tryRoute('product-reviews.index', '/product-reviews') });
             if (hasPermission('manage-digital-downloads')) items.push({ title: t('Digital Downloads'), href: tryRoute('digital-downloads.index', '/digital-downloads') });
-            if (hasPermission('manage-pos') && routeExists('inventory.index')) {
-                items.push({ title: t('Inventory'), href: tryRoute('inventory.index', '/inventory') });
-            }
             return { title: titleFor('products'), items };
         }
         case 'customers': {
@@ -307,9 +338,6 @@ export function getMerchantContextNav(
             if (hasPermission('manage-customers')) items.push({ title: t('Customers'), href: tryRoute('customers.index', '/customers') });
             if (sid && hasPermission('settings-stores')) {
                 items.push({ title: t('Customer Accounts') !== 'Customer Accounts' ? t('Customer Accounts') : 'حسابات العملاء', href: `/stores/${sid}/customer-accounts`, activePaths: [`/stores/${sid}/customer-accounts`] });
-            }
-            if (hasPermission('manage-loyalty')) {
-                items.push({ title: t('Loyalty Points'), href: tryRoute('loyalty.settings', '/loyalty/settings') });
             }
             return { title: titleFor('customers'), items };
         }
@@ -324,7 +352,6 @@ export function getMerchantContextNav(
             if (hasPermission('manage-media')) {
                 items.push({ title: t('Media Library'), href: tryRoute('media-library', '/media-library') });
             }
-            // Store Features / Pages placeholder if exists — keep minimal
             return { title: titleFor('store'), items };
         }
         case 'marketing': {
@@ -342,8 +369,14 @@ export function getMerchantContextNav(
             if (hasPermission('manage-referral')) {
                 items.push({ title: t('Referral Program'), href: tryRoute('referral.index', '/referral') });
             }
+            if (hasPermission('manage-loyalty')) {
+                items.push({ title: t('Loyalty Points'), href: tryRoute('loyalty.settings', '/loyalty/settings') });
+            }
             if (hasPermission('settings-stores')) {
-                items.push({ title: t('Product Feeds') !== 'Product Feeds' ? t('Product Feeds') : 'خلاصات المنتجات', href: tryRoute('product-feeds.index', '/product-feeds'), activePaths: ['/product-feeds'] });
+                items.push({ title: t('Product Feeds') !== 'Product Feeds' ? t('Product Feeds') : 'ربط المنتجات مع Google', href: tryRoute('product-feeds.index', '/product-feeds'), activePaths: ['/product-feeds'] });
+            }
+            if (sid && hasPermission('settings-stores')) {
+                items.push({ title: t('WhatsApp Commerce') !== 'WhatsApp Commerce' ? t('WhatsApp Commerce') : 'التواصل عبر واتساب', href: `/stores/${sid}/whatsapp-commerce`, activePaths: [`/stores/${sid}/whatsapp-commerce`] });
             }
             const partnerHref = isPartner ? tryRoute('partner.dashboard', '/partner/dashboard') : tryRoute('partner.apply', '/partner/apply');
             items.push({ title: t('Partner Program') !== 'Partner Program' ? t('Partner Program') : 'برنامج الشركاء', href: partnerHref, activePaths: ['/partner'] });
@@ -381,20 +414,13 @@ export function getMerchantContextNav(
                 items.push({ title: t('Domain') !== 'Domain' ? t('Domain') : 'الدومين', href: `/stores/${sid}/domains`, activePaths: [`/stores/${sid}/domains`] });
                 items.push({ title: t('Integrations'), href: `/stores/${sid}/integrations`, activePaths: [`/stores/${sid}/integrations`, `/stores/${sid}/integrations/erp`] });
                 items.push({ title: t('Social Commerce') !== 'Social Commerce' ? t('Social Commerce') : 'التسويق والتتبع', href: `/stores/${sid}/marketing`, activePaths: [`/stores/${sid}/marketing`] });
-                items.push({ title: t('WhatsApp Commerce') !== 'WhatsApp Commerce' ? t('WhatsApp Commerce') : 'واتساب التجاري', href: `/stores/${sid}/whatsapp-commerce`, activePaths: [`/stores/${sid}/whatsapp-commerce`] });
             }
             if (hasPermission('manage-users')) {
                 items.push({ title: t('Users & Roles') !== 'Users & Roles' ? t('Users & Roles') : 'الفريق والصلاحيات', href: tryRoute('users.index', '/users') });
             }
-            if (hasPermission('manage-notifications')) {
-                // Customer Notifications under settings email section already covers, but keep explicit if permission
-                // avoid duplicate — skip if email-settings already present
-            }
             if (hasPermission('manage-plans')) {
                 items.push({ title: t('My Plan') !== 'My Plan' ? t('My Plan') : 'الخطة', href: tryRoute('plans.index', '/plans') });
             }
-            // Referral moved to marketing, COD moved to orders, Media moved to store — NOT here
-            // Platform Settings is admin-only — hidden for company users
             return { title: titleFor('settings'), items };
         }
         default:

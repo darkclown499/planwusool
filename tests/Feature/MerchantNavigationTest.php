@@ -21,6 +21,18 @@ class MerchantNavigationTest extends TestCase
             'General' => 'عام',
             'Users & Roles' => 'الفريق والصلاحيات',
             'My Plan' => 'الخطة',
+            'Delivery' => 'التوصيل',
+            'Delivery Dashboard' => 'لوحة التوصيل',
+            'Zones' => 'المناطق',
+            'Drivers' => 'السائقون',
+            'Payments' => 'المدفوعات',
+            'Sales' => 'المبيعات',
+            'Inventory' => 'المخزون',
+            'Payment Operations' => 'عمليات الدفع',
+            'COD Payments' => 'الدفع عند الاستلام',
+            'Product Feeds' => 'ربط المنتجات مع Google',
+            'WhatsApp Commerce' => 'التواصل عبر واتساب',
+            'Partner Program' => 'برنامج الشركاء',
         ];
         foreach ($required as $key => $expected) {
             $this->assertArrayHasKey($key, $ar, "Missing ar key $key");
@@ -29,12 +41,15 @@ class MerchantNavigationTest extends TestCase
         }
     }
 
-    /** Config file exports primary areas compact list (8 items) */
+    /** Config file exports primary areas compact list */
     public function test_primary_areas_count(): void
     {
         $content = file_get_contents(resource_path('js/config/merchant-navigation.ts'));
         $this->assertStringContainsString("'dashboard'", $content);
         $this->assertStringContainsString("'orders'", $content);
+        $this->assertStringContainsString("'delivery'", $content, "Delivery primary area must exist");
+        $this->assertStringContainsString("'payments'", $content, "Payments primary area must exist");
+        $this->assertStringContainsString("'sales'", $content, "Sales primary area must exist");
         $this->assertStringContainsString("'products'", $content);
         $this->assertStringContainsString("'customers'", $content);
         $this->assertStringContainsString("'store'", $content);
@@ -42,7 +57,7 @@ class MerchantNavigationTest extends TestCase
         $this->assertStringContainsString("'analytics'", $content);
         $this->assertStringContainsString("'settings'", $content);
         $count = substr_count($content, "labelKey:");
-        $this->assertGreaterThanOrEqual(8, $count);
+        $this->assertGreaterThanOrEqual(11, $count);
     }
 
     /** Contextual nav map covers required level-2 groups */
@@ -60,9 +75,15 @@ class MerchantNavigationTest extends TestCase
         $this->assertStringContainsString("Referral Program", $content);
         $this->assertStringContainsString("Abandoned Carts", $content);
         $this->assertStringContainsString("Express Checkout", $content);
+        $this->assertStringContainsString("Returns", $content, "Returns must be in web orders context nav");
+        $this->assertStringContainsString("Delivery Dashboard", $content, "Delivery Dashboard must be in delivery context nav");
+        $this->assertStringContainsString("Inventory", $content, "Inventory must be in POS/sales context nav");
+        $this->assertStringContainsString("WhatsApp Commerce", $content, "WhatsApp must be in marketing context nav");
+        $this->assertStringContainsString("Product Feeds", $content, "Product Feeds must be in marketing context nav");
+        $this->assertStringContainsString("Partner Program", $content, "Partner Program must be in marketing context nav");
     }
 
-    /** No duplicate feature across groups: COD only in orders, Media only in store, Referral only in marketing */
+    /** No duplicate feature across groups: COD only in payments, Media only in store, Referral only in marketing */
     public function test_no_duplicate_feature_across_groups(): void
     {
         $content = file_get_contents(resource_path('js/config/merchant-navigation.ts'));
@@ -76,9 +97,26 @@ class MerchantNavigationTest extends TestCase
         $marketingBlock = substr($content, $marketingStart, 2000);
         $this->assertStringContainsString("Referral Program", $marketingBlock);
 
+        $paymentsStart = strpos($content, "case 'payments':");
+        $paymentsBlock = substr($content, $paymentsStart, 2000);
+        $this->assertStringContainsString("COD Payments", $paymentsBlock);
+        $this->assertStringContainsString("Payment Operations", $paymentsBlock);
+
         $ordersStart = strpos($content, "case 'orders':");
-        $ordersBlock = substr($content, $ordersStart, 2000);
-        $this->assertStringContainsString("COD Payments", $ordersBlock);
+        $ordersEnd = strpos($content, "case 'delivery':", $ordersStart);
+        $ordersBlock = substr($content, $ordersStart, $ordersEnd - $ordersStart);
+        $this->assertStringContainsString("Returns", $ordersBlock);
+        $this->assertStringNotContainsString("COD Payments", $ordersBlock, "COD must not be in orders");
+
+        $deliveryStart = strpos($content, "case 'delivery':");
+        $deliveryBlock = substr($content, $deliveryStart, 2000);
+        $this->assertStringContainsString("Delivery Dashboard", $deliveryBlock);
+        $this->assertStringContainsString("Zones", $deliveryBlock);
+        $this->assertStringContainsString("Drivers", $deliveryBlock);
+
+        $salesStart = strpos($content, "case 'sales':");
+        $salesBlock = substr($content, $salesStart, 2000);
+        $this->assertStringContainsString("Inventory", $salesBlock);
 
         $storeStart = strpos($content, "case 'store':");
         $storeBlock = substr($content, $storeStart, 2000);
@@ -91,6 +129,11 @@ class MerchantNavigationTest extends TestCase
         $content = file_get_contents(resource_path('js/config/merchant-navigation.ts'));
         $this->assertStringContainsString("/orders", $content);
         $this->assertStringContainsString("/returns", $content);
+        $this->assertStringContainsString("/delivery", $content, "Delivery routes must be resolved to delivery area");
+        $this->assertStringContainsString("/cod-payments", $content, "COD routes must be resolved to payments area");
+        $this->assertStringContainsString("/payments/operations", $content, "Payment Operations must be resolved to payments area");
+        $this->assertStringContainsString("/pos", $content, "POS must be resolved to sales area");
+        $this->assertStringContainsString("/inventory", $content, "Inventory must be resolved to sales area");
         $this->assertStringContainsString("/products", $content);
         $this->assertStringContainsString("/stores", $content);
         $this->assertStringContainsString("designer", $content);
@@ -98,6 +141,10 @@ class MerchantNavigationTest extends TestCase
         $this->assertStringContainsString("shipping", $content);
         $this->assertStringContainsString("abandoned-carts", $content);
         $this->assertStringContainsString("express-checkout", $content);
+        $this->assertStringContainsString("product-feeds", $content, "Product feeds must be resolved to marketing area");
+        $this->assertStringContainsString("whatsapp-commerce", $content, "WhatsApp commerce must be resolved to marketing area");
+        $this->assertStringContainsString("partner", $content, "Partner must be resolved to marketing area");
+        $this->assertStringContainsString("loyalty", $content, "Loyalty must be resolved to marketing area");
     }
 
     /** AppSidebar uses two-level components + premium widths */
@@ -252,5 +299,60 @@ class MerchantNavigationTest extends TestCase
     public function test_build_artifacts_exist(): void
     {
         $this->assertFileExists(public_path('build/manifest.json'));
+    }
+
+    /** Permission gates preserved: no navigation entitlement added without backend gate */
+    public function test_permission_gates_not_weakened(): void
+    {
+        $content = file_get_contents(resource_path('js/config/merchant-navigation.ts'));
+        // POS / Inventory gated on manage-pos
+        $salesStart = strpos($content, "case 'sales':");
+        $salesBlock = substr($content, $salesStart, 2000);
+        $this->assertStringContainsString("hasPermission('manage-pos')", $salesBlock, "Sales (POS/Inventory) must remain gated on manage-pos");
+        // Delivery gated on manage-orders
+        $deliveryStart = strpos($content, "case 'delivery':");
+        $deliveryBlock = substr($content, $deliveryStart, 2000);
+        $this->assertStringContainsString("hasPermission('manage-orders')", $deliveryBlock, "Delivery context must remain gated on manage-orders");
+        // Returns gated on manage-orders
+        $ordersStart = strpos($content, "case 'orders':");
+        $ordersBlock = substr($content, $ordersStart, 2000);
+        $this->assertStringContainsString("hasPermission('manage-orders')", $ordersBlock, "Orders/Returns context must remain gated on manage-orders");
+        // COD / Payment Operations gated on manage-cod-payments / manage-orders
+        $paymentsStart = strpos($content, "case 'payments':");
+        $paymentsBlock = substr($content, $paymentsStart, 2000);
+        $this->assertStringContainsString("hasPermission('manage-cod-payments')", $paymentsBlock, "COD must remain gated on manage-cod-payments");
+        $this->assertStringContainsString("hasPermission('manage-orders')", $paymentsBlock, "Payment Operations must remain gated on manage-orders");
+        // WhatsApp gated on settings-stores
+        $marketingStart = strpos($content, "case 'marketing':");
+        $marketingBlock = substr($content, $marketingStart, 2500);
+        $this->assertStringContainsString("hasPermission('settings-stores')", $marketingBlock, "WhatsApp + Product Feeds must remain gated on settings-stores");
+        $this->assertStringContainsString("hasPermission('manage-referral')", $marketingBlock, "Referral must remain gated on manage-referral");
+    }
+
+    /** Primary areas must not appear for users without the required permission */
+    public function test_primary_area_permission_gates(): void
+    {
+        $content = file_get_contents(resource_path('js/config/merchant-navigation.ts'));
+        // Sales area only for manage-pos
+        $this->assertStringContainsString("{ id: 'sales', labelKey: 'Sales', labelAr: 'المبيعات', icon: DollarSign, permissionAny: ['manage-pos'] }", $content, "Sales primary area must require manage-pos");
+        // Delivery area only for manage-orders
+        $this->assertStringContainsString("{ id: 'delivery', labelKey: 'Delivery', labelAr: 'التوصيل', icon: Truck, permissionAny: ['manage-orders'] }", $content, "Delivery primary area must require manage-orders");
+        // Payments area requires manage-cod-payments or manage-orders
+        $this->assertStringContainsString("{ id: 'payments', labelKey: 'Payments', labelAr: 'المدفوعات', icon: CreditCard, permissionAny: ['manage-cod-payments', 'manage-orders'] }", $content, "Payments primary area must require COD or orders permission");
+        // Marketing must include everything needed
+        $this->assertStringContainsString("permissionAny: ['manage-coupon-system', 'manage-advanced-coupons', 'manage-abandoned-carts', 'manage-express-checkout', 'manage-referral', 'manage-loyalty', 'settings-stores']", $content, "Marketing primary area permissionAny must not lose gates");
+        // Customers no longer includes loyalty (moved to marketing)
+        $this->assertStringContainsString("{ id: 'customers', labelKey: 'Customers', labelAr: 'العملاء', icon: Users, permissionAny: ['manage-customers'] }", $content, "Customers primary area must not gate on loyalty");
+    }
+
+    /** Desktop and mobile consumers both reuse the canonical merchant-navigation config */
+    public function test_desktop_mobile_use_canonical_source(): void
+    {
+        $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
+        $this->assertStringContainsString("getMerchantContextNav", $sidebar);
+        $this->assertStringContainsString("resolvePrimaryId", $sidebar);
+        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $sidebar);
+        $primary = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
+        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $primary, "Desktop primary nav must iterate canonical config");
     }
 }

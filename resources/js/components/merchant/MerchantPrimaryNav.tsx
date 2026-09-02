@@ -35,6 +35,12 @@ function PrimaryItem({ area, isActive, label, variant = 'vertical' }: { area: (t
                     return route('dashboard');
                 case 'orders':
                     return route('orders.index');
+                case 'delivery':
+                    try { return route('delivery.index'); } catch { return '/delivery'; }
+                case 'payments':
+                    try { return route('cod-payments.index'); } catch { return '/cod-payments'; }
+                case 'sales':
+                    try { return route('pos.index'); } catch { return '/pos'; }
                 case 'products':
                     return route('products.index');
                 case 'customers':

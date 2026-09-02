@@ -319,15 +319,22 @@ class WhatsAppCommercePhase1Test extends TestCase
         $this->actingAs($user)->get(route('orders.show', $order->id))->assertStatus(200);
     }
 
-    /* ── Merchant navigation wiring (settings cluster) ── */
-    public function test_merchant_navigation_wires_whatsapp_commerce_under_settings(): void
+    /* ── Merchant navigation wiring (marketing cluster) ── */
+    public function test_merchant_navigation_wires_whatsapp_commerce_under_marketing(): void
     {
         $content = file_get_contents(resource_path('js/config/merchant-navigation.ts'));
         $this->assertStringContainsString('whatsapp-commerce', $content);
         $this->assertFileExists(resource_path('js/pages/stores/whatsapp-commerce.tsx'));
 
         $this->assertStringContainsString("'WhatsApp Commerce'", $content);
-        $this->assertStringContainsString('واتساب التجاري', $content);
+        $this->assertStringContainsString('التواصل عبر واتساب', $content);
+
+        // WhatsApp Commerce lives under the marketing primary area per the new IA
+        // (not the settings cluster).
+        $marketingStart = strpos($content, "case 'marketing':");
+        $this->assertNotFalse($marketingStart, "marketing context nav case must exist");
+        $marketingBlock = substr($content, $marketingStart, 2500);
+        $this->assertStringContainsString('whatsapp-commerce', $marketingBlock, "WhatsApp Commerce must be wired under marketing");
     }
 
     /* ── Number source of truth: single canonical field, reused from payment settings ── */

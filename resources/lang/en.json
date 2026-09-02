@@ -1158,6 +1158,7 @@
     "Delivered Orders": "Delivered Orders",
     "Delivery": "Delivery",
     "Delivery Company": "Delivery Company",
+    "Delivery Dashboard": "Delivery Dashboard",
     "Delivery Info": "Delivery Info",
     "Delivery Information": "Delivery Information",
     "Delivery Method": "Delivery Method",
@@ -1255,6 +1256,7 @@
     "Drag and drop your images here, or click to browse": "Drag and drop your images here, or click to browse",
     "Drag blocks here to start building your landing page": "Drag blocks here to start building your landing page",
     "Driver / staff name": "Driver / staff name",
+    "Drivers": "Drivers",
     "Drop files here": "Drop files here",
     "Duration": "Duration",
     "Dynamic Variables": "Dynamic Variables",
@@ -2639,6 +2641,7 @@
     "Payment Method": "Payment Method",
     "Payment Method: FPX (Online Banking)": "Payment Method: FPX (Online Banking)",
     "Payment Methods": "Payment Methods",
+    "Payments": "Payments",
     "Payment Process:": "Payment Process:",
     "Payment Receipt": "Payment Receipt",
     "Payment Settings": "Payment Settings",
@@ -4451,6 +4454,7 @@
     "Zain Cash Jordan": "Zain Cash Jordan",
     "Zip/Post Code": "Zip/Post Code",
     "Zone Type": "Zone Type",
+    "Zones": "Zones",
     "[اسم البنك الخاص بك]": "[اسم البنك الخاص بك]",
     "[اسم صاحب الحساب]": "[اسم صاحب الحساب]",
     "[رقم الآيبان أو السويفت كود]": "[رقم الآيبان أو السويفت كود]",
@@ -5191,5 +5195,6 @@
     "Try another period": "Try choosing another time period.",
     "From date": "From date",
     "To date": "To date",
-    "Product Feeds": "Product Feeds"
+    "Product Feeds": "Connect Products with Google",
+    "WhatsApp Commerce": "Communicate with Customers via WhatsApp"
 }

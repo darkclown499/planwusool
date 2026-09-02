@@ -322,6 +322,9 @@ export function AppSidebar() {
                         switch (area.id) {
                             case 'dashboard': href = route('dashboard'); break;
                             case 'orders': href = route('orders.index'); break;
+                            case 'delivery': try { href = route('delivery.index'); } catch { href = '/delivery'; } break;
+                            case 'payments': try { href = route('cod-payments.index'); } catch { href = '/cod-payments'; } break;
+                            case 'sales': try { href = route('pos.index'); } catch { href = '/pos'; } break;
                             case 'products': href = route('products.index'); break;
                             case 'customers': href = route('customers.index'); break;
                             case 'store': try { href = route('stores.index'); } catch { href = sid ? `/stores/${sid}/designer` : '/stores'; } break;
