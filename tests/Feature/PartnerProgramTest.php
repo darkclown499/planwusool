@@ -508,4 +508,113 @@ class PartnerProgramTest extends TestCase
 
         return $partner;
     }
+
+    public function test_pending_partner_sees_pending_state_on_apply_page(): void
+    {
+        $partner = $this->makePartner(Partner::STATUS_PENDING);
+
+        $this->actingAs($partner->user);
+        $this->get(route('partner.apply'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('partner/apply')
+                ->where('partner.status', Partner::STATUS_PENDING)
+                ->where('partner.id', $partner->id));
+    }
+
+    public function test_approved_partner_can_access_dashboard(): void
+    {
+        $partner = $this->makePartner(Partner::STATUS_APPROVED);
+
+        $this->actingAs($partner->user);
+        $this->get(route('partner.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('partner/dashboard')
+                ->where('partner.status', Partner::STATUS_APPROVED)
+                ->where('partner.referral_link', route('register', ['ref' => $partner->referral_code])));
+    }
+
+    public function test_pending_partner_can_access_dashboard_and_sees_no_financials(): void
+    {
+        // Current rules do NOT gate the dashboard on approval: any partner with a
+        // profile may open it and see their truthful status, but never any
+        // fabricated commission/earnings values.
+        $partner = $this->makePartner(Partner::STATUS_PENDING);
+
+        $this->actingAs($partner->user);
+        $this->get(route('partner.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('partner/dashboard')
+                ->where('partner.status', Partner::STATUS_PENDING)
+                ->missing('earnings')
+                ->missing('commission')
+                ->missing('balance'));
+    }
+
+    public function test_dashboard_counts_match_stored_attribution(): void
+    {
+        $partner = $this->makePartner(Partner::STATUS_APPROVED);
+
+        $activeMerchant = $this->companyUser(['partner_id' => $partner->id, 'onboarded_at' => now()]);
+        $this->makeStore($activeMerchant, ['partner_id' => $partner->id]);
+        $this->makeStore($activeMerchant, ['partner_id' => $partner->id]);
+
+        $inactiveMerchant = $this->companyUser(['partner_id' => $partner->id, 'onboarded_at' => null]);
+        $this->makeStore($inactiveMerchant, ['partner_id' => $partner->id]);
+
+        $this->actingAs($partner->user);
+        $this->get(route('partner.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('partner/dashboard')
+                ->has('referredStores', 3)
+                ->where('stats.referredStores', 3)
+                ->where('stats.activatedStores', 2));
+    }
+
+    public function test_partner_payload_never_exposes_financial_fields(): void
+    {
+        // Guarantees the partner dashboard/apply never surface payout/commission
+        // concepts that the backend does not implement (no fabricated benefits).
+        $partner = $this->makePartner(Partner::STATUS_APPROVED);
+
+        $this->actingAs($partner->user);
+        $this->get(route('partner.dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('partner/dashboard')
+                ->missing('earnings')
+                ->missing('commission')
+                ->missing('commission_amount')
+                ->missing('balance')
+                ->missing('payout'));
+
+        $this->get(route('partner.apply'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('partner.status', Partner::STATUS_APPROVED)
+                ->missing('partner.commission')
+                ->missing('partner.balance')
+                ->missing('partner.payout'));
+    }
+
+    public function test_rejected_partner_cannot_resubmit_application(): void
+    {
+        // A rejected partner still owns a partner profile linked to their
+        // account, and the application route rejects re-submission — so the UX
+        // must not advertise a re-apply action that the backend does not allow.
+        $partner = $this->makePartner(Partner::STATUS_REJECTED);
+
+        $this->actingAs($partner->user);
+        $this->post(route('partner.apply.store'), [
+            'company_name' => 'Second Agency',
+            'contact_person' => 'John',
+            'email' => 'second@example.com',
+            'business_type' => 'agency',
+        ])->assertSessionHasErrors();
+
+        $this->assertSame(1, Partner::where('user_id', $partner->user_id)->count());
+    }
 }
