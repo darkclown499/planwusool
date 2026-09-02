@@ -374,7 +374,7 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
   const { t } = useTranslation();
   const [trendKey, setTrendKey] = useState<TrendKey>('valid_value');
 
-  const metrics = analytics?.metrics ?? ({} as AnalyticsPayload['metrics']);
+  const metrics = analytics?.metrics ?? ({} as NonNullable<AnalyticsPayload['metrics']>);
   const trend = analytics?.trend ?? { granularity: 'day', currency: '', labels: [], valid_value: [], collected: [], orders: [] };
   const hasNoStore = analytics?.has_no_store;
 

@@ -548,7 +548,10 @@ class LocalDeliveryOsPhase1Test extends TestCase
         }
 
         $this->actingAs($owner);
-        $res = $this->withHeader('X-Inertia', 'true')->getJson(route('delivery.index') . '?per_page=5');
+        $version = app(\App\Http\Middleware\HandleInertiaRequests::class)->version(request());
+        $res = $this->withHeader('X-Inertia', 'true')
+            ->withHeader('X-Inertia-Version', $version ?? '')
+            ->getJson(route('delivery.index') . '?per_page=5');
         $res->assertOk();
         $orders = $res->json('props.orders') ?? [];
         $this->assertCount(5, $orders['data'] ?? []);
