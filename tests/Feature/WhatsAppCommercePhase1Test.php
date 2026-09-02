@@ -329,4 +329,120 @@ class WhatsAppCommercePhase1Test extends TestCase
         $this->assertStringContainsString("'WhatsApp Commerce'", $content);
         $this->assertStringContainsString('واتساب التجاري', $content);
     }
+
+    /* ── Number source of truth: single canonical field, reused from payment settings ── */
+
+    public function test_merchant_can_update_canonical_whatsapp_number_from_page(): void
+    {
+        [$user,$store] = $this->companyWithStore();
+        app(WhatsAppCommerceService::class)->seedDefaults($store->id);
+
+        $this->actingAs($user)
+            ->from(route('stores.whatsapp-commerce', $store->id))
+            ->put(route('stores.whatsapp-commerce.update', $store->id), [
+                'store_phone' => '+970591234567',
+                'enabled' => 'true',
+                'templates' => [['key'=>'order_confirmed','locale'=>'ar','body'=>'تأكيد {order_number}']],
+            ])->assertRedirect(route('stores.whatsapp-commerce', $store->id));
+
+        // The number is persisted into the SAME payment-settings whatsapp_number
+        // source of truth used by orders/product share (never a new field).
+        // value is encrypted at rest, so read it back through the model accessor.
+        $saved = \App\Models\PaymentSetting::where('user_id',$store->user_id)->where('store_id',$store->id)->where('key','whatsapp_number')->first();
+        $this->assertNotNull($saved);
+        $this->assertSame('+970591234567', $saved->value);
+        // No duplicate number row exists for this store.
+        $this->assertSame(1, \App\Models\PaymentSetting::where('user_id',$store->user_id)->where('store_id',$store->id)->where('key','whatsapp_number')->count());
+    }
+
+    public function test_invalid_phone_is_rejected_and_nothing_saved(): void
+    {
+        [$user,$store] = $this->companyWithStore();
+        app(WhatsAppCommerceService::class)->seedDefaults($store->id);
+
+        $this->actingAs($user)
+            ->from(route('stores.whatsapp-commerce', $store->id))
+            ->put(route('stores.whatsapp-commerce.update', $store->id), ['store_phone' => 'not-a-phone'])
+            ->assertSessionHasErrors('store_phone');
+
+        $this->assertDatabaseMissing('payment_settings', ['user_id'=>$store->user_id,'store_id'=>$store->id,'key'=>'whatsapp_number']);
+    }
+
+    public function test_refresh_returns_saved_number_as_configured(): void
+    {
+        [$user,$store] = $this->companyWithStore();
+        app(WhatsAppCommerceService::class)->seedDefaults($store->id);
+
+        \App\Models\PaymentSetting::updateOrCreate(
+            ['user_id'=>$store->user_id,'store_id'=>$store->id,'key'=>'whatsapp_number'],
+            ['value'=>'+972591234567']
+        );
+        \Illuminate\Support\Facades\Cache::forget('payment_settings.'.$store->user_id.'.'.$store->id);
+
+        $this->actingAs($user)
+            ->get(route('stores.whatsapp-commerce', $store->id))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('stores/whatsapp-commerce')
+                ->where('settings.store_phone_configured', true)
+                ->where('settings.store_phone', '972591234567'));
+    }
+
+    public function test_missing_number_means_not_configured_and_no_broken_link(): void
+    {
+        [$user,$store] = $this->companyWithStore();
+        app(WhatsAppCommerceService::class)->seedDefaults($store->id);
+
+        $this->actingAs($user)
+            ->get(route('stores.whatsapp-commerce', $store->id))
+            ->assertStatus(200)
+            ->assertInertia(fn ($page) => $page
+                ->component('stores/whatsapp-commerce')
+                ->where('settings.store_phone_configured', false));
+
+        // No number → deepLink returns null (UI must not open a broken link).
+        $this->assertNull(app(WhatsAppCommerceService::class)->deepLink(null, 'مرحبا'));
+    }
+
+    public function test_other_store_cannot_update_whatsapp_number(): void
+    {
+        [$userA,$storeA] = $this->companyWithStore();
+        [$userB,$storeB] = $this->companyWithStore();
+
+        $this->actingAs($userA)
+            ->from(route('stores.whatsapp-commerce', $storeB->id))
+            ->put(route('stores.whatsapp-commerce.update', $storeB->id), [
+                'store_phone' => '+970591111111',
+                'templates' => [['key'=>'order_confirmed','locale'=>'en','body'=>'intrusion {order_number}']],
+            ])->assertStatus(404);
+
+        $this->assertDatabaseMissing('payment_settings', ['user_id'=>$storeB->user_id,'store_id'=>$storeB->id,'key'=>'whatsapp_number']);
+        $this->assertDatabaseMissing('whatsapp_templates', ['store_id'=>$storeB->id,'key'=>'order_confirmed','locale'=>'en','body'=>'intrusion {order_number}']);
+    }
+
+    public function test_valid_store_number_builds_wa_me_test_link_with_store_name(): void
+    {
+        [$user,$store] = $this->companyWithStore();
+        app(WhatsAppCommerceService::class)->seedDefaults($store->id);
+        \App\Models\PaymentSetting::updateOrCreate(
+            ['user_id'=>$store->user_id,'store_id'=>$store->id,'key'=>'whatsapp_number'],
+            ['value'=>'+970591234567']
+        );
+        \Illuminate\Support\Facades\Cache::forget('payment_settings.'.$store->user_id.'.'.$store->id);
+
+        // The page exposes the canonical number + store name for the test button.
+        $this->actingAs($user)
+            ->get(route('stores.whatsapp-commerce', $store->id))
+            ->assertInertia(fn ($page) => $page
+                ->component('stores/whatsapp-commerce')
+                ->where('settings.store_phone', '970591234567')
+                ->where('settings.store_name', $store->name));
+
+        // And the wa.me deep-link uses that store number (no automatic sending).
+        $url = app(WhatsAppCommerceService::class)->deepLink('+970591234567', 'مرحبًا، هذه رسالة تجريبية من ' . $store->name . ' عبر وصول.');
+        $this->assertNotNull($url);
+        $this->assertStringStartsWith('https://wa.me/970591234567?text=', $url);
+        $this->assertStringContainsString(rawurlencode($store->name), $url);
+        $this->assertStringNotContainsString('api.whatsapp.com', $url);
+    }
 }
