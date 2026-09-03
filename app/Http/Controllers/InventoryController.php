@@ -178,20 +178,26 @@ class InventoryController extends Controller
 
         $movements = $query->with('product:id,name')->orderByDesc('created_at')->paginate($perPage)->withQueryString();
 
+        // Send a flat array of rows (not the paginator object) so the Inertia
+        // page can `movements.map(...)` directly — matching the sibling
+        // inventory/index convention (rows array + separate pagination prop).
+        $rows = collect($movements->items())->map(fn ($m) => [
+            'id' => $m->id,
+            'product_name' => $m->product?->name,
+            'variant_label' => $m->variant_uuid,
+            'variant_combination_id' => $m->variant_combination_id,
+            'delta' => $m->quantity_delta,
+            'type' => $m->movement_type,
+            'before' => $m->before_quantity,
+            'after' => $m->after_quantity,
+            'reference_number' => $m->reference_number,
+            'reference_type' => $m->reference_type,
+            'note' => $m->note,
+            'created_at' => $m->created_at?->toISOString(),
+        ])->values()->all();
+
         return Inertia::render('inventory/movements', [
-            'movements' => $movements->through(fn ($m) => [
-                'id' => $m->id,
-                'product_name' => $m->product?->name,
-                'variant_label' => $m->variant_uuid,
-                'delta' => $m->quantity_delta,
-                'type' => $m->movement_type,
-                'before' => $m->before_quantity,
-                'after' => $m->after_quantity,
-                'reference_number' => $m->reference_number,
-                'reference_type' => $m->reference_type,
-                'note' => $m->note,
-                'created_at' => $m->created_at?->toISOString(),
-            ]),
+            'movements' => $rows,
             'filters' => [
                 'product_id' => (int) $request->input('product_id', 0) ?: null,
                 'type' => (string) $request->input('type', ''),

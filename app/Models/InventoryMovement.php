@@ -41,6 +41,11 @@ class InventoryMovement extends Model
         'product_id' => 'integer',
         'reference_id' => 'integer',
         'actor_id' => 'integer',
+        // created_at is an explicit timestamp column (timestamps=false disables
+        // auto-maintenance, but the column still holds real timestamps). Cast it
+        // to a Carbon so date consumers (e.g. ->toISOString()) never read a raw
+        // string back and throw "Call to a member function ... on string".
+        'created_at' => 'datetime',
     ];
 
     protected $fillable = [
