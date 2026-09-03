@@ -71,7 +71,7 @@ class StoreSettingsController extends Controller
                 'domains' => route('stores.domains', $storeId),
                 'features' => route('stores.features', $storeId),
                 'erp' => route('stores.integrations', $storeId),
-                'marketing' => route('stores.marketing', $storeId),
+                'marketing' => route('stores.tracking', $storeId),
             ];
             if (isset($map[$tab])) {
                 return redirect()->to($map[$tab]);
@@ -138,16 +138,11 @@ class StoreSettingsController extends Controller
     }
 
     /**
-     * Renders the Social Commerce Hub page (Meta Pixel / TikTok Pixel / GA4)
-     * for a store. Values persist through the shared stores.settings.update /
-     * autosave endpoints and are exposed to the storefront via
-     * ThemeController::getStoreConfig under config.*_pixel_id.
+     * Legacy marketing route — now redirects to the canonical Marketing Tracking Hub.
+     * Kept for backward compatibility (bookmarks, ?tab=marketing). The editable
+     * tracking hub lives at stores.tracking (Marketing → التتبع والإعلانات).
      *
-     * PLAN GATING DEFERRED: there is NO canonical marketing/pixel entitlement in
-     * the plans/features architecture, so tracking is deliberately NOT coupled to
-     * the template-editor tier (`template_editor_level`). Social Commerce is
-     * available to every eligible store until a dedicated marketing entitlement
-     * is introduced.
+     * PLAN GATING DEFERRED: see tracking().
      */
     public function marketing(Request $request, $storeId)
     {
@@ -155,9 +150,33 @@ class StoreSettingsController extends Controller
             return redirect()->back()->with('error', __('You do not have permission to access store tracking.'));
         }
 
+        // Permanent handoff to the canonical Marketing Tracking Hub.
+        return redirect()->route('stores.tracking', $storeId);
+    }
+
+    /**
+     * Renders the Marketing Tracking Hub (Meta Pixel / TikTok Pixel / GA4)
+     * for a store. Values persist through the shared stores.settings.update /
+     * autosave endpoints and are exposed to the storefront via
+     * ThemeController::getStoreConfig under config.*_pixel_id.
+     *
+     * This is the CANONICAL merchant-facing location (Marketing → التتبع والإعلانات).
+     *
+     * PLAN GATING DEFERRED: there is NO canonical marketing/pixel entitlement in
+     * the plans/features architecture, so tracking is deliberately NOT coupled to
+     * the template-editor tier (`template_editor_level`). Social Commerce is
+     * available to every eligible store until a dedicated marketing entitlement
+     * is introduced.
+     */
+    public function tracking(Request $request, $storeId)
+    {
+        if (!Auth::user()->can('settings-stores')) {
+            return redirect()->back()->with('error', __('You do not have permission to access store tracking.'));
+        }
+
         $store = $this->resolveStore($storeId);
 
-        return Inertia::render('stores/marketing', [
+        return Inertia::render('marketing/tracking', [
             'store' => $store,
             'settings' => StoreConfiguration::getConfiguration($storeId),
         ]);
@@ -219,7 +238,7 @@ class StoreSettingsController extends Controller
             // (or an empty string to clear) pass validation.
             'settings.google_analytics_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
                 if ($value === null || trim((string) $value) === '') return;
-                if (!preg_match('/^(G-|GT-|UA-|AW-|DC-|YT-)[A-Za-z0-9-]{4,}$/', trim((string) $value))) {
+                if (!preg_match('/^(G-|GT-)[A-Za-z0-9-]{4,}$/', trim((string) $value))) {
                     $fail(__('معرّف Google Analytics غير صالح. أدخل معرّفاً مثل G-XXXXXXX.'));
                 }
             }],

@@ -816,6 +816,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stores/{id}/integrations/erp', [\App\Http\Controllers\StoreErpPageController::class, 'show'])->middleware('permission:settings-stores')->name('stores.erp');
         Route::get('stores/{id}/payments', [\App\Http\Controllers\StorePaymentsController::class, 'show'])->middleware('permission:settings-stores')->name('stores.payments');
         Route::get('stores/{id}/marketing', [\App\Http\Controllers\StoreSettingsController::class, 'marketing'])->middleware('permission:settings-stores')->name('stores.marketing');
+        Route::get('stores/{id}/tracking', [\App\Http\Controllers\StoreSettingsController::class, 'tracking'])->middleware('permission:settings-stores')->name('stores.tracking');
 
         // WhatsApp Commerce (Phase 1 — wa.me deep links only, no messaging API)
         Route::get('stores/{id}/whatsapp-commerce', [\App\Http\Controllers\WhatsAppCommerceController::class, 'index'])->middleware('permission:settings-stores')->name('stores.whatsapp-commerce');
