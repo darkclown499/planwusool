@@ -18,7 +18,7 @@ interface Props {
 
 const META_RE = /^\d{10,20}$/;
 const TIKTOK_RE = /^[A-Za-z0-9]{16,24}$/;
-const GA4_RE = /^(G-|GT-|UA-|AW-|DC-|YT-)[A-Za-z0-9-]{4,}$/;
+const GA4_RE = /^(G-|GT-)[A-Za-z0-9-]{4,}$/;
 
 interface TrackingField {
   key: 'google_analytics_id' | 'meta_pixel_id' | 'tiktok_pixel_id';
@@ -76,7 +76,7 @@ export default function MarketingTrackingPage({ store, settings }: Props) {
       placeholder: 'مثال: G-XXXXXXXXXX',
       label: 'Measurement ID',
       validate: (v) => v.trim() === '' || GA4_RE.test(v.trim()),
-      hint: 'يبدأ بـ G- (مثل G-XXXXXXXXXX) — GA4 فقط',
+      hint: 'يبدأ بـ G- أو GT- (مثل G-XXXXXXXXXX)',
     },
   ];
 

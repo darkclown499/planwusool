@@ -163,6 +163,65 @@ class MarketingTrackingHubTest extends TestCase
         $this->assertSame('G-NEWTRACK01', StoreConfiguration::getConfiguration($store->id)['google_analytics_id']);
     }
 
+    public function test_valid_google_ids_accepted(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->actingAs($user);
+        $this->put(route('stores.settings.update', $store->id), [
+            'settings' => ['google_analytics_id' => 'G-ABCDE12345'],
+        ])->assertSessionHasNoErrors();
+        StoreConfiguration::flushRequestCache();
+        $this->assertSame('G-ABCDE12345', StoreConfiguration::getConfiguration($store->id)['google_analytics_id']);
+
+        $this->put(route('stores.settings.update', $store->id), [
+            'settings' => ['google_analytics_id' => 'GT-ABCDE12345'],
+        ])->assertSessionHasNoErrors();
+        StoreConfiguration::flushRequestCache();
+        $this->assertSame('GT-ABCDE12345', StoreConfiguration::getConfiguration($store->id)['google_analytics_id']);
+    }
+
+    public function test_ua_legacy_rejected(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->actingAs($user);
+        $this->put(route('stores.settings.update', $store->id), [
+            'settings' => ['google_analytics_id' => 'UA-123456789-1'],
+        ])->assertSessionHasErrors(['settings.google_analytics_id']);
+        StoreConfiguration::flushRequestCache();
+        $this->assertSame('', StoreConfiguration::getConfiguration($store->id)['google_analytics_id']);
+        // UI would remain غير مضاف
+        $res = $this->get(route('stores.tracking', $store->id));
+        $this->assertSame('', $res->inertiaPage()['props']['settings']['google_analytics_id']);
+    }
+
+    public function test_aw_dc_yt_prefixes_rejected(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->actingAs($user);
+        foreach (['AW-123456789', 'DC-123456789', 'YT-123456789'] as $bad) {
+            $this->put(route('stores.settings.update', $store->id), [
+                'settings' => ['google_analytics_id' => $bad],
+            ])->assertSessionHasErrors(['settings.google_analytics_id']);
+        }
+        StoreConfiguration::flushRequestCache();
+        $this->assertSame('', StoreConfiguration::getConfiguration($store->id)['google_analytics_id']);
+    }
+
+    public function test_google_malformed_and_script_payload_rejected(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->actingAs($user);
+        $payloads = ['<script>alert(1)</script>', 'javascript:alert(1)', 'G-', 'G-12', 'GT-', '   '];
+        foreach ($payloads as $payload) {
+            if (trim($payload) === '') continue;
+            $this->put(route('stores.settings.update', $store->id), [
+                'settings' => ['google_analytics_id' => $payload],
+            ])->assertSessionHasErrors(['settings.google_analytics_id']);
+        }
+        StoreConfiguration::flushRequestCache();
+        $this->assertSame('', StoreConfiguration::getConfiguration($store->id)['google_analytics_id']);
+    }
+
     // I. new page writes to SAME canonical storage
     public function test_new_page_writes_to_same_canonical_storage(): void
     {

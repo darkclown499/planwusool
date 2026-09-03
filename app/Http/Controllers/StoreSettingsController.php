@@ -238,7 +238,7 @@ class StoreSettingsController extends Controller
             // (or an empty string to clear) pass validation.
             'settings.google_analytics_id' => ['nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
                 if ($value === null || trim((string) $value) === '') return;
-                if (!preg_match('/^(G-|GT-|UA-|AW-|DC-|YT-)[A-Za-z0-9-]{4,}$/', trim((string) $value))) {
+                if (!preg_match('/^(G-|GT-)[A-Za-z0-9-]{4,}$/', trim((string) $value))) {
                     $fail(__('معرّف Google Analytics غير صالح. أدخل معرّفاً مثل G-XXXXXXX.'));
                 }
             }],
