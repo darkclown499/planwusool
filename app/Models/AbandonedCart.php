@@ -55,6 +55,23 @@ class AbandonedCart extends Model
         'unsubscribed' => 'unsubscribed',
     ];
 
+    /**
+     * Override decimal cast to handle legacy/malformed production values without throwing.
+     * Production observed number_format + decimal cast failures for empty string and
+     * comma-formatted legacy totals (e.g. "1,200.00"). Formatting is presentation only —
+     * we preserve raw evidence instead of fabricating 0 or throwing 500.
+     */
+    protected function asDecimal($value, $decimals): string
+    {
+        if ($value === null || $value === '') {
+            return '0.00';
+        }
+        if (!is_numeric($value)) {
+            return (string) $value;
+        }
+        return number_format((float) $value, $decimals, '.', '');
+    }
+
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);

@@ -35,11 +35,26 @@ class AbandonedCartReminderMail extends Mailable
             with: [
                 'cart' => $this->cart,
                 'customerName' => $this->cart->customer_name ?? 'عميلنا الكريم',
-                'cartTotal' => number_format($this->cart->cart_total, 2),
+                'cartTotal' => $this->formatCartTotal($this->cart->cart_total),
                 'items' => is_array($this->cart->cart_items) ? $this->cart->cart_items : [],
                 'storeName' => $this->cart->store?->name ?? 'المتجر',
             ],
         );
+    }
+
+    private function formatCartTotal($value): string
+    {
+        if ($value === null || $value === '') {
+            return '0.00';
+        }
+        if (is_numeric($value)) {
+            return number_format((float) $value, 2, '.', '');
+        }
+        if (is_array($value) || is_object($value)) {
+            return '—';
+        }
+        $raw = trim((string) $value);
+        return $raw !== '' ? $raw : '0.00';
     }
 
     public function attachments(): array

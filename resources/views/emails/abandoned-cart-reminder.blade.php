@@ -139,7 +139,7 @@
                 @endif
 
                 <div class="total">
-                    Total: {{ number_format($cartTotal, 2) }}
+                    Total: {{ is_numeric($cartTotal) ? number_format((float) $cartTotal, 2) : e($cartTotal) }}
                 </div>
 
                 <a href="{{ url('/') }}" class="cta-button">
