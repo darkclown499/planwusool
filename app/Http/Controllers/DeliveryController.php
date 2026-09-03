@@ -22,7 +22,11 @@ use Inertia\Inertia;
 class DeliveryController extends Controller
 {
     /**
-     * Operational board with buckets: unassigned / assigned / out_for_delivery / delivered / failed.
+     * Delivery Hub — canonical merchant entry for "الشحن والتوصيل".
+     * Consolidates overview, operational board, methods, zones, drivers, companies, settings
+     * while preserving backend isolation (Shipping vs DeliveryZone vs Drivers vs CourierIntegrations).
+     *
+     * Query ?tab= controls internal hub navigation; default "overview".
      */
     public function index(Request $request)
     {
@@ -30,6 +34,7 @@ class DeliveryController extends Controller
         $storeId = getCurrentStoreId($user);
 
         $filters = $request->validate([
+            'tab' => 'nullable|string|in:overview,orders,methods,zones,drivers,companies,settings',
             'bucket' => 'nullable|string|in:unassigned,assigned,picked_up,out_for_delivery,delivered,delivery_failed,returned,cancelled,all',
             'zone_id' => 'nullable|integer',
             'driver_id' => 'nullable|integer',
@@ -103,8 +108,84 @@ class DeliveryController extends Controller
             'cancelled' => Order::where('store_id', $storeId)->where('delivery_status', 'cancelled')->count(),
         ];
 
-        $zones = DeliveryZone::where('store_id', $storeId)->orderBy('name')->get(['id', 'name']);
-        $drivers = DeliveryDriver::where('store_id', $storeId)->orderBy('name')->get(['id', 'name', 'active']);
+        $zones = DeliveryZone::where('store_id', $storeId)->orderBy('name')->get(['id', 'name', 'fee', 'is_active', 'est_time_text']);
+        $drivers = DeliveryDriver::where('store_id', $storeId)->orderBy('name')->get(['id', 'name', 'active', 'phone']);
+
+        // Hub aggregation — authoritative per-store counts (no cross-store leakage)
+        $currentTab = $filters['tab'] ?? 'overview';
+
+        // Shipping methods (legacy but still authoritative for checkout)
+        $shippings = \App\Models\Shipping::where('store_id', $storeId)->orderBy('sort_order')->orderBy('name')->get();
+        $shippingStats = [
+            'total' => $shippings->count(),
+            'active' => $shippings->where('is_active', true)->count(),
+        ];
+
+        // Delivery zones full details for hub pricing view
+        $zonesDetailed = \App\Models\DeliveryZone::where('store_id', $storeId)
+            ->orderBy('sort_order')->orderBy('name')
+            ->get()->map(fn($z) => [
+                'id' => $z->id,
+                'name' => $z->name,
+                'description' => $z->description,
+                'fee' => (float) $z->fee,
+                'is_active' => (bool) $z->is_active,
+                'sort_order' => (int) $z->sort_order,
+                'est_time_text' => $z->est_time_text,
+                'free_delivery_threshold' => $z->free_delivery_threshold,
+                'min_order_amount' => $z->min_order_amount,
+            ]);
+
+        // Drivers detailed for hub
+        $driversDetailed = \App\Models\DeliveryDriver::where('store_id', $storeId)
+            ->orderBy('name')->get()->map(fn($d) => [
+                'id' => $d->id,
+                'name' => $d->name,
+                'phone' => $d->phone,
+                'active' => (bool) $d->active,
+                'code' => $d->code,
+            ]);
+
+        // Courier integrations (truthful, no fake API claims)
+        $courierIntegrations = [];
+        $courierRequests = [];
+        try {
+            $courierIntegrations = \App\Models\StoreCourierIntegration::where('store_id', $storeId)
+                ->get()->map(fn($c) => [
+                    'id' => $c->id,
+                    'provider' => $c->provider,
+                    'display_name' => $c->display_name,
+                    'status' => $c->status,
+                    'is_active' => (bool) $c->is_active,
+                    'last_error' => $c->last_error,
+                    'last_tested_at' => $c->last_tested_at?->toISOString(),
+                ])->values();
+            // Optional courier requests if table exists
+            if (\Illuminate\Support\Facades\Schema::hasTable('store_courier_connection_requests')) {
+                $courierRequests = \App\Models\StoreCourierConnectionRequest::where('store_id', $storeId)->get(['id','provider','status'])->values();
+            }
+        } catch (\Throwable $e) {
+            // silent fallback for hubs without courier tables
+        }
+
+        // Free shipping authoritative config
+        $storeConfig = \App\Models\StoreConfiguration::getConfiguration($storeId);
+        $freeEnabled = \App\Models\StoreConfiguration::toBool($storeConfig['free_shipping_enabled'] ?? null, false);
+        $freeThresholdRaw = $storeConfig['free_shipping_threshold'] ?? null;
+        $freeThresholdVal = is_numeric($freeThresholdRaw) && (float)$freeThresholdRaw > 0 ? (float)$freeThresholdRaw : null;
+
+        $hubStats = [
+            'methods_total' => $shippingStats['total'],
+            'methods_active' => $shippingStats['active'],
+            'zones_total' => $zonesDetailed->count(),
+            'zones_active' => $zonesDetailed->where('is_active', true)->count(),
+            'drivers_total' => $driversDetailed->count(),
+            'drivers_active' => $driversDetailed->where('active', true)->count(),
+            'unassigned_orders' => $counts['unassigned'] ?? 0,
+            'courier_integrations' => count($courierIntegrations),
+            'free_shipping_enabled' => $freeEnabled,
+            'free_shipping_threshold' => $freeThresholdVal,
+        ];
 
         return Inertia::render('delivery/index', [
             'orders' => $orders,
@@ -112,6 +193,18 @@ class DeliveryController extends Controller
             'drivers' => $drivers,
             'counts' => $counts,
             'filters' => $filters,
+            'currentTab' => $currentTab,
+            'hubStats' => $hubStats,
+            'shippings' => $shippings,
+            'shippingStats' => $shippingStats,
+            'zonesDetailed' => $zonesDetailed,
+            'driversDetailed' => $driversDetailed,
+            'courierIntegrations' => $courierIntegrations,
+            'courierRequests' => $courierRequests,
+            'freeShipping' => [
+                'enabled' => $freeEnabled,
+                'threshold' => $freeThresholdVal,
+            ],
         ]);
     }
 
