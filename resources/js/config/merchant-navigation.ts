@@ -306,10 +306,11 @@ export function getMerchantContextNav(
         case 'payments': {
             const items: ContextNavItem[] = [];
             if (hasPermission('manage-orders')) {
-                items.push({ title: t('Payment Operations') !== 'Payment Operations' ? t('Payment Operations') : 'عمليات الدفع', href: tryRoute('payments.operations', '/payments/operations'), activePaths: ['/payments/operations'] });
+                items.push({ title: t('Payment Operations') !== 'Payment Operations' ? t('Payment Operations') : 'عمليات الدفع', href: '/cod-payments?tab=operations', activePaths: ['/cod-payments'] });
+                items.push({ title: 'التسويات', href: '/cod-payments?tab=settlements', activePaths: ['/cod-payments'] });
             }
             if (hasPermission('manage-cod-payments')) {
-                items.push({ title: t('COD Payments'), href: tryRoute('cod-payments.index', '/cod-payments') });
+                items.push({ title: t('COD Payments'), href: '/cod-payments?tab=cod', activePaths: ['/cod-payments'] });
             }
             return { title: titleFor('payments'), items };
         }

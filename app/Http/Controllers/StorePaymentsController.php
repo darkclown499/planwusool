@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\FeatureService;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
 
 /**
- * Renders the dedicated per-store payment settings page. Enable/disable
- * toggles + API keys are fetched/saved through Api\StorePaymentController.
+ * Hand-off for the legacy per-store payment settings page. Enable/disable toggles
+ * + API keys live in the Payments Hub ("المدفوعات والتحصيل") method configuration
+ * tab — this route redirects there (GET only; no duplicate editable forms).
  */
 class StorePaymentsController extends Controller
 {
@@ -20,9 +19,6 @@ class StorePaymentsController extends Controller
 
         $store = resolveStoreQuery(Auth::user())->findOrFail($storeId);
 
-        return Inertia::render('stores/payments', [
-            'store' => $store,
-            'methods' => FeatureService::PAYMENT_METHODS,
-        ]);
+        return redirect()->route('cod-payments.index', ['tab' => 'methods']);
     }
 }
