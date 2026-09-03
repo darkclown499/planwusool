@@ -237,4 +237,112 @@ class PaymentHubPhaseTest extends TestCase
         $order->refresh();
         $this->assertEquals('paid', $order->payment_status);
     }
+
+    // ─────────── Server-side tab gating (not frontend-only) ───────────
+
+    public function test_settings_only_user_server_gating(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->allow($user, 'settings-stores');
+
+        // methods allowed — must have 'methods' prop, must NOT have operations/cod/settlements props
+        $this->get(route('cod-payments.index', ['tab' => 'methods']))
+            ->assertOk()
+            ->assertInertia(fn ($p) => $p
+                ->where('tab', 'methods')
+                ->has('methods')
+                ->missing('rows')
+                ->missing('payments')
+            );
+
+        // operations forbidden — 403, no ledger data leaked
+        $this->get(route('cod-payments.index', ['tab' => 'operations']))->assertStatus(403);
+        // cod forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'cod']))->assertStatus(403);
+        // settlements forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'settlements']))->assertStatus(403);
+        // overview allowed for any hub user
+        $this->get(route('cod-payments.index', ['tab' => 'overview']))->assertOk()
+            ->assertInertia(fn ($p) => $p->where('tab', 'overview')->has('overview'));
+    }
+
+    public function test_manage_orders_only_user_server_gating(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->allow($user, 'manage-orders');
+        $this->makeOrder($store, ['payment_method' => 'cod', 'total_amount' => 50]);
+
+        // operations allowed — has rows/codPending/settlements, must NOT have methods/payments
+        $this->get(route('cod-payments.index', ['tab' => 'operations']))
+            ->assertOk()
+            ->assertInertia(fn ($p) => $p
+                ->where('tab', 'operations')
+                ->has('rows')
+                ->has('codPending')
+                ->has('settlements')
+                ->missing('methods')
+                ->missing('payments')
+            );
+
+        // settlements allowed (certified permission manage-orders)
+        $this->get(route('cod-payments.index', ['tab' => 'settlements']))
+            ->assertOk()
+            ->assertInertia(fn ($p) => $p
+                ->where('tab', 'settlements')
+                ->has('settlements')
+                ->has('codPending')
+                ->missing('methods')
+                ->missing('payments')
+            );
+
+        // methods forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'methods']))->assertStatus(403);
+        // cod forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'cod']))->assertStatus(403);
+    }
+
+    public function test_manage_cod_only_user_server_gating(): void
+    {
+        [$user, $store] = $this->ownerWithStore();
+        $this->allow($user, 'manage-cod-payments');
+        $order = $this->makeOrder($store, ['payment_method' => 'cod', 'payment_status' => 'pending', 'total_amount' => 75]);
+        CodPayment::create(['order_id' => $order->id, 'store_id' => $store->id, 'total_amount' => 75, 'cod_fee' => 0, 'amount_collected' => 0, 'amount_remaining' => 75, 'status' => 'pending']);
+
+        // cod allowed — has payments, must NOT have methods/rows
+        $this->get(route('cod-payments.index', ['tab' => 'cod']))
+            ->assertOk()
+            ->assertInertia(fn ($p) => $p
+                ->where('tab', 'cod')
+                ->has('payments')
+                ->missing('methods')
+                ->missing('rows')
+            );
+
+        // methods forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'methods']))->assertStatus(403);
+        // operations forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'operations']))->assertStatus(403);
+        // settlements forbidden
+        $this->get(route('cod-payments.index', ['tab' => 'settlements']))->assertStatus(403);
+    }
+
+    public function test_direct_tab_url_cannot_bypass_permission_inertia_props(): void
+    {
+        // Each singleton trying each forbidden tab must get 403 and therefore no Inertia props
+        [$uSettings, ] = $this->ownerWithStore();
+        $this->allow($uSettings, 'settings-stores');
+        $this->get(route('cod-payments.index', ['tab' => 'operations']))->assertStatus(403);
+        $this->get(route('cod-payments.index', ['tab' => 'cod']))->assertStatus(403);
+
+        [$uOrders, ] = $this->ownerWithStore();
+        $this->allow($uOrders, 'manage-orders');
+        $this->get(route('cod-payments.index', ['tab' => 'methods']))->assertStatus(403);
+        $this->get(route('cod-payments.index', ['tab' => 'cod']))->assertStatus(403);
+
+        [$uCod, ] = $this->ownerWithStore();
+        $this->allow($uCod, 'manage-cod-payments');
+        $this->get(route('cod-payments.index', ['tab' => 'methods']))->assertStatus(403);
+        $this->get(route('cod-payments.index', ['tab' => 'operations']))->assertStatus(403);
+        $this->get(route('cod-payments.index', ['tab' => 'settlements']))->assertStatus(403);
+    }
 }

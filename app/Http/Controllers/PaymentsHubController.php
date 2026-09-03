@@ -36,6 +36,11 @@ class PaymentsHubController extends Controller
         $storeId = getCurrentStoreId($user);
         $tab = $this->resolveTab($request->input('tab'));
 
+        $required = $this->requiredPermissionForTab($tab);
+        if ($required !== null && !$user->can($required)) {
+            abort(403);
+        }
+
         $overview = $this->overview($storeId);
 
         $props = [
@@ -68,6 +73,17 @@ class PaymentsHubController extends Controller
     {
         $tab = is_string($tab) ? strtolower(trim($tab)) : 'overview';
         return in_array($tab, self::TABS, true) ? $tab : 'overview';
+    }
+
+    private function requiredPermissionForTab(string $tab): ?string
+    {
+        return match ($tab) {
+            'methods' => 'settings-stores',
+            'operations' => 'manage-orders',
+            'cod' => 'manage-cod-payments',
+            'settlements' => 'manage-orders',
+            default => null,
+        };
     }
 
     /**
