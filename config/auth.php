@@ -44,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'customers',
         ],
+        'pos_terminal' => [
+            'driver' => 'session',
+            'provider' => 'pos_terminals',
+        ],
     ],
 
     /*
@@ -71,6 +75,10 @@ return [
         'customers' => [
             'driver' => 'eloquent',
             'model' => App\Models\Customer::class,
+        ],
+        'pos_terminals' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\PosTerminal::class,
         ],
     ],
 

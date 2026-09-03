@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class AppServiceProvider extends ServiceProvider
@@ -118,6 +119,19 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('password-reset', function (Request $request) {
             return Limit::perMinute(3)->by('pw-reset:' . ($request->ip() ?? 'unknown'))->response(function () {
                 return response()->json(['message' => 'Too many requests. Please try again later.'], 429);
+            });
+        });
+
+        // Terminal login brute-force protection. Key includes the terminal login
+        // identifier and the request source so a single terminal/IP cannot be
+        // brute-forced, but one terminal being throttled never locks other
+        // stores or terminals in the platform.
+        RateLimiter::for('terminal-login', function (Request $request) {
+            $identifier = Str::lower(trim((string) $request->input('username')))
+                . ':' . (string) $request->input('store', 'anonymous');
+            $ip = $request->ip() ?? 'unknown';
+            return Limit::perMinute(5)->by('terminal-login:' . $identifier . ':' . $ip)->response(function () {
+                return response()->json(['message' => 'محاولات تسجيل دخول كثيرة. حاول لاحقًا.'], 429);
             });
         });
     }

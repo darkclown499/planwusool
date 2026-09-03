@@ -314,6 +314,9 @@ export function getMerchantContextNav(
             if (hasPermission('manage-pos') && routeExists('pos.index')) {
                 items.push({ title: t('point_of_sale_short'), href: tryRoute('pos.index', '/pos') });
             }
+            if (hasPermission('manage-pos') && routeExists('pos.terminals.index')) {
+                items.push({ title: t('POS Terminals') !== 'POS Terminals' ? t('POS Terminals') : 'طرفيات نقطة البيع', href: tryRoute('pos.terminals.index', '/pos/terminals') });
+            }
             if (hasPermission('manage-pos') && routeExists('inventory.index')) {
                 items.push({ title: t('Inventory') !== 'Inventory' ? t('Inventory') : 'المخزون', href: tryRoute('inventory.index', '/inventory') });
             }
