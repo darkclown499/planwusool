@@ -86,6 +86,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.throttle' => \App\Http\Middleware\ApiRateLimiter::class,
             'security.headers' => \App\Http\Middleware\SecurityHeadersMiddleware::class,
             'csp.nonce' => \App\Http\Middleware\CspNonceMiddleware::class,
+            'pos.terminal' => \App\Http\Middleware\EnsurePosTerminal::class,
         ]);
 
         $middleware->validateCsrfTokens(

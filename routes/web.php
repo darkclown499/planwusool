@@ -783,6 +783,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('pos/sale', [\App\Http\Controllers\PointOfSaleController::class, 'store'])->middleware('permission:manage-pos')->name('pos.sale');
         Route::get('pos/receipt/{order}', [\App\Http\Controllers\PointOfSaleController::class, 'receipt'])->middleware('permission:manage-pos')->name('pos.receipt');
 
+        // POS Terminal Management (Phase 2) — merchant manages their own store's cashier devices.
+        Route::get('pos/terminals', [\App\Http\Controllers\PosTerminalManagementController::class, 'index'])->middleware('permission:manage-pos')->name('pos.terminals.index');
+        Route::post('pos/terminals', [\App\Http\Controllers\PosTerminalManagementController::class, 'store'])->middleware('permission:manage-pos')->name('pos.terminals.store');
+        Route::put('pos/terminals/{terminal}', [\App\Http\Controllers\PosTerminalManagementController::class, 'update'])->middleware('permission:manage-pos')->name('pos.terminals.update');
+        Route::post('pos/terminals/{terminal}/toggle', [\App\Http\Controllers\PosTerminalManagementController::class, 'toggle'])->middleware('permission:manage-pos')->name('pos.terminals.toggle');
+        Route::delete('pos/terminals/{terminal}', [\App\Http\Controllers\PosTerminalManagementController::class, 'destroy'])->middleware('permission:manage-pos')->name('pos.terminals.destroy');
+
         // Unified Inventory (Phase 1)
         Route::get('inventory', [\App\Http\Controllers\InventoryController::class, 'index'])->middleware('permission:manage-pos')->name('inventory.index');
         Route::post('inventory/adjust', [\App\Http\Controllers\InventoryController::class, 'adjust'])->middleware('permission:manage-pos')->name('inventory.adjust');
@@ -1371,6 +1378,25 @@ Route::middleware(['auth'])->prefix('gdpr')->name('gdpr.')->group(function () {
 Route::middleware(['auth', 'App\Http\Middleware\SuperAdminMiddleware'])->group(function () {
     Route::get('update', [\App\Http\Controllers\UpdateController::class, 'show'])->name('update.show');
     Route::post('update', [\App\Http\Controllers\UpdateController::class, 'run'])->name('update.run');
+});
+
+// POS Terminal (Phase 2) — dedicated cashier routes, isolated from the merchant dashboard.
+// These live OUTSIDE the merchant web auth/onboarding stack and use the dedicated
+// `pos_terminal` guard, so a cashier can never reach dashboard/settings/admin pages.
+Route::prefix('pos/terminal')->name('pos.terminal.')->group(function () {
+    Route::middleware('throttle:terminal-login')->group(function () {
+        Route::get('login', [\App\Http\Controllers\Terminal\PosTerminalAuthController::class, 'create'])->name('login');
+        Route::post('login', [\App\Http\Controllers\Terminal\PosTerminalAuthController::class, 'store'])->name('login.store');
+    });
+
+    Route::middleware('pos.terminal')->group(function () {
+        Route::post('logout', [\App\Http\Controllers\Terminal\PosTerminalAuthController::class, 'destroy'])->name('logout');
+        Route::get('', [\App\Http\Controllers\Terminal\PosTerminalController::class, 'register'])->name('register');
+        Route::get('api/search', [\App\Http\Controllers\Terminal\PosTerminalController::class, 'search'])->name('search');
+        Route::get('api/customers', [\App\Http\Controllers\Terminal\PosTerminalController::class, 'customers'])->name('customers');
+        Route::get('api/categories', [\App\Http\Controllers\Terminal\PosTerminalController::class, 'categories'])->name('categories');
+        Route::post('api/sale', [\App\Http\Controllers\Terminal\PosTerminalController::class, 'store'])->name('sale');
+    });
 });
 
 // Catch-all route for custom domains/subdomains

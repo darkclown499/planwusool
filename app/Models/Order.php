@@ -148,6 +148,11 @@ class Order extends Model
         return $this->hasOne(\App\Models\CodPayment::class);
     }
 
+    public function posTerminal(): BelongsTo
+    {
+        return $this->belongsTo(PosTerminal::class, 'pos_terminal_id');
+    }
+
     public static function generateOrderNumber(): string
     {
         do {

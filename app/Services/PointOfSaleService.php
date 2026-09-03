@@ -33,6 +33,10 @@ class PointOfSaleService
      * @param string|null $notes
      * @param bool $markCollected whether the cashier physically collected CASH at the register.
      *        Only ever marks a CASH order paid; bank/bank_transfer always stay pending.
+     * @param int|null $posTerminalId optional relational attribution to the POS terminal (device).
+     * @param string|null $posCashierUsername optional snapshot label of the cashier/terminal username,
+     *        retained so attribution survives a later terminal rename/deletion. It is a display label
+     *        only — it is NEVER used for authorization.
      * @return Order
      *
      * @throws \Exception with Arabic domain message on validation/insufficient stock
@@ -43,7 +47,9 @@ class PointOfSaleService
         string $paymentMethod,
         ?int $customerId = null,
         ?string $notes = null,
-        bool $markCollected = true
+        bool $markCollected = true,
+        ?int $posTerminalId = null,
+        ?string $posCashierUsername = null
     ): Order {
         if (empty($lineItems)) {
             throw new \Exception('لا يمكن إتمام بيع فارغ.');
@@ -60,6 +66,22 @@ class PointOfSaleService
         // they stay pending until the highly-trusted manual confirm flow authorises them.
         $cashCollected = ($paymentMethod === 'cash') && $markCollected;
 
+        // The entire POS pipeline — authoritative order + order items + stock ledger
+        // decrement (via OrderService) AND the terminal attribution columns — runs inside
+        // ONE outer transaction. OrderService::createOrder opens a nested transaction
+        // (savepoint) within this one, so a failure anywhere (including the attribution
+        // forceFill/save at the end) rolls back the whole sale and stock movement together.
+        // Attribution can never be silently lost while a valid sale + decrement are kept.
+        return DB::transaction(function () use (
+            $storeId,
+            $lineItems,
+            $paymentMethod,
+            $customerId,
+            $notes,
+            $cashCollected,
+            $posTerminalId,
+            $posCashierUsername
+        ) {
         $currency = $this->storeCurrency($storeId);
         $walkInName = 'زبون مباشر';
         if ($customerId) {
@@ -184,10 +206,20 @@ class PointOfSaleService
             $posState['paid_at'] = now();
             $posState['payment_confirmed_by'] = Auth::guard('web')->id();
         }
+        // Relational + snapshot attribution to the POS terminal that completed this sale.
+        // Nullable for normal online and merchant-terminal-less sales. Authorization never
+        // reads from these columns; they exist purely to answer "which terminal created this sale?".
+        if ($posTerminalId) {
+            $posState['pos_terminal_id'] = $posTerminalId;
+        }
+        if ($posCashierUsername !== null) {
+            $posState['pos_cashier_username'] = $posCashierUsername;
+        }
         $order->forceFill($posState);
         $order->save();
 
         return $order->fresh();
+        });
     }
 
     /**

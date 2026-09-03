@@ -47,6 +47,8 @@ export default function PosIndex() {
     const { t } = useTranslation();
     const page = usePage().props as any;
     const storeCurrency: string = page.storeCurrency || 'ILS';
+    const categories: { id: number; name: string }[] = page.categories || [];
+    const [categoryId, setCategoryId] = useState<string>('');
 
     const [q, setQ] = useState('');
     const [rows, setRows] = useState<PosRow[]>([]);
@@ -79,9 +81,9 @@ export default function PosIndex() {
         return { subtotal, tax, total };
     }, [cart]);
 
-    const runSearch = (term: string) => {
+    const runSearch = (term: string, cat: string = categoryId) => {
         setLoadingSearch(true);
-        axios.get(route('pos.search'), { params: { q: term, per_page: 20 } })
+        axios.get(route('pos.search'), { params: { q: term, category_id: cat || undefined, per_page: 20 } })
             .then((res: { data: { success: boolean; rows?: PosRow[] } }) => {
                 if (res.data && res.data.success) setRows(res.data.rows || []);
                 else setRows([]);
@@ -92,6 +94,7 @@ export default function PosIndex() {
 
     useEffect(() => {
         runSearch('');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onQuery = (val: string) => {
@@ -99,6 +102,25 @@ export default function PosIndex() {
         if (searchDebounce.current) clearTimeout(searchDebounce.current);
         searchDebounce.current = setTimeout(() => runSearch(val), 300);
     };
+
+    // Switching category re-queries the server but never touches the local cart,
+    // so the cart stays intact while browsing/filtering products.
+    const onCategoryChange = (cat: string) => {
+        setCategoryId(cat);
+        if (searchDebounce.current) clearTimeout(searchDebounce.current);
+        runSearch(q, cat);
+    };
+
+    // Cart-aware available stock: authoritativeStock - quantity of the same
+    // product/variant already in the cart. Merely adding to the cart NEVER
+    // mutates DB stock; it only reduces what is still available to add.
+    const cartQtyFor = (row: Pick<PosRow, 'product_id' | 'variant_uuid' | 'variant_id' | 'is_variant'>): number => {
+        const key = row.is_variant ? `${row.product_id}::${row.variant_uuid ?? row.variant_id ?? ''}` : `${row.product_id}`;
+        return cart.reduce((sum, l) => (l.key === key ? sum + l.qty : sum), 0);
+    };
+
+    const availableFor = (row: PosRow): number | null =>
+        row.stock === null ? null : Math.max(0, row.stock - cartQtyFor(row));
 
     // Enter in barcode field triggers immediate search (barcode scanners type fast).
     const onBarcodeEnter = () => {
@@ -115,7 +137,9 @@ export default function PosIndex() {
         line.stock_limit === null || line.qty <= line.stock_limit;
 
     const addToCart = (row: PosRow) => {
-        if (row.stock !== null && row.stock <= 0) return;
+        // Prevent adding beyond the display-aware available stock (authoritative - in-cart).
+        const available = availableFor(row);
+        if (available !== null && available <= 0) return;
         const key = row.is_variant ? `${row.product_id}::${row.variant_uuid ?? row.variant_id ?? ''}` : `${row.product_id}`;
         setCart((prev) => {
             const existing = prev.find((l) => l.key === key);
@@ -217,19 +241,46 @@ export default function PosIndex() {
                             autoFocus
                         />
                     </div>
+                    {categories.length > 0 && (
+                        <div className="flex gap-2 overflow-x-auto pb-1">
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={categoryId === '' ? 'default' : 'outline'}
+                                className="shrink-0"
+                                onClick={() => onCategoryChange('')}
+                            >
+                                {t('All')} (الكل)
+                            </Button>
+                            {categories.map((c) => (
+                                <Button
+                                    key={c.id}
+                                    type="button"
+                                    size="sm"
+                                    variant={String(c.id) === categoryId ? 'default' : 'outline'}
+                                    className="shrink-0"
+                                    onClick={() => onCategoryChange(String(c.id))}
+                                >
+                                    {c.name}
+                                </Button>
+                            ))}
+                        </div>
+                    )}
                     {loadingSearch && <p className="text-xs text-muted-foreground">{t('Loading')}...</p>}
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
-                        {rows.map((r, i) => (
+                        {rows.map((r, i) => {
+                            const available = availableFor(r);
+                            return (
                             <button
                                 key={`${r.product_id}-${r.variant_uuid ?? r.variant_id ?? i}`}
                                 type="button"
                                 onClick={() => addToCart(r)}
-                                disabled={r.stock !== null && r.stock <= 0}
+                                disabled={available !== null && available <= 0}
                                 className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-start shadow-xs transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                <div className="flex h-20 items-center justify-center bg-muted/40">
+                                <div className="flex h-20 items-center justify-center bg-muted/40 p-2">
                                     {r.cover_image ? (
-                                        <img src={r.cover_image} alt={r.name} className="h-full w-full object-cover" />
+                                        <img src={r.cover_image} alt={r.name} className="h-full w-full object-contain" />
                                     ) : (
                                         <ShoppingCart className="h-6 w-6 text-muted-foreground" />
                                     )}
@@ -239,15 +290,16 @@ export default function PosIndex() {
                                     {r.variant_label && <span className="text-[11px] text-muted-foreground">{r.variant_label}</span>}
                                     <div className="flex items-center justify-between gap-1">
                                         <span className="text-sm font-semibold">{fmt(r.price)} {storeCurrency}</span>
-                                        {r.stock !== null && (
-                                            <Badge variant={r.stock <= 0 ? 'destructive' : 'secondary'} className="text-[10px]">
-                                                {r.stock}
+                                        {available !== null && (
+                                            <Badge variant={available <= 0 ? 'destructive' : 'secondary'} className="text-[10px]">
+                                                {available}
                                             </Badge>
                                         )}
                                     </div>
                                 </div>
                             </button>
-                        ))}
+                            );
+                        })}
                         {!loadingSearch && rows.length === 0 && (
                             <p className="col-span-full py-8 text-center text-sm text-muted-foreground">
                                 {t('No products matched your search')}

@@ -216,8 +216,13 @@ class HandleInertiaRequests extends Middleware
                 ? Auth::guard('customer')->user()->addresses 
                 : [],
             'auth'  => function() use ($request) {
-                $user = $request->user() ? $request->user()->load('stores', 'plan') : null;
-                
+                // Only a real merchant User carries the store/plan/role shape the
+                // dashboard expects. A dedicated POS terminal (pos_terminal guard)
+                // is authenticated on a separate session and must never be treated
+                // as a merchant here — so it safely resolves to a null merchant.
+                $principal = $request->user();
+                $user = ($principal instanceof \App\Models\User) ? $principal->load('stores', 'plan') : null;
+
                 // Get stores for the current user
                 $stores = [];
                 if ($user) {
@@ -266,15 +271,16 @@ class HandleInertiaRequests extends Middleware
                 
                 return [
                     'user'        => $user,
-                    'roles'       => $request->user()?->roles->pluck('name'),
-                    'permissions' => $request->user()?->getAllPermissions()->pluck('name'),
-                    'has_partner' => $request->user() ? (bool) $request->user()->partner : false,
+                    'roles'       => $user?->roles->pluck('name'),
+                    'permissions' => $user?->getAllPermissions()->pluck('name'),
+                    'has_partner' => $user ? (bool) $user->partner : false,
                     'lang' => $locale,
                     'stores' => $stores
                 ];
             },
             'stores' => function() use ($request) {
-                $user = $request->user();
+                $principal = $request->user();
+                $user = ($principal instanceof \App\Models\User) ? $principal : null;
                 if (!$user) return [];
                 
                 $stores = [];
@@ -325,7 +331,8 @@ class HandleInertiaRequests extends Middleware
      */
     private function getStoreCurrencySettings(Request $request): array
     {
-        $user = $request->user();
+        $principal = $request->user();
+        $user = ($principal instanceof \App\Models\User) ? $principal : null;
         
         // Default currency settings
         $defaultCurrency = [
