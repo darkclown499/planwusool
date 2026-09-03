@@ -316,7 +316,7 @@ class AbandonedCartController extends Controller
                     $cart->customer_name ?? 'N/A',
                     $cart->customer_email ?? 'N/A',
                     $cart->customer_phone ?? 'N/A',
-                    number_format($cart->cart_total, 2),
+                    $this->formatCartTotalForExport($cart->cart_total),
                     $statusLabels[$cart->status] ?? ucfirst($cart->status),
                     count($items),
                     $cart->reminder_count,
@@ -345,5 +345,33 @@ class AbandonedCartController extends Controller
             Log::error('Export abandoned carts failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             abort(500, 'Failed to export abandoned carts.');
         }
+    }
+
+    /**
+     * Safely format cart_total for CSV export without throwing TypeError.
+     *
+     * Money rule: formatting is presentation only. We never mutate persisted values.
+     * - numeric strings/ints/floats (including DB decimal strings like "120.50") are formatted to 2 decimals
+     * - null/empty is treated as 0.00 to keep CSV numeric consistency (DB default is 0)
+     * - genuinely malformed values (e.g. "1,200" with thousands separator, currency-decorated text, array) are preserved as raw string to avoid fabricating 0
+     */
+    private function formatCartTotalForExport($value): string
+    {
+        if ($value === null || $value === '') {
+            return '0.00';
+        }
+        if (is_numeric($value)) {
+            return number_format((float) $value, 2, '.', '');
+        }
+        if (is_string($value) && is_numeric(trim(str_replace(',', '', $value)))) {
+            // Preserve evidence: do not silently strip commas — return raw trimmed value
+            // Merchant can see original malformed value; we do not fabricate a corrected number.
+            return trim($value);
+        }
+        if (is_array($value) || is_object($value)) {
+            return '—';
+        }
+        // Non-numeric scalar (e.g. "abc", "₪100") — preserve raw evidence
+        return trim((string) $value) !== '' ? trim((string) $value) : '0.00';
     }
 }
