@@ -27,6 +27,13 @@ class SocialCommerceTrackingTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutVite();
+        \App\Models\StoreConfiguration::flushRequestCache();
+    }
+
     private function ownerWithStore(array $attrs = []): array
     {
         $plan = Plan::factory()->create([
@@ -88,17 +95,21 @@ class SocialCommerceTrackingTest extends TestCase
         [$user, $store] = $this->ownerWithStore();
         $this->actingAs($user);
 
-        $res = $this->get(route('stores.marketing', $store->id));
+        // Canonical Marketing Tracking Hub
+        $res = $this->get(route('stores.tracking', $store->id));
         $res->assertOk();
 
         $page = $res->inertiaPage();
-        $this->assertSame('stores/marketing', $page['component']);
+        $this->assertSame('marketing/tracking', $page['component']);
         $this->assertArrayHasKey('store', $page['props']);
         $this->assertSame($store->id, $page['props']['store']['id']);
         $this->assertArrayHasKey('settings', $page['props']);
         // Plan gating is deferred (no canonical marketing entitlement): the page
         // must NOT couple tracking UI to the template-editor tier.
         $this->assertArrayNotHasKey('planAllowsAdvancedFeatures', $page['props']);
+
+        // Legacy route must hand off to canonical via redirect
+        $this->get(route('stores.marketing', $store->id))->assertRedirect(route('stores.tracking', $store->id));
     }
 
     public function test_marketing_page_shotgunned_other_tenant_store_404s(): void
@@ -109,7 +120,7 @@ class SocialCommerceTrackingTest extends TestCase
         $this->actingAs($otherUser);
         // The other user owns a store with the same permission, but must NOT be
         // able to reach the owner's store settings.
-        $res = $this->get(route('stores.marketing', $store->id));
+        $res = $this->get(route('stores.tracking', $store->id));
         $res->assertNotFound();
     }
 
@@ -119,7 +130,7 @@ class SocialCommerceTrackingTest extends TestCase
         $user->revokePermissionTo('settings-stores');
         $this->actingAs($user);
 
-        $this->get(route('stores.marketing', $store->id))->assertForbidden();
+        $this->get(route('stores.tracking', $store->id))->assertForbidden();
     }
 
     public function test_update_persists_valid_tracking_ids_and_exposes_them_to_storefront(): void
@@ -259,7 +270,7 @@ class SocialCommerceTrackingTest extends TestCase
         [$user, $store] = $this->ownerWithStore(['template_editor_level' => 'none']);
         $this->actingAs($user);
 
-        $res = $this->get(route('stores.marketing', $store->id));
+        $res = $this->get(route('stores.tracking', $store->id));
         $res->assertOk();
         $props = $res->inertiaPage()['props'];
         $this->assertArrayNotHasKey('planAllowsAdvancedFeatures', $props);

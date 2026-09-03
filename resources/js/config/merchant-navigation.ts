@@ -35,7 +35,8 @@ export type PrimaryId =
 // Taxes, Email, Domains, Integrations under a given store. These pages drop the
 // heavy desktop secondary sidebar and surface their sub-nav as horizontal
 // in-page tabs instead.
-const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations|marketing)(\/|$)/;
+// NOTE: marketing/tracking is intentionally NOT here — it lives under Marketing (التتبع والإعلانات) as canonical.
+const STORE_SETTINGS_RE = /^\/stores\/[^/]+\/(settings|payments|shipping|taxes|email-settings|domains|integrations)(\/|$)/;
 
 // Merchant store-shipping & tax settings land on the global /shipping and /tax
 // routes (the /stores/{id}/shipping and /stores/{id}/taxes canonical routes
@@ -116,6 +117,7 @@ export const MERCHANT_AR_LABELS: Record<string, string> = {
     Domain: 'الدومين',
     Integrations: 'التكاملات',
     'Social Commerce': 'التسويق والتتبع',
+    'Tracking & Ads': 'التتبع والإعلانات',
     'Meta Pixel': 'ميتا بيكسل',
     'TikTok Pixel': 'تيك توك بيكسل',
     'Google Analytics': 'جوجل أناليتكس',
@@ -197,6 +199,8 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     if (path.startsWith('/loyalty')) return 'marketing';
     // WhatsApp Commerce page belongs to marketing navigation
     if (sid && path.startsWith(`/stores/${sid}/whatsapp-commerce`)) return 'marketing';
+    // Marketing Tracking Hub canonical location (Marketing → التتبع والإعلانات)
+    if (sid && (path.startsWith(`/stores/${sid}/tracking`) || path.startsWith(`/stores/${sid}/marketing`))) return 'marketing';
 
     // Analytics
     if (path.startsWith('/analytics')) return 'analytics';
@@ -213,6 +217,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     if (path.startsWith('/stores') && path.includes('/features')) return 'store';
 
     // Settings area: payments, shipping, taxes, email, domains, integrations, users, etc.
+    // NOTE: tracking/marketing intentionally excluded — canonical is Marketing.
     if (sid && (
         path.startsWith(`/stores/${sid}/payments`) ||
         path.startsWith(`/stores/${sid}/shipping`) ||
@@ -222,7 +227,6 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
         path.startsWith(`/stores/${sid}/domains`) ||
         path.startsWith(`/stores/${sid}/integrations`) ||
         path.startsWith(`/stores/${sid}/erp`) ||
-        path.startsWith(`/stores/${sid}/marketing`) ||
         path.startsWith(`/stores/${sid}/settings`)
     )) return 'settings';
 
@@ -235,7 +239,7 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
     if (path.startsWith('/users') || path.startsWith('/roles') || path.startsWith('/permissions') || path.startsWith('/notifications') || path.startsWith('/plans') || path.startsWith('/plan-')) {
         return 'settings';
     }
-    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|marketing|notifications|settings)/)) {
+    if (path.match(/^\/stores\/[^/]+\/(payments|shipping|taxes|email-settings|domains|integrations|notifications|settings)/)) {
         return 'settings';
     }
 
@@ -378,6 +382,10 @@ export function getMerchantContextNav(
             if (sid && hasPermission('settings-stores')) {
                 items.push({ title: t('WhatsApp Commerce') !== 'WhatsApp Commerce' ? t('WhatsApp Commerce') : 'التواصل عبر واتساب', href: `/stores/${sid}/whatsapp-commerce`, activePaths: [`/stores/${sid}/whatsapp-commerce`] });
             }
+            // Marketing Tracking Hub — canonical location (Marketing → التتبع والإعلانات)
+            if (sid && hasPermission('settings-stores')) {
+                items.push({ title: t('Tracking & Ads') !== 'Tracking & Ads' ? t('Tracking & Ads') : 'التتبع والإعلانات', href: `/stores/${sid}/tracking`, activePaths: [`/stores/${sid}/tracking`, `/stores/${sid}/marketing`] });
+            }
             const partnerHref = isPartner ? tryRoute('partner.dashboard', '/partner/dashboard') : tryRoute('partner.apply', '/partner/apply');
             items.push({ title: t('Partner Program') !== 'Partner Program' ? t('Partner Program') : 'برنامج الشركاء', href: partnerHref, activePaths: ['/partner'] });
             return { title: titleFor('marketing'), items };
@@ -413,7 +421,6 @@ export function getMerchantContextNav(
                 items.push({ title: t('Email & Notifications') !== 'Email & Notifications' ? t('Email & Notifications') : 'البريد والإشعارات', href: `/stores/${sid}/email-settings`, activePaths: [`/stores/${sid}/email-settings`, `/stores/${sid}/notifications/email`, `/stores/${sid}/notifications/whatsapp`] });
                 items.push({ title: t('Domain') !== 'Domain' ? t('Domain') : 'الدومين', href: `/stores/${sid}/domains`, activePaths: [`/stores/${sid}/domains`] });
                 items.push({ title: t('Integrations'), href: `/stores/${sid}/integrations`, activePaths: [`/stores/${sid}/integrations`, `/stores/${sid}/integrations/erp`] });
-                items.push({ title: t('Social Commerce') !== 'Social Commerce' ? t('Social Commerce') : 'التسويق والتتبع', href: `/stores/${sid}/marketing`, activePaths: [`/stores/${sid}/marketing`] });
             }
             if (hasPermission('manage-users')) {
                 items.push({ title: t('Users & Roles') !== 'Users & Roles' ? t('Users & Roles') : 'الفريق والصلاحيات', href: tryRoute('users.index', '/users') });
