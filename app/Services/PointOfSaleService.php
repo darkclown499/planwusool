@@ -66,6 +66,22 @@ class PointOfSaleService
         // they stay pending until the highly-trusted manual confirm flow authorises them.
         $cashCollected = ($paymentMethod === 'cash') && $markCollected;
 
+        // The entire POS pipeline — authoritative order + order items + stock ledger
+        // decrement (via OrderService) AND the terminal attribution columns — runs inside
+        // ONE outer transaction. OrderService::createOrder opens a nested transaction
+        // (savepoint) within this one, so a failure anywhere (including the attribution
+        // forceFill/save at the end) rolls back the whole sale and stock movement together.
+        // Attribution can never be silently lost while a valid sale + decrement are kept.
+        return DB::transaction(function () use (
+            $storeId,
+            $lineItems,
+            $paymentMethod,
+            $customerId,
+            $notes,
+            $cashCollected,
+            $posTerminalId,
+            $posCashierUsername
+        ) {
         $currency = $this->storeCurrency($storeId);
         $walkInName = 'زبون مباشر';
         if ($customerId) {
@@ -203,6 +219,7 @@ class PointOfSaleService
         $order->save();
 
         return $order->fresh();
+        });
     }
 
     /**

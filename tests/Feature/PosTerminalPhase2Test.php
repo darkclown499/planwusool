@@ -9,6 +9,7 @@ use App\Models\PosTerminal;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -573,5 +574,214 @@ class PosTerminalPhase2Test extends TestCase
 
         $terminalSrc = file_get_contents(resource_path('js/pages/pos/terminal/index.tsx'));
         $this->assertStringContainsString('object-contain', $terminalSrc, 'terminal POS images must also be uncropped');
+    }
+
+    /* ───────────────────────── TASK-1 FINAL SECURITY (AE–AK) ───────────────────────── */
+
+    public function test_ae_cross_store_merchant_cannot_manage_other_stores_terminal(): void
+    {
+        $ownerA = $this->companyUser(['email' => 'ae-a-' . uniqid() . '@test.com']);
+        $ownerB = $this->companyUser(['email' => 'ae-b-' . uniqid() . '@test.com']);
+        $termB = $this->createTerminalAs($ownerB, 'ae-b-term', '2222');
+        $nameBefore = $termB->name;
+        $hashBefore = $termB->pin_hash;
+        $activeBefore = $termB->is_active;
+
+        // Store A merchant must never be able to mutate Store B's terminal.
+        $upd = $this->actingAs($ownerA)->put(route('pos.terminals.update', $termB->id), [
+            'name' => 'Hijacked', 'pin' => '9999',
+        ]);
+        $this->assertSame(404, $upd->getStatusCode(), 'cross-store terminal update must 404');
+
+        $tgl = $this->actingAs($ownerA)->post(route('pos.terminals.toggle', $termB->id), ['active' => false]);
+        $this->assertSame(404, $tgl->getStatusCode(), 'cross-store terminal toggle must 404');
+
+        $del = $this->actingAs($ownerA)->delete(route('pos.terminals.destroy', $termB->id));
+        $this->assertSame(404, $del->getStatusCode(), 'cross-store terminal delete must 404');
+
+        $refreshed = $termB->fresh();
+        $this->assertNotNull($refreshed, 'Store B terminal must not be deleted by Store A');
+        $this->assertSame($nameBefore, $refreshed->name, 'Store B terminal name unchanged');
+        $this->assertSame($hashBefore, $refreshed->pin_hash, 'Store B terminal PIN hash unchanged');
+        $this->assertSame($activeBefore, $refreshed->is_active, 'Store B terminal active state unchanged');
+    }
+
+    public function test_af_cross_store_merchant_cannot_view_or_share_other_stores_terminal(): void
+    {
+        $ownerA = $this->companyUser(['email' => 'af-a-' . uniqid() . '@test.com']);
+        $ownerB = $this->companyUser(['email' => 'af-b-' . uniqid() . '@test.com']);
+        $termB = $this->createTerminalAs($ownerB, 'af-b-term', '2222');
+
+        // Store A management index must never list Store B's terminal (no login/share identifier leak).
+        $res = $this->actingAs($ownerA)->get(route('pos.terminals.index'));
+        $res->assertOk();
+        $res->assertInertia(fn ($p) => $p
+            ->where('terminals', fn ($list) => collect($list)->pluck('id')->doesntContain($termB->id))
+            ->where('store.id', $ownerA->current_store));
+    }
+
+    public function test_ag_terminal_login_logs_out_web_guard_so_terminal_mode_never_keeps_dashboard_session(): void
+    {
+        $owner = $this->companyUser();
+        $terminal = $this->createTerminalAs($owner, 'ag-front', '1111');
+        $store = Store::find($owner->current_store);
+
+        // Browser is signed in as a merchant on the `web` guard.
+        $this->actingAs($owner);
+        $this->assertTrue(Auth::guard('web')->check(), 'precondition: merchant is authenticated');
+
+        // Switch to terminal mode: successful terminal login.
+        $res = $this->postJson(route('pos.terminal.login.store'), [
+            'store' => $store->slug, 'username' => 'ag-front', 'pin' => '1111',
+        ]);
+        $res->assertRedirect(route('pos.terminal.register'));
+
+        $this->assertTrue(Auth::guard('pos_terminal')->check(), 'terminal session is established');
+        $this->assertFalse(Auth::guard('web')->check(), 'merchant web session must be cleared on terminal login');
+
+        // And the now-terminal browser must NOT reach the merchant dashboard.
+        $dash = $this->getJson(route('dashboard'));
+        $this->assertNotSame(200, $dash->getStatusCode(), 'after terminal login the browser cannot reach the merchant dashboard');
+    }
+
+    public function test_ah_terminal_logout_does_not_restore_old_web_session(): void
+    {
+        $owner = $this->companyUser();
+        $terminal = $this->createTerminalAs($owner, 'ah-front', '1111');
+        $store = Store::find($owner->current_store);
+
+        // Merchant session first…
+        $this->actingAs($owner);
+        // …then terminal login (clears web)…
+        $this->postJson(route('pos.terminal.login.store'), [
+            'store' => $store->slug, 'username' => 'ah-front', 'pin' => '1111',
+        ]);
+        $this->assertFalse(Auth::guard('web')->check(), 'precondition: web cleared by terminal login');
+
+        // …then terminal logout.
+        Auth::guard('pos_terminal')->logout();
+
+        $this->assertFalse(Auth::guard('pos_terminal')->check(), 'terminal session gone after logout');
+        $this->assertFalse(Auth::guard('web')->check(), 'terminal logout must NOT resurrect the earlier merchant session');
+    }
+
+    public function test_ai_login_failures_do_not_disclose_account_existence(): void
+    {
+        $owner = $this->companyUser();
+        $this->createTerminalAs($owner, 'ai-live', '1111');
+        $store = Store::find($owner->current_store);
+
+        // (a) correct username + wrong PIN
+        $wrongPin = $this->postJson(route('pos.terminal.login.store'), [
+            'store' => $store->slug, 'username' => 'ai-live', 'pin' => '0000',
+        ]);
+        // (b) totally unknown username
+        $unknown = $this->postJson(route('pos.terminal.login.store'), [
+            'store' => $store->slug, 'username' => 'ai-does-not-exist', 'pin' => '1111',
+        ]);
+        // (c) inactive/revoked terminal with correct PIN
+        $inactive = PosTerminal::create([
+            'store_id' => $store->id, 'name' => 'Revoked', 'username' => 'ai-revoked',
+            'pin_hash' => \Illuminate\Support\Facades\Hash::make('1111'),
+            'terminal_code' => 'AIREVOKED', 'is_active' => false,
+        ]);
+        $revoked = $this->postJson(route('pos.terminal.login.store'), [
+            'store' => $store->slug, 'username' => 'ai-revoked', 'pin' => '1111',
+        ]);
+        unset($inactive);
+
+        $this->assertSame(422, $wrongPin->getStatusCode());
+        $this->assertSame(422, $unknown->getStatusCode());
+        $this->assertSame(422, $revoked->getStatusCode());
+
+        // The error payload on the `pin` field must be byte-identical across all three,
+        // so an unauthenticated caller cannot tell whether a username exists.
+        $this->assertSame($wrongPin->json('errors.pin.0'), $unknown->json('errors.pin.0'), 'unknown username must not be distinguishable');
+        $this->assertSame($wrongPin->json('errors.pin.0'), $revoked->json('errors.pin.0'), 'revoked terminal must not be distinguishable');
+        $this->assertSame('بيانات تسجيل الدخول غير صحيحة.', $wrongPin->json('errors.pin.0'));
+    }
+
+    public function test_aj_merchant_terminal_endpoints_require_manage_pos_permission(): void
+    {
+        $owner = $this->companyUser();
+        $terminal = $this->createTerminalAs($owner, 'aj-front', '1111');
+
+        // A merchant staff account with NO manage-pos permission (owns a store, is
+        // onboarded, has an active plan and a current_store so it passes the surrounding
+        // merchant middlewares — only the manage-pos permission gate should block it).
+        $plan = Plan::factory()->create(['name' => 'P2-staff-' . uniqid(), 'price' => 10, 'themes' => ['all'], 'max_stores' => 5, 'max_products_per_store' => 100]);
+        $staff = \App\Models\User::factory()->create([
+            'type' => 'company',
+            'email_verified_at' => now(),
+            'onboarded_at' => now(),
+            'plan_id' => $plan->id,
+            'plan_is_active' => 1,
+            'plan_expire_date' => now()->addYear(),
+        ]);
+        $staffStore = \App\Models\Store::factory()->create(['user_id' => $staff->id, 'currency' => 'ILS']);
+        $staff->forceFill(['current_store' => $staffStore->id])->save();
+
+        $this->assertSame(403, $this->actingAs($staff)->get(route('pos.terminals.index'))->getStatusCode(), 'no list without manage-pos');
+        $this->assertSame(403, $this->actingAs($staff)->post(route('pos.terminals.store'), [
+            'name' => 'x', 'username' => 'x-1', 'pin' => '1234',
+        ])->getStatusCode(), 'no create without manage-pos');
+        $this->assertSame(403, $this->actingAs($staff)->put(route('pos.terminals.update', $terminal->id), [
+            'name' => 'x', 'pin' => '4321',
+        ])->getStatusCode(), 'no reset/update without manage-pos');
+        $this->assertSame(403, $this->actingAs($staff)->post(route('pos.terminals.toggle', $terminal->id), ['active' => false])->getStatusCode(), 'no toggle without manage-pos');
+        $this->assertSame(403, $this->actingAs($staff)->delete(route('pos.terminals.destroy', $terminal->id))->getStatusCode(), 'no delete without manage-pos');
+
+        $this->assertSame('aj-front', $terminal->fresh()->username, 'terminal untouched by unauthorized staff');
+    }
+
+    public function test_ak_terminal_register_page_does_not_leak_merchant_props(): void
+    {
+        $owner = $this->companyUser();
+        $terminal = $this->createTerminalAs($owner, 'ak-front', '1111');
+
+        $this->actingAs($terminal, 'pos_terminal');
+        $res = $this->get(route('pos.terminal.register'));
+        $res->assertOk();
+        $res->assertInertia(function ($p) {
+            // The terminal page must not receive any merchant dashboard / owner scope
+            // data. The shared handler resolves a terminal (non-User principal) to a
+            // null merchant: auth.user/roles/permissions are null and stores is empty.
+            $p->component('pos/terminal/index');
+            $p->where('auth.user', null)
+              ->where('auth.roles', null)
+              ->where('auth.permissions', null)
+              ->where('auth.stores', [])
+              ->where('stores', []);
+        });
+    }
+
+    public function test_al_attribution_is_atomic_with_order_and_stock_creation(): void
+    {
+        $owner = $this->companyUser();
+        $store = Store::find($owner->current_store);
+        $p = $this->makeProduct($store, ['name' => 'Atomic', 'sku' => 'ATOMIC-1', 'stock' => 4]);
+        $ordersBefore = Order::count();
+
+        // Attribution save fails (bad terminal id violates the pos_terminal_id FK).
+        // Under the single outer transaction, the ENTIRE sale must roll back —
+        // no order, no stock movement — proving attribution is atomic with creation.
+        try {
+            app(\App\Services\PointOfSaleService::class)->createPosSale(
+                $store->id,
+                [['product_id' => $p->id, 'quantity' => 2]],
+                'cash',
+                null,
+                null,
+                true,
+                999999,
+                'ghost-attribution'
+            );
+            $this->fail('Expected the attribution FK violation to abort the sale');
+        } catch (\Throwable $e) {
+            // expected: transaction rolled back
+        }
+
+        $this->assertSame($ordersBefore, Order::count(), 'no order may persist when attribution save fails');
+        $this->assertSame(4, $p->fresh()->stock, 'stock must roll back together with the abandoned sale');
     }
 }

@@ -49,6 +49,14 @@ class PosTerminalAuthController extends Controller
             ]);
         }
 
+        // A dedicated POS terminal must be an isolated, cashier-only session. If this
+        // browser happened to be signed in as a merchant on the `web` guard, that session
+        // is deliberately dropped here so terminal mode never preserves (or silently keeps
+        // alive) an authenticated merchant dashboard session. Guards resolve per-session in
+        // Laravel, so an earlier merchant login would otherwise still satisfy `auth:web` on
+        // dashboard routes. Logging out `web` here makes the transition explicit and safe;
+        // customer/storefront auth is untouched (it lives on its own guard and context).
+        Auth::guard('web')->logout();
         // Session regeneration prevents session-fixation on every cashier sign-in.
         $request->session()->regenerate();
         Auth::guard('pos_terminal')->login($terminal, false);
