@@ -1072,17 +1072,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('promotions/{promotion}', [\App\Http\Controllers\PromotionsController::class, 'destroy'])->middleware('permission:delete-advanced-coupons')->name('promotions.destroy');
         });
 
+        // Payments Hub — canonical merchant entry for all payments ("المدفوعات والتحصيل").
+        // Any payment-related permission grants access; the internal tabs are gated by
+        // the hub controller according to each permission.
+        Route::get('cod-payments', [\App\Http\Controllers\PaymentsHubController::class, 'index'])->middleware('permission:manage-cod-payments|manage-orders|settings-stores')->name('cod-payments.index');
+
+        // Legacy GET hand-off: payment operations → hub "operations" tab (filters forwarded).
+        Route::get('payments/operations', [\App\Http\Controllers\PaymentsHubController::class, 'legacyOperationsRedirect'])->middleware('permission:manage-cod-payments|manage-orders|settings-stores')->name('payments.operations');
+
         // Advanced COD Payment routes (cash on delivery tracking & collection)
         Route::middleware('permission:manage-cod-payments')->group(function () {
-            Route::get('cod-payments', [CodPaymentController::class, 'index'])->name('cod-payments.index');
             Route::get('cod-payments/export', [CodPaymentController::class, 'export'])->middleware('permission:export-cod-payments')->name('cod-payments.export');
             Route::get('cod-payments/{codPayment}', [CodPaymentController::class, 'show'])->name('cod-payments.show');
             Route::post('cod-payments/{codPayment}/collect', [CodPaymentController::class, 'recordCollection'])->middleware('permission:collect-cod-payments')->name('cod-payments.collect');
             Route::post('cod-payments/{codPayment}/delivery-info', [CodPaymentController::class, 'updateDeliveryInfo'])->middleware('permission:manage-cod-payments')->name('cod-payments.delivery-info');
             Route::post('cod-payments/{codPayment}/status', [CodPaymentController::class, 'changeStatus'])->middleware('permission:manage-cod-payments')->name('cod-payments.status');
 
-        // Payment Operations (merchant financial operations center)
-            Route::get('payments/operations', [\App\Http\Controllers\PaymentOperationsController::class, 'index'])->middleware('permission:manage-orders')->name('payments.operations');
+        // Payment Operations (merchant financial operations center) — actions + export
             Route::get('payments/operations/export', [\App\Http\Controllers\PaymentOperationsController::class, 'export'])->middleware('permission:export-orders')->name('payments.operations.export');
             Route::post('payments/settlements', [\App\Http\Controllers\PaymentOperationsController::class, 'storeSettlement'])->middleware('permission:manage-orders')->name('payments.settlements.store');
             Route::post('payments/settlements/{id}/settle', [\App\Http\Controllers\PaymentOperationsController::class, 'settleSettlement'])->middleware('permission:manage-orders')->name('payments.settlements.settle');

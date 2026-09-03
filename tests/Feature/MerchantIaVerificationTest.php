@@ -113,8 +113,12 @@ class MerchantIaVerificationTest extends TestCase
         [$ownerB, $storeB] = $this->makeCompanyWithStore('Store B3');
 
         $this->actingAs($ownerA);
-        $this->get(route('stores.payments', $storeA->id))->assertStatus(200);
+        // Legacy store payment settings GET now hands off to the canonical Payments Hub methods tab.
+        $this->get(route('stores.payments', $storeA->id))->assertRedirect(route('cod-payments.index', ['tab' => 'methods']));
         $this->get(route('stores.payments', $storeB->id))->assertStatus(404);
+
+        // Canonical Payments Hub (methods tab) is reachable by a settings-capable owner.
+        $this->get(route('cod-payments.index', ['tab' => 'methods']))->assertStatus(200);
 
         // Toggle COD via API (store-scoped)
         $this->put(route('api.store-payments.update', $storeA->id), ['method'=>'cod','enabled'=>true])->assertStatus(200);
