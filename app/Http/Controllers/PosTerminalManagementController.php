@@ -29,7 +29,7 @@ class PosTerminalManagementController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        return Inertia::render('pos/terminals', [
+        return Inertia::render('pos/terminals/index', [
             'store' => $store ? ['id' => $store->id, 'name' => $store->name, 'slug' => $store->slug] : ['id' => $storeId, 'name' => '', 'slug' => ''],
             'terminals' => $terminals->map(fn ($t) => [
                 'id' => $t->id,
