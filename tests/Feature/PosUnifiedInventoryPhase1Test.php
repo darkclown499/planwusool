@@ -313,20 +313,19 @@ class PosUnifiedInventoryPhase1Test extends TestCase
         app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'cash', $otherCust->id);
     }
 
-    public function test_pos_not_collected_leaves_payment_unpaid(): void
+    public function test_pos_cash_is_always_paid_regardless_of_mark_collected_param(): void
     {
         [$user, $store] = $this->merchantWithStore();
         $this->actingAs($user);
         $cat = $this->category($store);
         $p = $this->product($store, $cat, ['stock' => 5]);
 
-        // CASH not marked collected by the cashier -> stays pending (never auto-paid).
+        // POS cash is ALWAYS paid — server overrides legacy $markCollected=false.
         $order = app(PointOfSaleService::class)->createPosSale($store->id, [['product_id' => $p->id, 'quantity' => 1]], 'cash', null, null, false);
 
         $this->assertSame('delivered', $order->status);
-        $this->assertSame('pending', $order->payment_status);
-        $this->assertNull($order->paid_at);
-        $this->assertNull($order->payment_confirmed_by);
+        $this->assertSame('paid', $order->payment_status, 'POS cash is always paid — server overrides stale client');
+        $this->assertNotNull($order->paid_at);
     }
 
     public function test_pos_rejects_bad_payment_method(): void

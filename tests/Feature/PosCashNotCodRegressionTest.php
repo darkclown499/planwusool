@@ -19,10 +19,10 @@ use Tests\TestCase;
 /**
  * REGRESSION — POS in-store cash/bank sales must NEVER be classified as COD.
  *
- * Business rule: POS cash + uncollected = method CASH + status PENDING/UNCOLLECTED
- * (never COD, no COD queue / due count / Collect button / settlement). POS cash +
- * collected = CASH + PAID (counted exactly once). Ecommerce COD (payment_method
- * 'cod', order_source 'storefront') must remain genuine COD.
+ * Business rule: POS cash = PAID at register automatically (POS + cash means
+ * the cashier collected cash — there is no pending/uncollected state for POS cash).
+ * POS bank/bank_transfer stay pending until the authoritative manual confirm.
+ * Ecommerce COD (payment_method 'cod', order_source 'storefront') remains genuine COD.
  *
  * The discriminator is order_source = 'pos' (set only by PointOfSaleService). The
  * shared COD classification in PaymentFinancialMetrics deliberately keeps legacy
@@ -104,7 +104,7 @@ class PosCashNotCodRegressionTest extends TestCase
 
     /* ───────────────────────── POS cash — NEVER COD ───────────────────────── */
 
-    public function test_pos_cash_uncollected_is_pending_and_never_cod(): void
+    public function test_pos_cash_is_always_paid_regardless_of_mark_collected_param(): void
     {
         $owner = $this->companyUser();
         $store = Store::find($owner->current_store);
@@ -117,17 +117,17 @@ class PosCashNotCodRegressionTest extends TestCase
             'cash',
             null,
             null,
-            false, // cash NOT collected
+            false, // legacy $markCollected=false — server overrides for POS cash
         );
 
         $this->assertSame('pos', $order->order_source, 'POS sale must be attributed as order_source = pos');
         $this->assertSame('cash', $order->payment_method, 'POS cash payment method is CASH');
-        $this->assertSame('pending', $order->payment_status, 'uncollected POS cash stays pending');
+        $this->assertSame('paid', $order->payment_status, 'POS cash is always paid — server overrides stale client');
 
         $this->assertSame(0, CodPayment::where('order_id', $order->id)->count(), 'no COD tracking record for POS cash');
 
         $summary = PaymentFinancialMetrics::summary($store->id);
-        $this->assertSame(0, $summary['cod_pending_count'], 'uncollected POS cash must NOT count as COD due');
+        $this->assertSame(0, $summary['cod_pending_count'], 'POS cash must NOT count as COD due');
 
         $row = app(PaymentOperationsData::class)->row($order);
         $this->assertFalse($row['can_collect_cod'], 'no "Collect COD" action for POS cash');
@@ -226,7 +226,7 @@ class PosCashNotCodRegressionTest extends TestCase
             'cash',
             null,
             null,
-            false,
+            false, // legacy $markCollected=false — server overrides for POS cash
         );
         $ecommerceCod = $this->makeEcommerceOrder($store, ['payment_method' => 'cod', 'order_source' => 'storefront', 'total_amount' => 200]);
 

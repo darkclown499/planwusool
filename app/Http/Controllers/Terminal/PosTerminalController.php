@@ -180,7 +180,7 @@ class PosTerminalController extends Controller
                 $request->input('payment_method'),
                 $request->has('customer_id') ? (int) $request->input('customer_id') : null,
                 $request->input('notes'),
-                (bool) $request->input('cash_collected', false),
+                true,
                 $terminal->id,
                 $terminal->username
             );

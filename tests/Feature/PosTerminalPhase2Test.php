@@ -342,14 +342,14 @@ class PosTerminalPhase2Test extends TestCase
 
         $this->actingAs($terminal, 'pos_terminal');
 
-        // cash NOT collected → pending.
+        // cash with stale cash_collected=false → server overrides to paid (POS cash = always paid).
         $r1 = $this->postJson(route('pos.terminal.sale'), [
             'items' => [['product_id' => $p->id, 'quantity' => 1]], 'payment_method' => 'cash', 'cash_collected' => false,
         ]);
         $r1->assertStatus(201);
-        $this->assertSame('pending', Order::orderByDesc('id')->first()->payment_status, 'uncollected cash must stay pending');
+        $this->assertSame('paid', Order::orderByDesc('id')->first()->payment_status, 'POS cash is always paid — server overrides stale client');
 
-        // cash collected → paid.
+        // cash with explicit true → paid.
         $this->postJson(route('pos.terminal.sale'), [
             'items' => [['product_id' => $p->id, 'quantity' => 1]], 'payment_method' => 'cash', 'cash_collected' => true,
         ]);

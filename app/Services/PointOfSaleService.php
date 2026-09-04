@@ -61,10 +61,11 @@ class PointOfSaleService
         if (!in_array($paymentMethod, ['cash', 'bank', 'bank_transfer'], true)) {
             throw new \Exception('طريقة الدفع غير مدعومة في نقطة البيع.');
         }
-        // Payment correctness: only cash collected by the cashier at the register may be
-        // marked paid immediately. Bank/bank_transfer can NEVER be auto-paid on creation —
-        // they stay pending until the highly-trusted manual confirm flow authorises them.
-        $cashCollected = ($paymentMethod === 'cash') && $markCollected;
+        // Payment correctness: POS + cash means the customer paid at the register.
+        // The cashier handed over cash; there is no pending/uncollected state for POS cash.
+        // Bank/bank_transfer can NEVER be auto-paid on creation — they stay pending until
+        // the highly-trusted manual confirm flow authorises them.
+        $cashCollected = ($paymentMethod === 'cash');
 
         // The entire POS pipeline — authoritative order + order items + stock ledger
         // decrement (via OrderService) AND the terminal attribution columns — runs inside

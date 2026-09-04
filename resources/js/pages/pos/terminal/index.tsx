@@ -56,7 +56,6 @@ export default function PosTerminalRegister() {
     const [loadingSearch, setLoadingSearch] = useState(false);
     const [cart, setCart] = useState<CartLine[]>([]);
     const [paymentMethod, setPaymentMethod] = useState('cash');
-    const [cashCollected, setCashCollected] = useState(false);
     const [notes, setNotes] = useState('');
     const [customerId, setCustomerId] = useState<string | null>(null);
     const [customerSearch, setCustomerSearch] = useState('');
@@ -204,7 +203,6 @@ export default function PosTerminalRegister() {
                 quantity: l.qty,
             })),
             payment_method: paymentMethod,
-            cash_collected: cashCollected,
             customer_id: customerId ? Number(customerId) : null,
             notes: notes || null,
         })
@@ -213,7 +211,6 @@ export default function PosTerminalRegister() {
                 setCart([]);
                 setNotes('');
                 setCustomerId(null);
-                setCashCollected(false);
                 // Post-sale stock sync: refetch authoritative inventory so product cards show
                 // the fresh stock immediately after the sale, without a hard refresh.
                 runSearch(q);
@@ -392,17 +389,6 @@ export default function PosTerminalRegister() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            {paymentMethod === 'cash' && (
-                                <label className="flex items-center gap-2 text-sm">
-                                    <input
-                                        type="checkbox"
-                                        checked={cashCollected}
-                                        onChange={(e) => setCashCollected(e.target.checked)}
-                                        className="h-4 w-4"
-                                    />
-                                    {t('Cash collected at register')}
-                                </label>
-                            )}
                             <div className="grid gap-2">
                                 <Label>{t('Customer')}</Label>
                                 {customerId ? (
