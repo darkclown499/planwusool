@@ -542,16 +542,27 @@ final class AnalyticsService
      */
     private function paymentMethodBreakdown(int $storeId, CarbonInterface $from, CarbonInterface $to, string $primaryCurrency): array
     {
+        // Effective method key: POS sales are bucketed with a 'pos_' prefix so they
+        // can NEVER fold into the COD family. Composed in PHP (no SQL string concat)
+        // so it is portable across SQLite/MySQL/Postgres.
+        $eff = function (string $orderSource, string $method): string {
+            $base = $method !== '' ? $method : 'offline';
+            return strtolower($orderSource) === PaymentFinancialMetrics::POS_ORDER_SOURCE
+                ? PaymentFinancialMetrics::POS_ORDER_SOURCE . '_' . $base
+                : $base;
+        };
+
         $methods = Order::where('store_id', $storeId)
             ->where('created_at', '>=', $from)
             ->where('created_at', '<', $to)
             ->whereNotIn('status', PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES)
             ->selectRaw(
-                "COALESCE(NULLIF(payment_method, ''), 'offline') AS method,
+                "order_source,
+                 COALESCE(NULLIF(payment_method, ''), 'offline') AS method,
                  COUNT(*) AS orders,
                  COUNT(*) AS valid_orders",
             )
-            ->groupBy('method')
+            ->groupBy('order_source', 'method')
             ->get();
 
         $validValue = Order::where('store_id', $storeId)
@@ -559,11 +570,12 @@ final class AnalyticsService
             ->where('created_at', '<', $to)
             ->whereNotIn('status', PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES)
             ->selectRaw(
-                "COALESCE(NULLIF(payment_method, ''), 'offline') AS method,
+                "order_source,
+                 COALESCE(NULLIF(payment_method, ''), 'offline') AS method,
                  COALESCE(NULLIF(currency, ''), 'ILS') AS currency,
                  SUM(total_amount) AS total"
             )
-            ->groupBy('method', 'currency')
+            ->groupBy('order_source', 'method', 'currency')
             ->get();
 
         $collected = Order::where('store_id', $storeId)
@@ -571,13 +583,13 @@ final class AnalyticsService
             ->whereNotIn('status', PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES)
             ->where(DB::raw('COALESCE(paid_at, created_at)'), '>=', $from)
             ->where(DB::raw('COALESCE(paid_at, created_at)'), '<', $to)
-            ->selectRaw("COALESCE(NULLIF(payment_method, ''), 'offline') AS method, currency, SUM(total_amount) AS total")
-            ->groupBy('method', 'currency')
+            ->selectRaw("order_source, COALESCE(NULLIF(payment_method, ''), 'offline') AS method, currency, SUM(total_amount) AS total")
+            ->groupBy('order_source', 'method', 'currency')
             ->get();
 
-        $fold = function (array $map, $rows, string $field): array {
+        $fold = function (array $map, $rows, string $field) use ($eff): array {
             foreach ($rows as $row) {
-                $m = (string) $row->method;
+                $m = $eff((string) ($row->order_source ?? ''), (string) $row->method);
                 $map[$m][strtoupper((string) ($row->currency ?: 'ILS'))] =
                     ($map[$m][strtoupper((string) ($row->currency ?: 'ILS'))] ?? 0) + (float) $row->{$field};
             }
@@ -588,12 +600,12 @@ final class AnalyticsService
         $validValueMap = $fold([], $validValue, 'total');
         $collectedMap = $fold([], $collected, 'total');
 
-        $families = ['cod', 'bank', 'online', 'offline_other'];
+        $families = ['cod', 'bank', 'online', 'offline_other', 'cash'];
         $out = [];
         foreach ($families as $family) {
             $group = ['method' => $family, 'orders' => 0, 'valid_orders' => 0, 'valid_value' => [], 'collected' => []];
             foreach ($methods as $row) {
-                if ($this->methodFamily((string) $row->method) !== $family) {
+                if ($this->methodFamily($eff((string) ($row->order_source ?? ''), (string) $row->method)) !== $family) {
                     continue;
                 }
                 $group['orders'] += (int) $row->orders;
@@ -616,7 +628,7 @@ final class AnalyticsService
                 }
             }
 
-            $out[] = [
+            $entry = [
                 'method' => $family,
                 'orders' => (int) $group['orders'],
                 'valid_orders' => (int) $group['valid_orders'],
@@ -625,6 +637,12 @@ final class AnalyticsService
                 'valid_value_primary' => $this->primaryAmount($group['valid_value'], $primaryCurrency),
                 'collected_primary' => $this->primaryAmount($group['collected'], $primaryCurrency),
             ];
+            // The POS 'cash' family is only surfaced when a POS sale actually exists —
+            // stores without POS keep the canonical four-family output.
+            if ($family === 'cash' && $entry['orders'] === 0) {
+                continue;
+            }
+            $out[] = $entry;
         }
 
         return $out;
@@ -633,6 +651,10 @@ final class AnalyticsService
     private function methodFamily(string $method): string
     {
         $lower = strtolower($method);
+        // POS in-store sales are bucketed with a 'pos_' prefix — NEVER part of COD.
+        if (str_starts_with($lower, PaymentFinancialMetrics::POS_ORDER_SOURCE . '_')) {
+            return 'cash';
+        }
         if (in_array($lower, PaymentFinancialMetrics::COD_METHODS, true)) {
             return 'cod';
         }

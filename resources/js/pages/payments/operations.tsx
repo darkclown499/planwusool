@@ -113,7 +113,7 @@ export default function PaymentOperations() {
 
   const pmLabel = (m: string) => ({
     cod: 'الدفع عند الاستلام',
-    cash: 'الدفع عند الاستلام',
+    cash: 'نقدًا',
     cash_on_delivery: 'الدفع عند الاستلام',
     bank: 'تحويل بنكي',
     bank_transfer: 'تحويل بنكي',

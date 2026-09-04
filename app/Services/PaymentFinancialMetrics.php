@@ -38,6 +38,31 @@ final class PaymentFinancialMetrics
     public const COD_METHODS = ['cod', 'cash', 'cash_on_delivery'];
     public const BANK_METHODS = ['bank', 'bank_transfer'];
 
+    /** order_source that marks an in-store Point-of-Sale sale. */
+    public const POS_ORDER_SOURCE = 'pos';
+
+    /**
+     * Canonical COD eligibility for a single order instance.
+     *
+     * COD is genuinely applicable only when the order was NOT created at a POS
+     * terminal (order_source !== 'pos') and its payment method is a COD-compatible
+     * legacy method. POS in-store sales (cash/bank/bank_transfer) are NEVER COD,
+     * regardless of the payment_status value.
+     */
+    public static function orderIsCod(Order $order): bool
+    {
+        return strtolower((string) $order->order_source) !== self::POS_ORDER_SOURCE
+            && in_array(strtolower((string) $order->payment_method), self::COD_METHODS, true);
+    }
+
+    /**
+     * Apply a "never POS" ExclusionScope to an Order query.
+     */
+    public static function scopeExcludingPos($query)
+    {
+        return $query->where('order_source', '!=', self::POS_ORDER_SOURCE);
+    }
+
     /** @var array<string,string>|null cached code → symbol */
     private static ?array $symbolCache = null;
 
@@ -79,6 +104,7 @@ final class PaymentFinancialMetrics
             'cod_pending_count' => Order::where('store_id', $storeId)
                 ->where('payment_status', 'pending')
                 ->whereIn('payment_method', self::COD_METHODS)
+                ->where('order_source', '!=', self::POS_ORDER_SOURCE)
                 ->whereNotIn('status', self::EXCLUDED_ORDER_STATUSES)
                 ->count(),
             'bank_pending_count' => Order::where('store_id', $storeId)

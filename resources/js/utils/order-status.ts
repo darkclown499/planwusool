@@ -72,7 +72,7 @@ export function tReturnRefundStatus(status: string): string {
 
 export const paymentMethodAr: Record<string, string> = {
   cod: 'الدفع عند الاستلام',
-  cash: 'الدفع عند الاستلام',
+  cash: 'نقدًا',
   'Cash on Delivery': 'الدفع عند الاستلام',
   cash_on_delivery: 'الدفع عند الاستلام',
   credit_card: 'بطاقة ائتمان',

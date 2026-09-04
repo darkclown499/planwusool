@@ -124,7 +124,9 @@ class PaymentOperationsData
             'receipt_url' => (in_array($pm, PaymentFinancialMetrics::BANK_METHODS, true) && $order->bank_transfer_receipt)
                 ? route('orders.receipt', $order->id, false)
                 : null,
-            'can_collect_cod' => !$terminal && in_array($pm, PaymentFinancialMetrics::COD_METHODS, true) && $ps === 'pending',
+            'can_collect_cod' => !$terminal
+                && PaymentFinancialMetrics::orderIsCod($order)
+                && $ps === 'pending',
             'can_confirm_bank' => !$terminal && in_array($pm, PaymentFinancialMetrics::BANK_METHODS, true) && $ps === 'pending',
             'can_reject_bank' => in_array($pm, PaymentFinancialMetrics::BANK_METHODS, true) && $ps === 'pending',
         ];
@@ -182,7 +184,8 @@ class PaymentOperationsData
         if (!empty($filters['payment_method']) && $filters['payment_method'] !== 'all') {
             switch ($filters['payment_method']) {
                 case 'cod':
-                    $query->whereIn('payment_method', PaymentFinancialMetrics::COD_METHODS);
+                    $query->whereIn('payment_method', PaymentFinancialMetrics::COD_METHODS)
+                        ->where('order_source', '!=', PaymentFinancialMetrics::POS_ORDER_SOURCE);
                     break;
                 case 'bank':
                     $query->whereIn('payment_method', PaymentFinancialMetrics::BANK_METHODS);

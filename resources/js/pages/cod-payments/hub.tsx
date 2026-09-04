@@ -359,7 +359,7 @@ function OperationsTab() {
     post(route('payments.settlements.store'), { cod_payment_ids: ids, courier_company: selected.trim() || null, courier_fees: 0, adjustment: 0 });
   };
 
-  const pmLabel = (m: string) => ({ cod: 'الدفع عند الاستلام', cash: 'الدفع عند الاستلام', cash_on_delivery: 'الدفع عند الاستلام', bank: 'تحويل بنكي', bank_transfer: 'تحويل بنكي', whatsapp: 'واتساب', telegram: 'تيليجرام', offline: 'دفع يدوي' }[m] || m);
+  const pmLabel = (m: string) => ({ cod: 'الدفع عند الاستلام', cash: 'نقدًا', cash_on_delivery: 'الدفع عند الاستلام', bank: 'تحويل بنكي', bank_transfer: 'تحويل بنكي', whatsapp: 'واتساب', telegram: 'تيليجرام', offline: 'دفع يدوي' }[m] || m);
   const psLabel = (s: string) => ({ pending: 'بانتظار الدفع', paid: 'مدفوع', failed: 'فشل الدفع', refunded: 'مسترجع', partially_refunded: 'استرجاع جزئي' }[s] || s);
   const osLabel = (s: string) => ({ pending: 'قيد الانتظار', confirmed: 'مؤكد', processing: 'قيد التجهيز', shipped: 'تم الشحن', delivered: 'تم التسليم', cancelled: 'ملغي', failed: 'فشل', refunded: 'مسترجع', returned: 'مرتجع', completed: 'مكتمل' }[s] || s);
 
