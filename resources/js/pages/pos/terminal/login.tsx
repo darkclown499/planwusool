@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -15,9 +15,15 @@ import { Store as StoreIcon, Loader2 } from 'lucide-react';
  */
 export default function PosTerminalLogin() {
     const { t } = useTranslation();
+    // Prefill store + username deterministically from the URL query (server-passed props),
+    // so the login form reliably reflects ?store=&username= on first render. PIN is never
+    // prefilled — it must stay secret and always be typed by the cashier.
+    const page = usePage().props as any;
+    const initialStore = typeof page.store === 'string' ? page.store : '';
+    const initialUsername = typeof page.username === 'string' ? page.username : '';
     const { data, setData, post, processing, errors } = useForm({
-        store: '',
-        username: '',
+        store: initialStore,
+        username: initialUsername,
         pin: '',
     });
 

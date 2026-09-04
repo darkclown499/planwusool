@@ -152,7 +152,7 @@ class OrderController extends Controller
         
         $order = Order::where('store_id', $storeId)
             ->where('id', $id)
-            ->with(['items.product', 'shippingMethod.courierIntegration', 'shippingMethod', 'deliveryDriver:id,name,phone', 'deliveryAssignments' => fn($q) => $q->orderByDesc('id')])
+            ->with(['items.product', 'shippingMethod.courierIntegration', 'shippingMethod', 'deliveryDriver:id,name,phone', 'deliveryAssignments' => fn($q) => $q->orderByDesc('id'), 'posTerminal'])
             ->firstOrFail();
 
         // Load shipments
@@ -182,6 +182,18 @@ class OrderController extends Controller
             'orderNumber' => $order->order_number,
             'store_id' => $order->store_id,
             'order_source' => $order->order_source ?? 'storefront',
+            // Safe POS attribution (presentation only). posTerminal is eager-loaded but is
+            // resolved/looked up within the same store only; if the terminal was deleted the
+            // relation is null and we fall back to the immutable cashier-username snapshot.
+            // pos_terminal_id is intentionally NOT exposed to the merchant (it is an internal
+            // FK); only the terminal display name and the cashier snapshot are surfaced.
+            'pos_attribution' => [
+                'is_pos' => strtolower((string) $order->order_source) === 'pos',
+                'terminal_name' => ($order->posTerminal && (int) $order->posTerminal->store_id === (int) $storeId)
+                    ? $order->posTerminal->name
+                    : null,
+                'cashier_username' => $order->pos_cashier_username,
+            ],
             'whatsapp_number' => $order->whatsapp_number,
             'date' => $order->created_at->format('F j, Y'),
             'status' => $order->status,

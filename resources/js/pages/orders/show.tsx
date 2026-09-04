@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { Package, User, CreditCard, Truck, MapPin, Phone, Mail, Copy, ExternalLink, CheckCircle2, AlertTriangle, Clock, MoreVertical, Pencil, Trash2, RotateCcw, Send, Box, MessageCircle, FileText, RotateCw } from 'lucide-react';
+import { Package, User, CreditCard, Truck, MapPin, Phone, Mail, Copy, ExternalLink, CheckCircle2, AlertTriangle, Clock, MoreVertical, Pencil, Trash2, RotateCcw, Send, Box, MessageCircle, FileText, RotateCw, Store as StoreIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -415,7 +415,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
             )}
           </div>
 
-          {/* Right — Customer / Shipping+Payment */}
+          {/* Right — Customer / POS attribution / Shipping+Payment */}
           <div className="space-y-4 sm:space-y-6 min-w-0">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-sm font-bold"><User className="h-4 w-4"/> العميل</CardTitle></CardHeader>
@@ -439,6 +439,17 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                 {isWhatsapp && (order as any).whatsapp_number && <p className="text-xs text-green-700 bg-green-50 rounded-lg px-2 py-1">رقم واتساب الطلب: {(order as any).whatsapp_number}</p>}
               </CardContent>
             </Card>
+
+            {/* POS attribution — surfaced ONLY for order_source = 'pos'. Non-POS orders keep this hidden. */}
+            {(order as any).pos_attribution?.is_pos ? (
+              <Card>
+                <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-sm font-bold"><StoreIcon className="h-4 w-4"/> مصدر الطلب: نقطة البيع</CardTitle></CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">الطرفية:</span><span className="font-medium">{(order as any).pos_attribution?.terminal_name || 'طرفية محذوفة'}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">الكاشير:</span><span className="font-medium" dir="ltr">{(order as any).pos_attribution?.cashier_username || '—'}</span></div>
+                </CardContent>
+              </Card>
+            ) : null}
 
             <Card>
               <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-sm font-bold"><MapPin className="h-4 w-4"/> الشحن والدفع</CardTitle></CardHeader>

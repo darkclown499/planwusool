@@ -210,6 +210,10 @@ export default function PosIndex() {
                 setCart([]);
                 setNotes('');
                 setCustomerId(null);
+                // Post-sale stock sync: the backend decremented inventory authoritatively, so
+                // the visible product cards must reflect the fresh stock immediately — no hard
+                // refresh. Presentation only; the server is the single source of truth.
+                runSearch(q);
             })
             .catch((err: { response?: { data?: { message?: string } } }) => {
                 const msg = err?.response?.data?.message;
@@ -250,7 +254,7 @@ export default function PosIndex() {
                                 className="shrink-0"
                                 onClick={() => onCategoryChange('')}
                             >
-                                {t('All')} (الكل)
+                                {t('All')}
                             </Button>
                             {categories.map((c) => (
                                 <Button

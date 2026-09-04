@@ -214,6 +214,9 @@ export default function PosTerminalRegister() {
                 setNotes('');
                 setCustomerId(null);
                 setCashCollected(false);
+                // Post-sale stock sync: refetch authoritative inventory so product cards show
+                // the fresh stock immediately after the sale, without a hard refresh.
+                runSearch(q);
             })
             .catch((err: { response?: { data?: { message?: string } } }) => {
                 const msg = err?.response?.data?.message;
@@ -273,7 +276,7 @@ export default function PosTerminalRegister() {
                                     className="shrink-0"
                                     onClick={() => onCategoryChange('')}
                                 >
-                                    {t('All')} (الكل)
+                                    {t('All')}
                                 </Button>
                                 {categories.map((c) => (
                                     <Button
