@@ -109,6 +109,19 @@ fi
 git submodule update --init --recursive 2>/dev/null || true
 
 # ------------------------------------------------------------------
+# 2.5) Ownership self-heal AFTER git but BEFORE Composer
+# ------------------------------------------------------------------
+# The git update above runs as ROOT. Any file tracked in the repo under
+# vendor/ (previously vendor was committed, e.g. composer/installed.json,
+# autoload.php) is restored root-owned by reset/merge, and Composer runs as
+# $WEB_USER — so it cannot replace/delete those files and fails with
+# "Permission denied" / "Could not delete vendor/...". Re-owning vendor to the
+# app user here makes every deploy self-healing and independent of manual
+# chown, and matches the ordering contract: git update -> correct ownership ->
+# Composer as app user. Composer install --no-dev no longer fights the tree.
+chown -R "${WEB_USER}:${WEB_USER}" vendor 2>/dev/null || true
+
+# ------------------------------------------------------------------
 # 3) Composer production install — AS WWW (writes bootstrap/cache)
 # ------------------------------------------------------------------
 echo "==> [2/8] Composer install (no-dev, as $WEB_USER)"
