@@ -384,6 +384,19 @@ if [ "$home_code" != "200" ] && [ "$home_code" != "302" ] && [ "$home_code" != "
     exit 1
 fi
 
+# Origin boot check: HTTP-200 is NOT enough. With display_errors on a broken
+# autoload/vendor, PHP returns HTTP 200 while emitting a raw Fatal error, so the
+# home smoke above would silently pass on a down app. Probe the origin (bypassing
+# Cloudflare cache) and fail if the body is a PHP fatal or is empty/thin.
+ORIGIN_PROBE="http://127.0.0.1/"
+BOOT_HOST="$(echo "$APP_URL_PROBE" | sed -E 's#^https?://([^/]+).*#\1#')"
+BOOT_BODY="$(curl -s --max-time 20 "$ORIGIN_PROBE" -H "Host: $BOOT_HOST" 2>/dev/null || true)"
+if printf '%s' "$BOOT_BODY" | grep -qE 'Fatal error|Failed opening required|allowed memory size' || [ "${#BOOT_BODY}" -lt 500 ]; then
+    echo "FATAL: origin boot check failed — PHP fatal or thin/empty body on / (app not booting) despite HTTP 200" >&2
+    exit 1
+fi
+echo "==> origin boot check OK (body size ${#BOOT_BODY} bytes, no PHP fatal)"
+
 # Find the storefront root host to probe a rate-limited API route on.
 RATE_PROBE_HOST="$(echo "$APP_URL_PROBE" | sed -E 's#^https?://([^/]+).*#\1#')"
 rl_codes=""
