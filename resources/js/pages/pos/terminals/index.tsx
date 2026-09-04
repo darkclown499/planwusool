@@ -36,8 +36,12 @@ export default function PosTerminals() {
     const [editName, setEditName] = useState('');
     const [copied, setCopied] = useState<number | null>(null);
 
-    const terminalLoginUrl = (term: TerminalRow) =>
-        `${window.location.origin}${route('pos.terminal.login', { store: store.id, username: term.username })}`;
+    const terminalLoginUrl = (term: TerminalRow) => {
+        const url = route('pos.terminal.login', { store: store.id, username: term.username });
+        return /^[a-z][a-z\d+\-.]*:\/\//i.test(url)
+            ? url
+            : `${window.location.origin}${url}`;
+    };
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
