@@ -22,6 +22,17 @@ use Inertia\Inertia;
 class DeliveryController extends Controller
 {
     /**
+     * Order statuses still in-flight and thus part of the operational board.
+     *
+     * Terminal orders (delivered/completed POS sales, cancelled, failed, …)
+     * keep delivery_status='unassigned' by default but do NOT need a driver, so
+     * they must never count or appear in the "غير معيّن" column. This constant is
+     * the single source of truth shared by the bucket count and the card query —
+     * previously the two filtered differently (count 1 vs 2 cards).
+     */
+    public const OPERATIONAL_DELIVERY_STATUSES = ['pending', 'confirmed', 'processing', 'shipped'];
+
+    /**
      * Delivery Hub — canonical merchant entry for "الشحن والتوصيل".
      * Consolidates overview, operational board, methods, zones, drivers, companies, settings
      * while preserving backend isolation (Shipping vs DeliveryZone vs Drivers vs CourierIntegrations).
@@ -32,6 +43,9 @@ class DeliveryController extends Controller
     {
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
+
+        $store = \App\Models\Store::find($storeId);
+        $shippingEnabled = $store ? $store->canUsePlanFeature('shipping_method') : true;
 
         $filters = $request->validate([
             'tab' => 'nullable|string|in:overview,orders,methods,zones,drivers,companies,settings',
@@ -54,6 +68,13 @@ class DeliveryController extends Controller
         $bucket = $filters['bucket'] ?? 'unassigned';
         if ($bucket === 'all') {
             // no bucket filter
+        } elseif ($bucket === 'unassigned') {
+            // Operational column: only in-flight orders need a driver. Terminal
+            // orders (completed POS sales, cancelled, refunded, failed, …) keep
+            // delivery_status='unassigned' but must not pollute the board —
+            // mirrors the unassigned bucket count below (kept in sync).
+            $query->where('orders.delivery_status', $bucket)
+                ->whereIn('orders.status', self::OPERATIONAL_DELIVERY_STATUSES);
         } else {
             $query->where('orders.delivery_status', $bucket);
         }
@@ -98,7 +119,7 @@ class DeliveryController extends Controller
 
         // Bucket counts (cheap indexed queries, not the full board)
         $counts = [
-            'unassigned' => Order::where('store_id', $storeId)->where('delivery_status', 'unassigned')->whereIn('status', ['pending','confirmed','processing','shipped'])->count(),
+            'unassigned' => Order::where('store_id', $storeId)->where('delivery_status', 'unassigned')->whereIn('status', self::OPERATIONAL_DELIVERY_STATUSES)->count(),
             'assigned' => Order::where('store_id', $storeId)->where('delivery_status', 'assigned')->count(),
             'picked_up' => Order::where('store_id', $storeId)->where('delivery_status', 'picked_up')->count(),
             'out_for_delivery' => Order::where('store_id', $storeId)->where('delivery_status', 'out_for_delivery')->count(),
@@ -201,6 +222,7 @@ class DeliveryController extends Controller
             'driversDetailed' => $driversDetailed,
             'courierIntegrations' => $courierIntegrations,
             'courierRequests' => $courierRequests,
+            'shippingEnabled' => $shippingEnabled,
             'freeShipping' => [
                 'enabled' => $freeEnabled,
                 'threshold' => $freeThresholdVal,

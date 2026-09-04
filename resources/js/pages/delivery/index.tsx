@@ -17,6 +17,7 @@ import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission } from '@/utils/permissions';
 import { toast } from '@/components/custom-toast';
 import { apiPost } from '@/utils/api';
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
 
 interface OrderItem {
   id: number;
@@ -94,7 +95,7 @@ const HUB_TABS = [
 export default function DeliveryHub() {
   const { t } = useTranslation();
   const pageProps = usePage().props as any;
-  const { orders, zones, drivers, counts, filters: serverFilters, currentTab, hubStats, shippings, shippingStats, zonesDetailed, driversDetailed, courierIntegrations, courierRequests, freeShipping } = pageProps;
+  const { orders, zones, drivers, counts, filters: serverFilters, currentTab, hubStats, shippings, shippingStats, zonesDetailed, driversDetailed, courierIntegrations, courierRequests, freeShipping, shippingEnabled } = pageProps;
 
   const activeTab = (currentTab as string) || 'overview';
 
@@ -265,9 +266,9 @@ export default function DeliveryHub() {
         description="كل ما يخص الشحن والتوصيل — الطلبات، طرق التوصيل، المناطق والأسعار، السائقين وشركات التوصيل."
         url="/delivery"
         actions={[
-          ...(activeTab === 'methods' && hasPermission('create-shipping') ? [{ label: '+ طريقة توصيل', icon: <Plus className="h-4 w-4" />, variant: 'default' as const, onClick: () => router.visit(route('shipping.create')) }] : []),
-          ...(activeTab === 'zones' && hasPermission('manage-shipping') ? [{ label: '+ منطقة جديدة', icon: <Plus className="h-4 w-4" />, variant: 'default' as const, onClick: () => router.visit(route('delivery.zones.create')) }] : []),
-          ...(activeTab === 'drivers' && hasPermission('manage-orders') ? [{ label: '+ سائق جديد', icon: <Plus className="h-4 w-4" />, variant: 'default' as const, onClick: () => router.visit(route('delivery.drivers.create')) }] : []),
+          ...(activeTab === 'methods' && shippingEnabled && hasPermission('create-shipping') ? [{ label: '+ طريقة توصيل', icon: <Plus className="h-4 w-4" />, variant: 'default' as const, onClick: () => router.visit(route('shipping.create')) }] : []),
+          ...(activeTab === 'zones' && shippingEnabled && hasPermission('manage-shipping') ? [{ label: '+ منطقة جديدة', icon: <Plus className="h-4 w-4" />, variant: 'default' as const, onClick: () => router.visit(route('delivery.zones.create')) }] : []),
+          ...(activeTab === 'drivers' && shippingEnabled && hasPermission('manage-orders') ? [{ label: '+ سائق جديد', icon: <Plus className="h-4 w-4" />, variant: 'default' as const, onClick: () => router.visit(route('delivery.drivers.create')) }] : []),
         ]}
         breadcrumbs={[
           { title: 'لوحة التحكم', href: route('dashboard') },
@@ -548,6 +549,9 @@ export default function DeliveryHub() {
 
           {activeTab === 'methods' && (
             <div className="space-y-3">
+              {!shippingEnabled && (
+                <FeatureLockedOverlay featureName="Shipping Methods" requiredPlan="Growth" />
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -562,7 +566,7 @@ export default function DeliveryHub() {
                       <Truck className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
                       <h3 className="mt-4 text-lg font-medium">لا توجد طرق توصيل بعد</h3>
                       <p className="mt-2 text-sm text-muted-foreground">أنشئ طريقة توصيل ليتمكن العملاء من اختيارها عند الدفع.</p>
-                      {hasPermission('create-shipping') && (
+                      {shippingEnabled && hasPermission('create-shipping') && (
                         <Button className="mt-4" onClick={() => router.visit(route('shipping.create'))}>
                           <Plus className="h-4 w-4 me-2" /> إضافة طريقة توصيل
                         </Button>
@@ -587,7 +591,7 @@ export default function DeliveryHub() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            {hasPermission('edit-shipping') && (
+                            {shippingEnabled && hasPermission('edit-shipping') && (
                               <Button variant="ghost" size="sm" onClick={() => router.visit(route('shipping.edit', s.id))}><Edit className="h-4 w-4" /></Button>
                             )}
                             {hasPermission('delete-shipping') && (
@@ -616,6 +620,9 @@ export default function DeliveryHub() {
 
           {activeTab === 'zones' && (
             <div className="space-y-3">
+              {!shippingEnabled && (
+                <FeatureLockedOverlay featureName="Local Delivery Zones" requiredPlan="Growth" />
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -630,7 +637,7 @@ export default function DeliveryHub() {
                       <MapPin className="h-12 w-12 mx-auto text-muted-foreground opacity-40" />
                       <h3 className="mt-4 text-lg font-medium">لا توجد مناطق توصيل بعد</h3>
                       <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">المناطق تحدد أين توصل وكم التكلفة — أنشئ منطقة ليتمكن العملاء من اختيارها عند الدفع.</p>
-                      {hasPermission('manage-shipping') && (
+                      {shippingEnabled && hasPermission('manage-shipping') && (
                         <Button className="mt-4" onClick={() => router.visit(route('delivery.zones.create'))}><Plus className="h-4 w-4 me-2" /> إنشاء منطقة</Button>
                       )}
                     </div>
@@ -652,11 +659,11 @@ export default function DeliveryHub() {
                             {z.description && <p className="text-xs text-muted-foreground mt-1">{z.description}</p>}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
+                            {shippingEnabled && hasPermission('manage-shipping') && (
+                              <Button variant="ghost" size="sm" onClick={() => router.visit(route('delivery.zones.edit', z.id))}><Edit className="h-4 w-4" /></Button>
+                            )}
                             {hasPermission('manage-shipping') && (
-                              <>
-                                <Button variant="ghost" size="sm" onClick={() => router.visit(route('delivery.zones.edit', z.id))}><Edit className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleteZoneId(z.id)}><Trash2 className="h-4 w-4" /></Button>
-                              </>
+                              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleteZoneId(z.id)}><Trash2 className="h-4 w-4" /></Button>
                             )}
                           </div>
                         </div>
@@ -689,6 +696,9 @@ export default function DeliveryHub() {
 
           {activeTab === 'drivers' && (
             <div className="space-y-3">
+              {!shippingEnabled && (
+                <FeatureLockedOverlay featureName="Delivery Drivers" requiredPlan="Growth" />
+              )}
               <Card className="border-blue-100 bg-blue-50/50">
                 <CardContent className="p-3 flex items-start gap-3">
                   <Info className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -711,7 +721,9 @@ export default function DeliveryHub() {
                       <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">إذا كنت توصل بنفسك، لا تحتاج لإضافة سائق. يمكنك إضافة فريق التوصيل لاحقاً.</p>
                       {hasPermission('manage-orders') && (
                         <div className="mt-4 flex justify-center gap-2">
-                          <Button onClick={() => router.visit(route('delivery.drivers.create'))}><Plus className="h-4 w-4 me-2" /> إضافة سائق</Button>
+                          {shippingEnabled && (
+                            <Button onClick={() => router.visit(route('delivery.drivers.create'))}><Plus className="h-4 w-4 me-2" /> إضافة سائق</Button>
+                          )}
                           <Button variant="outline" onClick={() => router.visit(route('delivery.drivers.index'))}>إدارة السائقين</Button>
                         </div>
                       )}
@@ -732,7 +744,9 @@ export default function DeliveryHub() {
                             {hasPermission('manage-orders') && (
                               <>
                                 <Button variant="ghost" size="sm" onClick={() => router.visit(route('delivery.drivers.show', d.id))}><Eye className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="sm" onClick={() => router.visit(route('delivery.drivers.edit', d.id))}><Edit className="h-4 w-4" /></Button>
+                                {shippingEnabled && (
+                                  <Button variant="ghost" size="sm" onClick={() => router.visit(route('delivery.drivers.edit', d.id))}><Edit className="h-4 w-4" /></Button>
+                                )}
                                 <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleteDriverId(d.id)}><Trash2 className="h-4 w-4" /></Button>
                               </>
                             )}

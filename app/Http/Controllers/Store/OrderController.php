@@ -42,6 +42,21 @@ class OrderController extends Controller
                     }
                 }
             }
+            // P1 SHIPPING ENTITLEMENT: plans without the shipping feature must not
+            // accept shipping methods or local delivery zones at checkout time.
+            if ($request->filled('shipping_method_id') || $request->filled('delivery_zone_id')) {
+                $entitlementStore = \App\Models\Store::find($request->store_id);
+                if ($entitlementStore && !$entitlementStore->canUsePlanFeature('shipping_method')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'طرق الشحن والتوصيل غير متاحة في خطتك الحالية.',
+                        'errors' => [
+                            'shipping_method_id' => ['طرق الشحن غير متاحة في خطتك الحالية.'],
+                            'delivery_zone_id' => ['مناطق التوصيل غير متاحة في خطتك الحالية.'],
+                        ],
+                    ], 422);
+                }
+            }
             // SECURITY: store owner can require login before checkout.
             $storeModel = \App\Models\Store::find($request->store_id);
             if ($storeModel) {

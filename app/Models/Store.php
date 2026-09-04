@@ -275,6 +275,28 @@ protected $fillable = [
         $plan = $this->user->getCurrentPlan();
         return $plan && $plan->enable_custsubdomain === 'on';
     }
+
+    /**
+     * Whether this store may use a given plan-gated feature.
+     * Truth is store-scoped via the owner's plan (staff/guests resolve to owner).
+     * Super admin bypass so testing/bypass can always reach the feature.
+     */
+    public function canUsePlanFeature(string $feature): bool
+    {
+        $column = \App\Http\Middleware\CheckPlanAccess::featureColumnMap()[$feature] ?? null;
+        if (!$column) {
+            return true;
+        }
+        $plan = $this->user?->getCurrentPlan();
+        if ($plan && $plan->$column === 'on') {
+            return true;
+        }
+        $authUser = \Illuminate\Support\Facades\Auth::user();
+        if ($authUser && method_exists($authUser, 'isSuperAdmin') && $authUser->isSuperAdmin()) {
+            return true;
+        }
+        return false;
+    }
     
     /**
      * Generate store route with custom domain support

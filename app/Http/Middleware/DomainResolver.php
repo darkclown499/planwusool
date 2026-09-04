@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Store;
 use App\Models\StoreConfiguration;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class DomainResolver
 {
@@ -178,7 +180,22 @@ class DomainResolver
                 }
                 
                 // Route the request to appropriate store controller method
-                return $this->handleStoreRequest($request, $store);
+                $response = $this->handleStoreRequest($request, $store);
+
+                // Storefront pages are served end-to-end from here (the rest of
+                // the middleware chain is bypassed), so set the privacy/static
+                // Referrer-Policy inline: 'same-origin' keeps the Referer for
+                // same-site requests but strips it for cross-origin subresources
+                // (e.g. reference product images hosted by third parties that
+                // block hotlinking and answer 403 for foreign Referers).
+                if ($response instanceof InertiaResponse) {
+                    $response = $response->toResponse($request);
+                }
+                if ($response instanceof Response) {
+                    $response->headers->set('Referrer-Policy', 'same-origin');
+                }
+
+                return $response;
             }
         }
         

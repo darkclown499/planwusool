@@ -131,13 +131,12 @@ class CheckPlanAccess
     /**
      * Check if user has access to a specific feature
      */
-    public static function checkFeatureAccess($user, $feature)
+    /**
+     * Feature key => plan column mapping — single source of truth for feature gating.
+     */
+    public static function featureColumnMap(): array
     {
-        if (!$user->plan) {
-            return ['allowed' => false, 'message' => __('No active plan found.')];
-        }
-        
-        $featureMap = [
+        return [
             'shipping_method' => 'enable_shipping_method',
             'pwa' => 'pwa_business',
             'custom_domain' => 'enable_custdomain',
@@ -148,6 +147,15 @@ class CheckPlanAccess
             'accounting_integration' => 'enable_accounting_integration',
             'theme_editor' => 'enable_theme_editor'
         ];
+    }
+
+    public static function checkFeatureAccess($user, $feature)
+    {
+        if (!$user->plan) {
+            return ['allowed' => false, 'message' => __('No active plan found.')];
+        }
+        
+        $featureMap = self::featureColumnMap();
         
         if (!isset($featureMap[$feature])) {
             return ['allowed' => true]; // Unknown feature, allow by default

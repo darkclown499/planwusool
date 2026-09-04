@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RestrictsPlanFeatures;
 use App\Models\DeliveryDriver;
+use App\Models\Store;
 use App\Services\PhoneNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +12,8 @@ use Inertia\Inertia;
 
 class DeliveryDriverController extends Controller
 {
+    use RestrictsPlanFeatures;
+
     /**
      * Delivery Drivers — merchant-managed, store-scoped.
      */
@@ -61,6 +65,10 @@ class DeliveryDriverController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
 
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $data = $this->validateDriver($request);
         $data['store_id'] = $storeId;
         if (!empty($data['phone'])) {
@@ -95,6 +103,10 @@ class DeliveryDriverController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
 
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $driver = DeliveryDriver::where('store_id', $storeId)->where('id', $id)->firstOrFail();
 
         $data = $this->validateDriver($request);
@@ -124,6 +136,10 @@ class DeliveryDriverController extends Controller
     {
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
+
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
 
         $driver = DeliveryDriver::where('store_id', $storeId)->where('id', $id)->firstOrFail();
         $driver->update(['active' => !$driver->active]);

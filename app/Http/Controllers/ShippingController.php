@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RestrictsPlanFeatures;
 use App\Models\Shipping;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ShippingController extends Controller
 {
+    use RestrictsPlanFeatures;
+
     /**
      * Display a listing of the resource.
      */
@@ -16,12 +20,9 @@ class ShippingController extends Controller
     {
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
-        // Check plan feature access for shipping
-        $shippingEnabled = true;
-        if ($user->type === 'company' && $user->plan) {
-            $shippingEnabled = $user->plan->enable_shipping_method === 'on';
-        }
+
+        // Plan feature gate is store-scoped (owner's plan; super admin bypass)
+        $shippingEnabled = Store::find($currentStoreId)?->canUsePlanFeature('shipping_method') ?? true;
         
         $shippings = Shipping::where('store_id', $currentStoreId)
             ->orderBy('sort_order')
@@ -76,6 +77,13 @@ class ShippingController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $currentStoreId = $user->current_store;
+
+        if (!Store::find($currentStoreId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string|in:flat_rate,free_shipping,weight_based,distance_based,percentage_based',
@@ -270,6 +278,10 @@ class ShippingController extends Controller
         $user = Auth::user();
         $currentStoreId = $user->current_store;
 
+        if (!Store::find($currentStoreId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         if (!empty($request->courier_integration_id)) {
             $valid = \App\Models\StoreCourierIntegration::where('id', $request->courier_integration_id)->where('store_id', $currentStoreId)->exists();
             if (!$valid) {
@@ -323,6 +335,11 @@ class ShippingController extends Controller
         ]);
         $user = Auth::user();
         $storeId = $user->current_store;
+
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $enabled = (bool) $request->boolean('enabled');
         $threshold = $request->input('threshold');
         \App\Models\StoreConfiguration::setConfiguration($storeId, 'free_shipping_enabled', $enabled ? 'true' : 'false');

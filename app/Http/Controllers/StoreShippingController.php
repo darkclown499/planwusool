@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shipping;
+use App\Models\Store;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -22,10 +23,7 @@ class StoreShippingController extends Controller
         $avgShippingCost = $shippings->where('type', '!=', 'free_shipping')->avg('cost') ?? 0;
 
         $user = Auth::user();
-        $shippingEnabled = true;
-        if ($user->type === 'company' && $user->plan) {
-            $shippingEnabled = $user->plan->enable_shipping_method === 'on';
-        }
+        $shippingEnabled = $store->canUsePlanFeature('shipping_method');
 
         return Inertia::render('shipping/index', [
             'shippings' => $shippings,

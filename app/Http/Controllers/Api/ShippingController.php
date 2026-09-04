@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Shipping;
+use App\Models\Store;
 use Illuminate\Http\Request;
 
 class ShippingController extends Controller
@@ -13,6 +14,11 @@ class ShippingController extends Controller
         $request->validate([
             'store_id' => 'required|exists:stores,id'
         ]);
+
+        // Plans without the shipping feature must not expose shipping methods to checkout.
+        if (!Store::find($request->store_id)?->canUsePlanFeature('shipping_method')) {
+            return response()->json(['shipping_methods' => []]);
+        }
 
         $shippingMethods = Shipping::where('store_id', $request->store_id)
             ->where('is_active', true)
@@ -47,6 +53,11 @@ class ShippingController extends Controller
         $request->validate([
             'store_id' => 'required|exists:stores,id'
         ]);
+
+        // Plans without the shipping feature must not expose delivery zones to checkout.
+        if (!Store::find($request->store_id)?->canUsePlanFeature('shipping_method')) {
+            return response()->json(['delivery_zones' => []]);
+        }
 
         $zones = \App\Models\DeliveryZone::where('store_id', $request->store_id)
             ->where('is_active', true)

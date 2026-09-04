@@ -29,7 +29,7 @@ class SecurityHeadersMiddleware
             $response->headers->set('X-Content-Type-Options', $headers['x_content_type_options']);
         }
 
-        if (! empty($headers['referrer_policy'])) {
+        if (! empty($headers['referrer_policy']) && ! $response->headers->has('Referrer-Policy')) {
             $response->headers->set('Referrer-Policy', $headers['referrer_policy']);
         }
 

@@ -11,8 +11,12 @@ use InvalidArgumentException;
  *
  * A single timezone-aware place that decides what "today", "yesterday",
  * "last 7 days", … mean for a store. All day boundaries are computed in the
- * STORE's configured timezone (default: Asia/Hebron) and converted to UTC
- * instants for database filters, because order timestamps are stored in UTC.
+ * STORE's configured timezone (default: Asia/Hebron) and left as local
+ * wall-clock instants for database filters, because order timestamps are
+ * stored literally in the application timezone (config('app.timezone')
+ * = Asia/Hebron), NOT in UTC. Shifting boundaries to UTC here made every
+ * order created in the last hours of a local day disappear from reports
+ * that end on "today".
  *
  *   - owns the preset → range mapping and custom-range validation,
  *   - exposes the immediately previous, equal-length period for comparison,
@@ -60,11 +64,18 @@ final class AnalyticsPeriod
      * Returned keys:
      *   key           preset key actually used ('custom' if input was custom)
      *   timezone      store timezone the boundaries were computed in
-     *   from          Carbon UTC instant — first local day 00:00:00 (inclusive)
-     *   to            Carbon UTC instant — day after the last local day 00:00:00 (exclusive)
-     *   prev_from     Carbon UTC instant — start of the previous equivalent period
-     *   prev_to       Carbon UTC instant — end of the previous equivalent period (exclusive)
+     *   from          Carbon local wall-clock instant — first day 00:00:00 (inclusive)
+     *   to            Carbon local wall-clock instant — day after the last day 00:00:00 (exclusive)
+     *   prev_from     Carbon local wall-clock instant — start of the previous equivalent period
+     *   prev_to       Carbon local wall-clock instant — end of the previous equivalent period (exclusive)
      *   labels        human-readable from/to labels in the store timezone
+     *
+     * The instants deliberately keep the store timezone (they are NOT converted
+     * to UTC): Eloquent binds them as 'Y-m-d H:i:s' and the orders table stores
+     * timestamps as literal app-timezone wall-clock, so comparison must happen
+     * in wall-clock space — otherwise late-evening rows fall outside a "today"
+     * window. Clients must format with ->toISOString() when an absolute instant
+     * is needed (the +03:00 offset is preserved).
      *
      * @param  string  $preset
      * @param  string|null  $from   Y-m-d (custom range, store-local dates)
@@ -263,10 +274,10 @@ final class AnalyticsPeriod
         return [
             'key' => $key,
             'timezone' => $this->timezone,
-            'from' => $from->utc(),
-            'to' => $to->utc(),
-            'prev_from' => $prevFrom->utc(),
-            'prev_to' => $prevTo->utc(),
+            'from' => $from,
+            'to' => $to,
+            'prev_from' => $prevFrom,
+            'prev_to' => $prevTo,
             'labels' => [
                 'from' => $from->setTimezone($this->timezone)->format('Y-m-d'),
                 'to' => $to->copy()->subSecond()->setTimezone($this->timezone)->format('Y-m-d'),
@@ -288,8 +299,8 @@ final class AnalyticsPeriod
             $next = $cursor->copy()->addHour();
             $buckets[] = [
                 'label' => $cursor->format('H:00'),
-                'start' => $cursor->utc(),
-                'end' => $next->utc(),
+                'start' => $cursor,
+                'end' => $next,
             ];
             $cursor = $next;
         }
@@ -310,8 +321,8 @@ final class AnalyticsPeriod
             $next = $cursor->copy()->addDay();
             $buckets[] = [
                 'label' => $cursor->format('M j'),
-                'start' => $cursor->utc(),
-                'end' => $next->utc(),
+                'start' => $cursor,
+                'end' => $next,
             ];
             $cursor = $next;
         }
@@ -335,8 +346,8 @@ final class AnalyticsPeriod
             }
             $buckets[] = [
                 'label' => $cursor->format('M j') . ' – ' . $next->copy()->subDay()->format('M j'),
-                'start' => $cursor->utc(),
-                'end' => $next->utc(),
+                'start' => $cursor,
+                'end' => $next,
             ];
             $cursor = $next;
         }

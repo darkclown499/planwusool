@@ -66,7 +66,7 @@ class AnalyticsMerchantClarityRegressionTest extends TestCase
             'shipping_address' => 'Nablus', 'shipping_city' => 'Nablus', 'shipping_state' => 'West Bank', 'shipping_country' => 'Palestine',
             'billing_address' => 'Nablus', 'billing_city' => 'Nablus', 'billing_state' => 'West Bank', 'billing_country' => 'Palestine',
             'subtotal' => 100, 'tax_amount' => 0, 'shipping_amount' => 0, 'discount_amount' => 0, 'total_amount' => 100, 'currency' => 'ILS',
-            'created_at' => CarbonImmutable::now('UTC'),
+            'created_at' => now(),
         ], $overrides));
     }
 
@@ -78,7 +78,7 @@ class AnalyticsMerchantClarityRegressionTest extends TestCase
     public function test_failed_orders_do_not_inflate_financial_totals(): void
     {
         [$user, $store] = $this->companyWithStore();
-        $this->makeOrder($store, ['total_amount' => 100, 'status' => 'delivered', 'payment_status' => 'paid', 'paid_at' => now('UTC')]);
+        $this->makeOrder($store, ['total_amount' => 100, 'status' => 'delivered', 'payment_status' => 'paid', 'paid_at' => now()]);
         $this->makeOrder($store, ['total_amount' => 999, 'status' => 'failed', 'payment_status' => 'failed']);
 
         $period = (new AnalyticsPeriod('Asia/Hebron', now()))->resolve('last_30_days');
@@ -98,7 +98,7 @@ class AnalyticsMerchantClarityRegressionTest extends TestCase
             'payment_method' => 'cash',
             'status' => 'delivered',
             'payment_status' => 'paid',
-            'paid_at' => now('UTC'),
+            'paid_at' => now(),
             'total_amount' => 200,
         ]);
 
@@ -152,8 +152,8 @@ class AnalyticsMerchantClarityRegressionTest extends TestCase
     {
         [$user, $store] = $this->companyWithStore();
         // one POS cash-collected order + one online order => 600 total value, 600 collected, no duplication
-        $this->makeOrder($store, ['order_source' => 'pos', 'payment_method' => 'cash', 'payment_status' => 'paid', 'paid_at' => now('UTC'), 'total_amount' => 200]);
-        $this->makeOrder($store, ['order_source' => 'online', 'payment_method' => 'stripe', 'payment_status' => 'paid', 'paid_at' => now('UTC'), 'total_amount' => 400]);
+        $this->makeOrder($store, ['order_source' => 'pos', 'payment_method' => 'cash', 'payment_status' => 'paid', 'paid_at' => now(), 'total_amount' => 200]);
+        $this->makeOrder($store, ['order_source' => 'online', 'payment_method' => 'stripe', 'payment_status' => 'paid', 'paid_at' => now(), 'total_amount' => 400]);
 
         $period = (new AnalyticsPeriod('Asia/Hebron', now()))->resolve('last_30_days');
         $o = $this->overview($store->id, $period);
@@ -178,8 +178,8 @@ class AnalyticsMerchantClarityRegressionTest extends TestCase
     public function test_custom_date_range_narrows_data(): void
     {
         [$user, $store] = $this->companyWithStore();
-        $this->makeOrder($store, ['total_amount' => 100, 'created_at' => CarbonImmutable::now('UTC')]);
-        $this->makeOrder($store, ['total_amount' => 200, 'created_at' => CarbonImmutable::now('UTC')->subDays(40)]);
+        $this->makeOrder($store, ['total_amount' => 100, 'created_at' => now()]);
+        $this->makeOrder($store, ['total_amount' => 200, 'created_at' => now()->subDays(40)]);
 
         // range covering only the last 10 days => only the 100 order
         $period = (new AnalyticsPeriod('Asia/Hebron', now()))->resolve(

@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RestrictsPlanFeatures;
 use App\Models\DeliveryZone;
+use App\Models\Store;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DeliveryZoneController extends Controller
 {
+    use RestrictsPlanFeatures;
+
     /**
      * Delivery Zones — merchant-managed, store-scoped.
      */
@@ -55,6 +59,10 @@ class DeliveryZoneController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
 
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $data = $this->validateZone($request);
         $data['store_id'] = $storeId;
 
@@ -80,6 +88,10 @@ class DeliveryZoneController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
 
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $zone = DeliveryZone::where('store_id', $storeId)->where('id', $id)->firstOrFail();
         $zone->update($this->validateZone($request));
 
@@ -104,6 +116,10 @@ class DeliveryZoneController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
 
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
+
         $zone = DeliveryZone::where('store_id', $storeId)->where('id', $id)->firstOrFail();
         $zone->update(['is_active' => !$zone->is_active]);
 
@@ -119,6 +135,10 @@ class DeliveryZoneController extends Controller
 
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
+
+        if (!Store::find($storeId)?->canUsePlanFeature('shipping_method')) {
+            return $this->denyPlanFeatureAccess();
+        }
 
         foreach ((array) $request->input('ids') as $index => $id) {
             DeliveryZone::where('store_id', $storeId)

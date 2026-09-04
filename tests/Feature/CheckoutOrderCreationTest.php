@@ -24,6 +24,7 @@ class CheckoutOrderCreationTest extends TestCase
             'name' => 'Professional-' . uniqid(),
             'price' => 99,
             'themes' => ['all'],
+            'enable_shipping_method' => 'on',
         ]);
 
         $user = User::factory()->create([

@@ -58,7 +58,7 @@ class AnalyticsReportsPhase1Test extends TestCase
             'shipping_address' => 'Nablus', 'shipping_city' => 'Nablus', 'shipping_state' => 'West Bank', 'shipping_country' => 'Palestine',
             'billing_address' => 'Nablus', 'billing_city' => 'Nablus', 'billing_state' => 'West Bank', 'billing_country' => 'Palestine',
             'subtotal' => 100, 'tax_amount' => 0, 'shipping_amount' => 0, 'discount_amount' => 0, 'total_amount' => 100, 'currency' => 'ILS',
-            'created_at' => CarbonImmutable::now('UTC'),
+            'created_at' => now(),
         ], $overrides));
     }
 
@@ -167,8 +167,8 @@ class AnalyticsReportsPhase1Test extends TestCase
         // 23:30 local belongs to "today"; 00:30 local belongs to tomorrow.
         $late = CarbonImmutable::parse('2026-09-03 23:30:00', $tz);
         $earlyTomorrow = CarbonImmutable::parse('2026-09-04 00:30:00', $tz);
-        $this->makeOrder($store, ['total_amount' => 100, 'created_at' => $late->utc()]);
-        $this->makeOrder($store, ['total_amount' => 500, 'created_at' => $earlyTomorrow->utc()]);
+        $this->makeOrder($store, ['total_amount' => 100, 'created_at' => $late]);
+        $this->makeOrder($store, ['total_amount' => 500, 'created_at' => $earlyTomorrow]);
 
         $o = $this->overview($store->id, $period);
         $this->assertEquals(100, $o['metrics']['gmv']['primary'], 'tomorrow morning must not be counted in today');
@@ -177,6 +177,34 @@ class AnalyticsReportsPhase1Test extends TestCase
         $this->assertEquals('hour', $o['trend']['granularity']);
         $this->assertEquals(100, array_sum($o['trend']['valid_value']));
         $this->assertEquals(24, count($o['trend']['valid_value']), 'a local day has 24 hourly buckets');
+    }
+
+    public function test_late_local_day_orders_are_not_dropped_from_today_reports(): void
+    {
+        [$user, $store] = $this->companyWithStore();
+        $tz = 'Asia/Hebron';
+
+        // Regression: order timestamps are stored as literal app-local wall-clock
+        // (config('app.timezone'), not UTC). Previously AnalyticsPeriod converted
+        // the "today"/"last 30 days" upper bound to UTC (e.g. 2026-09-03T21:00Z),
+        // so any order created after 21:00 local silently vanished from reports
+        // ending on "today" until the clock rolled past the next midnight.
+        $now = CarbonImmutable::parse('2026-09-03 23:05:00', $tz);
+        $this->makeOrder($store, ['total_amount' => 471, 'created_at' => $now]);
+
+        $today = $this->overview(
+            $store->id,
+            (new AnalyticsPeriod($tz, $now))->resolve('today')
+        );
+        $this->assertEquals(471, $today['metrics']['gmv']['primary'], '23:05 local must count on today');
+        $this->assertEquals(1, $today['metrics']['valid_orders']['current']);
+
+        $month = $this->overview(
+            $store->id,
+            (new AnalyticsPeriod($tz, $now))->resolve('last_30_days')
+        );
+        $this->assertEquals(471, $month['metrics']['gmv']['primary'], '23:05 local must count on last_30_days');
+        $this->assertEquals(1, $month['metrics']['valid_orders']['current']);
     }
 
     /* ─────────────────────────── products ─────────────────────────── */
