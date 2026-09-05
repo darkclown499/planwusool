@@ -803,7 +803,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
               </ul>
               <div className="flex flex-wrap gap-2">
                 {onboarding.missingForPublish.includes('الشحن والتوصيل') && (
-                  <Button size="sm" variant="outline" onClick={() => router.visit(`/stores/${currentStore.id}/settings?tab=shipping`)} className="gap-1.5 border-amber-300 bg-white text-amber-800 hover:bg-amber-100">
+                  <Button size="sm" variant="outline" onClick={() => router.visit(route('delivery.index'))} className="gap-1.5 border-amber-300 bg-white text-amber-800 hover:bg-amber-100">
                     <Truck className="h-4 w-4" /> إعداد الشحن
                   </Button>
                 )}

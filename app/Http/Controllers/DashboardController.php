@@ -178,7 +178,7 @@ class DashboardController extends Controller
             [
                 'key' => 'shipping',
                 'done' => $hasShipping,
-                'href' => $hasShipping ? null : '/stores/' . $store->id . '/settings?tab=shipping',
+                'href' => $hasShipping ? null : route('delivery.index'),
             ],
             [
                 'key' => 'payments',
