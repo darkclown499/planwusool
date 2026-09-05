@@ -18,7 +18,6 @@ import {
   Clock,
   Boxes,
   Store,
-  Warehouse,
   Database,
   Layout,
   Rocket,
@@ -219,7 +218,6 @@ const COMPARE_GROUPS: CompareGroup[] = [
     icon: Boxes,
     rows: [
       { label: 'عدد المنتجات', get: (p) => ({ kind: 'text', text: fmtNumber(p.max_products_per_store || 0) }) },
-      { label: 'المخازن', get: (p) => ({ kind: 'text', text: String(p.max_warehouses || 0) }) },
       { label: 'الموظفون والصلاحيات', get: (p) => ({ kind: 'text', text: String(p.max_users_per_store || 0) }) },
       { label: 'مساحة التخزين', get: (p) => ({ kind: 'text', text: `${p.storage_limit || 0} GB` }) },
       { label: 'أتمتة طلبات واتساب', tooltip: 'كل طلب يصل مباشرة إلى واتسابك كرسالة معبأة بكل التفاصيل: المنتجات والسعر والعنوان.', get: (p) => isPaidPlan(p) ? yes() : ({ kind: 'no', text: '—' }) },
@@ -448,7 +446,6 @@ export default function PlansSection({
             const limits = [
               { icon: Boxes, value: fmtNumber(plan.max_products_per_store || 0), label: 'منتج' },
               { icon: Store, value: String(plan.max_stores || 0), label: 'متجر' },
-              { icon: Warehouse, value: String(plan.max_warehouses || 0), label: 'مخزن' },
               { icon: Database, value: `${plan.storage_limit || 0}GB`, label: 'تخزين' },
             ];
             const prominent = getProminentFeatures(plan);
@@ -530,7 +527,7 @@ export default function PlansSection({
                 </div>
                 {price === 0 && <p className="mt-1 text-xs font-medium text-emerald-600">مجاني للأبد بدون بطاقة</p>}
 
-                <div className="mt-5 grid grid-cols-4 gap-2">
+                <div className="mt-5 grid grid-cols-3 gap-2">
                   {limits.map((limit, index) => (
                     <div
                       key={index}

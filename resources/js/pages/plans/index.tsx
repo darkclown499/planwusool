@@ -603,9 +603,6 @@ export default function Plans({ plans: initialPlans, billingCycle: initialBillin
       { key: 'products_per_store', label: t('Products/Store'), value: stats.products_per_store },
       { key: 'storage', label: t('Storage'), value: formatStorageLimit(stats.storage) },
       { key: 'templates', label: t('Themes'), value: stats.templates },
-      ...(stats.warehouses !== undefined
-        ? [{ key: 'warehouses', label: t('Branches'), value: stats.warehouses }]
-        : []),
     ];
     return rawItems
       .filter(item => item.value !== undefined && item.value !== null && String(item.value) !== '')
