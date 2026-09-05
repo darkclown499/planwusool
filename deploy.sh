@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+# -------------------------------------------------------------
+# Single-instance guard: aborts if another deploy is already
+# running (prevents concurrent deploys racing on public/build).
+# -------------------------------------------------------------
+exec 9>/tmp/wusool-deploy.lock
+if ! flock -n 9; then
+    echo "FATAL: another deploy is already running (lock /tmp/wusool-deploy.lock held). Aborting." >&2
+    exit 1
+fi
 # =============================================================
 # Wusool production deploy script (run on the SERVER).
 #
@@ -495,14 +504,15 @@ if [ "${#EDGE_FAILS[@]}" -ne 0 ]; then
     echo "==> ${#EDGE_FAILS[@]} asset(s) flaky at CF edge (512/522 negative cache up to ~5min); re-verifying with windowed backoff (origin healthy)"
     REMAIN=("${EDGE_FAILS[@]}")
     attempts=0
-    while [ "${#REMAIN[@]}" -ne 0 ] && [ "$attempts" -lt 18 ]; do
+    while [ "${#REMAIN[@]}" -ne 0 ] && [ "$attempts" -lt 36 ]; do
         attempts=$((attempts + 1))
+        echo "==> re-verify attempt $attempts (remaining: ${#REMAIN[@]})"
         sleep 20
         NEXT=()
         for rel in "${REMAIN[@]}"; do
             r_ok=0; rc=000; rs=0
             for t in 1 2; do
-                pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 -H "Cache-Control: no-cache" "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+                pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 15 -H "Cache-Control: no-cache" "https://$ASSET_HOST/$rel" 2>/dev/null || true)
                 rc=$(echo "$pub" | cut -d' ' -f1); rs=$(echo "$pub" | cut -d' ' -f3)
                 if [ "$rc" = "200" ] && [ "${rs:-0}" -gt 0 ]; then r_ok=1; break; fi
                 sleep 2
