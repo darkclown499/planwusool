@@ -442,6 +442,7 @@ echo "==> rate-limited endpoint OK (all non-500):$rl_codes"
 echo "==> [8/8d] Verifying public build assets (manifest-driven, origin + CF edge)"
 ASSET_HOST="$(echo "$APP_URL_PROBE" | sed -E 's#^https?://([^/?]+).*#\1#')"
 FAILED_ASSETS=()
+HARD_FAILS=0
 while IFS= read -r name; do
     [ -z "$name" ] || [ "$name" = "." ] && continue
     if [ "$name" = "manifest.json" ]; then
@@ -453,7 +454,7 @@ while IFS= read -r name; do
     for t in 1 2 3; do
         probe=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 20 -H "Host: $ASSET_HOST" "http://127.0.0.1/$rel" 2>/dev/null || true)
         ocode=$(echo "$probe" | cut -d' ' -f1); otype=$(echo "$probe" | cut -d' ' -f2); asize=$(echo "$probe" | cut -d' ' -f3)
-        if [ "$ocode" = "200" ] && [ "$asize" -gt 0 ] && ! echo "$otype" | grep -qE '^text/html'; then
+        if [ "$ocode" = "200" ] && [ "${asize:-0}" -gt 0 ] && ! echo "$otype" | grep -qE '^text/html'; then
             origin_ok=1; break
         fi
         sleep 2
@@ -461,6 +462,11 @@ while IFS= read -r name; do
     if [ "$origin_ok" -ne 1 ]; then
         echo "FATAL: '$rel' BROKEN AT ORIGIN (HTTP $ocode, type $otype, ${asize}b) -> DEPLOY FAILURE" >&2
         FAILED_ASSETS+=("$rel:ORIGIN_FAILURE")
+        HARD_FAILS=$((HARD_FAILS + 1))
+        if [ "$HARD_FAILS" -ge 3 ]; then
+            echo "FATAL: too many asset failures at origin (${FAILED_ASSETS[*]}) -> aborting" >&2
+            exit 1
+        fi
         continue
     fi
     echo "==> '$rel' healthy at origin (HTTP $ocode, $otype, ${asize}b)"
@@ -476,6 +482,11 @@ while IFS= read -r name; do
     if [ "$pub_ok" -ne 1 ]; then
         echo "FATAL: '$rel' unreachable at Cloudflare edge (public HTTP $pcode) while ORIGIN healthy -> CDN EDGE FAILURE" >&2
         FAILED_ASSETS+=("$rel:CDN_EDGE_FAILURE")
+        HARD_FAILS=$((HARD_FAILS + 1))
+        if [ "$HARD_FAILS" -ge 3 ]; then
+            echo "FATAL: too many assets failing at Cloudflare edge (${FAILED_ASSETS[*]}) -> aborting" >&2
+            exit 1
+        fi
     else
         echo "==> '$rel' served publicly OK (HTTP $pcode, ${psize}b)"
     fi
