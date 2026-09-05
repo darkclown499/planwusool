@@ -194,6 +194,18 @@ verify_staging() {
         echo "FATAL: Vite hot file exists - dev server leak, refusing to deploy" >&2
         return 1
     fi
+    # Every `file` referenced by the staging manifest must physically exist.
+    # A manifest that points at missing hashed chunks is exactly the "white
+    # screen" regression this script exists to prevent.
+    local missing=0 pfile
+    while IFS= read -r pfile; do
+        [ -z "$pfile" ] && continue
+        if [ ! -f "$STAGE_BUILD/$pfile" ]; then
+            echo "FATAL: manifest entry '$pfile' missing in staging build" >&2
+            missing=1
+        fi
+    done < <("$PHP" -r '$m=json_decode(file_get_contents($argv[1]), true); foreach ($m as $e) { if (isset($e["file"])) echo $e["file"], PHP_EOL; }' -- "$manifest" 2>/dev/null)
+    [ "$missing" -ne 0 ] && return 1
     return 0
 }
 trap restore_app EXIT
@@ -413,6 +425,66 @@ for c in $rl_codes; do
     fi
 done
 echo "==> rate-limited endpoint OK (all non-500):$rl_codes"
+
+# ------------------------------------------------------------------
+# d. MANIFEST-DRIVEN PUBLIC ASSET VERIFICATION (with CF-edge classification)
+#    Reads the LIVE manifest's critical entries and probes each asset TWICE:
+#      1) at the ORIGIN (127.0.0.1 + Host header) — authoritative app/static state
+#      2) over PUBLIC HTTPS (through Cloudflare) — edge-serving state
+#    Outcome classification:
+#      - origin 5xx / 404 / HTML-for-JS / empty body  -> DEPLOY FAILURE (real bug)
+#      - origin healthy but PUBLIC 5xx/520-527/000     -> CDN EDGE FAILURE
+#        (the 522-transient family that has hit production; NOT a code bug)
+#    Either class FAILS the deploy loudly — the operator must know assets can
+#    be broken at the edge even when origin is green. Bounded retries (x3) ride
+#    out the flaky CW/CF connection losses seen in production.
+# ------------------------------------------------------------------
+echo "==> [8/8d] Verifying public build assets (manifest-driven, origin + CF edge)"
+ASSET_HOST="$(echo "$APP_URL_PROBE" | sed -E 's#^https?://([^/?]+).*#\1#')"
+FAILED_ASSETS=()
+while IFS= read -r name; do
+    [ -z "$name" ] || [ "$name" = "." ] && continue
+    if [ "$name" = "manifest.json" ]; then
+        rel="build/manifest.json"
+    else
+        rel="build/assets/$name"
+    fi
+    origin_ok=0; ocode=000; otype=""; asize=0
+    for t in 1 2 3; do
+        probe=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 20 -H "Host: $ASSET_HOST" "http://127.0.0.1/$rel" 2>/dev/null || true)
+        ocode=$(echo "$probe" | cut -d' ' -f1); otype=$(echo "$probe" | cut -d' ' -f2); asize=$(echo "$probe" | cut -d' ' -f3)
+        if [ "$ocode" = "200" ] && [ "$asize" -gt 0 ] && ! echo "$otype" | grep -qE '^text/html'; then
+            origin_ok=1; break
+        fi
+        sleep 2
+    done
+    if [ "$origin_ok" -ne 1 ]; then
+        echo "FATAL: '$rel' BROKEN AT ORIGIN (HTTP $ocode, type $otype, ${asize}b) -> DEPLOY FAILURE" >&2
+        FAILED_ASSETS+=("$rel:ORIGIN_FAILURE")
+        continue
+    fi
+    echo "==> '$rel' healthy at origin (HTTP $ocode, $otype, ${asize}b)"
+    pub_ok=0; pcode=000; psize=0
+    for t in 1 2 3; do
+        pub=$(curl -s -o /dev/null -w '%{http_code} %{size_download}' --max-time 30 "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+        pcode=$(echo "$pub" | cut -d' ' -f1); psize=$(echo "$pub" | cut -d' ' -f3)
+        if [ "$pcode" = "200" ] && [ "$psize" -gt 0 ]; then
+            pub_ok=1; break
+        fi
+        sleep 3
+    done
+    if [ "$pub_ok" -ne 1 ]; then
+        echo "FATAL: '$rel' unreachable at Cloudflare edge (public HTTP $pcode) while ORIGIN healthy -> CDN EDGE FAILURE" >&2
+        FAILED_ASSETS+=("$rel:CDN_EDGE_FAILURE")
+    else
+        echo "==> '$rel' served publicly OK (HTTP $pcode, ${psize}b)"
+    fi
+done < <(run_www "$PHP" -r '$m=json_decode(file_get_contents($argv[1]), true); echo "manifest.json", PHP_EOL; foreach ($m as $e) { if (isset($e["file"])) echo basename($e["file"]), PHP_EOL; }' -- "public/build/manifest.json")
+if [ "${#FAILED_ASSETS[@]}" -ne 0 ]; then
+    echo "FATAL: build asset verification failed (${FAILED_ASSETS[*]})" >&2
+    exit 1
+fi
+echo "==> verify_public_assets OK: all manifest assets healthy at origin AND through public HTTPS"
 
 # Final ownership re-check after all writes (rate limiter + reloads).
 GOT="$(runtime_owner_violations | head -50)"
