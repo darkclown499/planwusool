@@ -239,10 +239,10 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
     if (fulfillment.type==='manual') {
       return (
         <Card>
-          <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><Truck className="h-5 w-5"/> الشحن</CardTitle></CardHeader>
+          <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-base"><Truck className="h-5 w-5"/> التوصيل</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">شركة التوصيل</span><span className="font-bold">{fulfillment.delivery_company || 'غير محدد'}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">طريقة الشحن</span><span>{order.shippingMethod || '—'}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">طريقة التوصيل</span><span>{order.shippingMethod || '—'}</span></div>
             {order.trackingNumber && <div className="flex justify-between items-center"><span className="text-muted-foreground">رقم التتبع</span><span className="font-mono flex items-center gap-1">{order.trackingNumber} <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>{navigator.clipboard.writeText(order.trackingNumber); toast.success('تم النسخ');}}><Copy className="h-3 w-3"/></Button></span></div>}
             {primaryShipment?.tracking_url && <a href={primaryShipment.tracking_url} target="_blank" className="text-sm text-emerald-700 underline flex items-center gap-1">تتبع الشحنة <ExternalLink className="h-3 w-3"/></a>}
           </CardContent>
@@ -299,7 +299,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                   </Button>
                 )}
                 {isTerminal && statusLower==='delivered' && (
-                  <span className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full"><CheckCircle2 className="h-4 w-4"/> مكتمل</span>
+                  <span className="inline-flex items-center gap-1 text-sm font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full"><CheckCircle2 className="h-4 w-4"/> تم التسليم</span>
                 )}
 
                 {/* Additional actions dropdown — always visible */}
@@ -463,7 +463,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                  <div className="flex justify-between"><span className="text-muted-foreground">طريقة الشحن</span><span className="font-medium">{order.shippingMethod || '—'}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">طريقة التوصيل</span><span className="font-medium">{order.shippingMethod || '—'}</span></div>
                   {order.trackingNumber && <div className="flex justify-between items-center"><span className="text-muted-foreground">رقم التتبع</span><span className="font-mono flex items-center gap-1">{order.trackingNumber} <Button variant="ghost" size="icon" className="h-6 w-6" onClick={()=>{navigator.clipboard.writeText(order.trackingNumber); toast.success('تم النسخ');}}><Copy className="h-3 w-3"/></Button></span></div>}
                   {fulfillment.delivery_company && <div className="flex justify-between"><span className="text-muted-foreground">شركة التوصيل</span><span>{fulfillment.delivery_company}</span></div>}
                 </div>

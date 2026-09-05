@@ -118,5 +118,5 @@ export const primaryActionByStatus: Record<string, { label: string; next: string
   pending: { label: 'تأكيد الطلب', next: 'confirmed' },
   confirmed: { label: 'بدء التجهيز', next: 'processing' },
   processing: { label: 'جاهز للتوصيل', next: 'shipped' },
-  shipped: { label: 'تم التسليم', next: 'delivered' },
+  shipped: { label: 'تم الشحن', next: 'delivered' },
 };

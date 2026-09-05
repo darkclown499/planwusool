@@ -27,19 +27,19 @@ const CHANNEL_LABELS: Record<string, string> = {
 };
 
 const TYPE_LABELS: Record<string, string> = {
-  welcome: 'Welcome',
-  order_confirmed: 'Order Confirmed',
-  order_shipped: 'Order Shipped',
-  order_delivered: 'Order Delivered',
-  order_cancelled: 'Order Cancelled',
-  review_reply: 'Review Reply',
-  back_in_stock: 'Back in Stock',
-  price_drop: 'Price Drop',
-  abandoned_cart_reminder: 'Abandoned Cart',
-  loyalty_earned: 'Loyalty Earned',
-  loyalty_redeemed: 'Loyalty Redeemed',
-  offer_promo: 'Offer / Promo',
-  custom: 'Custom',
+  welcome: 'ترحيب',
+  order_confirmed: 'تأكيد الطلب',
+  order_shipped: 'تم الشحن',
+  order_delivered: 'تم التسليم',
+  order_cancelled: 'إلغاء الطلب',
+  review_reply: 'رد على التقييم',
+  back_in_stock: 'توفر المنتج',
+  price_drop: 'انخفاض السعر',
+  abandoned_cart_reminder: 'السلة المتروكة',
+  loyalty_earned: 'اكتساب نقاط الولاء',
+  loyalty_redeemed: 'استبدال نقاط الولاء',
+  offer_promo: 'عرض / تخفيض',
+  custom: 'مخصص',
 };
 
 export default function AdminNotifications() {

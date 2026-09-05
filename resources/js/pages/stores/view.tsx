@@ -150,7 +150,7 @@ export default function ViewStore({ store, stats, readiness, storeUrl }: any) {
         </DropdownMenu>
       }
       breadcrumbs={[
-        { title: 'الرئيسية', href: route('dashboard') },
+        { title: 'لوحة التحكم', href: route('dashboard') },
         { title: 'المتاجر', href: route('stores.index') },
         { title: store.name },
       ]}

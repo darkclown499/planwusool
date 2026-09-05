@@ -629,7 +629,7 @@ export default function DeliveryHub() {
                     المناطق والأسعار
                     <Badge variant="secondary">{zonesDetailed?.length || 0}</Badge>
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">مناطق التوصيل المحلية — "وين بوصل؟ وكم تكلفة التوصيل؟" وتغطية طرق الشحن.</p>
+                  <p className="text-xs text-muted-foreground">مناطق التوصيل المحلية — "وين بوصل؟ وكم تكلفة التوصيل؟" وتغطية طرق التوصيل.</p>
                 </CardHeader>
                 <CardContent>
                   {(!zonesDetailed || zonesDetailed.length === 0) ? (
@@ -684,10 +684,10 @@ export default function DeliveryHub() {
               </Dialog>
               {shippings && shippings.length > 0 && (
                 <Card className="border-dashed">
-                  <CardHeader><CardTitle className="text-sm">تغطية طرق الشحن</CardTitle></CardHeader>
+                  <CardHeader><CardTitle className="text-sm">تغطية طرق التوصيل</CardTitle></CardHeader>
                   <CardContent>
-                    <p className="text-xs text-muted-foreground">لديك أيضاً {shippings.length} طريقة شحن مهيأة — تختلف عن مناطق التوصيل المحلية في آلية التسعير والتنفيذ.</p>
-                    <Button size="sm" variant="outline" className="mt-2" onClick={() => navigateTab('methods')}>عرض طرق الشحن</Button>
+                    <p className="text-xs text-muted-foreground">لديك أيضاً {shippings.length} طريقة توصيل مهيأة — تختلف عن مناطق التوصيل المحلية في آلية التسعير والتنفيذ.</p>
+                    <Button size="sm" variant="outline" className="mt-2" onClick={() => navigateTab('methods')}>عرض طرق التوصيل</Button>
                   </CardContent>
                 </Card>
               )}

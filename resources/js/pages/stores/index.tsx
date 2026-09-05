@@ -234,7 +234,7 @@ export default function StoreManagement({ stores = [], storeStats = {}, storeLim
       url="/stores"
       actions={pageActions}
       breadcrumbs={[
-        { title: 'الرئيسية', href: route('dashboard') },
+        { title: 'لوحة التحكم', href: route('dashboard') },
         { title: 'إدارة المتاجر', href: route('stores.index') },
         { title: 'المتاجر' },
       ]}

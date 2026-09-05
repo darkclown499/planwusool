@@ -62,7 +62,7 @@ const STATUS_TABS = [
   { key: 'confirmed', label: 'مؤكد' },
   { key: 'processing', label: 'قيد التجهيز' },
   { key: 'shipped', label: 'تم الشحن' },
-  { key: 'delivered', label: 'مكتمل' },
+  { key: 'delivered', label: 'تم التسليم' },
   { key: 'cancelled', label: 'ملغي' },
 ];
 

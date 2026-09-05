@@ -248,15 +248,15 @@ export default function EditOrder({ order, customers, products, shippingMethods 
           <TabsContent value="shipping" className="space-y-4 mt-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">الشحن</CardTitle>
-                <CardDescription>طريقة الشحن والعنوان ورقم التتبع — حالة الطلب تُدار من صفحة التفاصيل</CardDescription>
+                <CardTitle className="text-base">التوصيل</CardTitle>
+                <CardDescription>طريقة التوصيل والعنوان ورقم التتبع — حالة الطلب تُدار من صفحة التفاصيل</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>طريقة الشحن</Label>
+                    <Label>طريقة التوصيل</Label>
                     <Select value={shippingMethodId} onValueChange={setShippingMethodId}>
-                      <SelectTrigger><SelectValue placeholder="اختر طريقة الشحن" /></SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="اختر طريقة التوصيل" /></SelectTrigger>
                       <SelectContent>
                         {(shippingMethods ?? []).map((method) => (
                           <SelectItem key={method.id} value={method.id.toString()}>{method.name} — {formatCurrency(Number(method.cost))}</SelectItem>

@@ -14,6 +14,7 @@ import { useBrand } from '@/contexts/BrandContext';
 import { THEME_COLORS } from '@/hooks/use-appearance';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import { getCsrfToken } from '@/utils/csrf';
+import { tOrderStatus } from '@/utils/order-status';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Bar as RechartsBar, BarChart as RechartsBarChart } from 'recharts';
 
 interface Props {
@@ -1173,7 +1174,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                       </div>
                       <div className="text-end">
                         <p className="text-sm font-medium ltr-num">{formatPrice(order.amount)}</p>
-                        <p className="text-xs text-muted-foreground">{order.status}</p>
+                        <p className="text-xs text-muted-foreground">{tOrderStatus(order.status)}</p>
                       </div>
                     </div>
                   )) : (

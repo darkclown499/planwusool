@@ -148,8 +148,8 @@ export default function EditShipping() {
 
   return (
     <PageTemplate
-      title="تعديل طريقة الشحن"
-      description="تعديل طريقة الشحن — نفس نموذج الإنشاء"
+      title="تعديل طريقة التوصيل"
+      description="تعديل طريقة التوصيل — نفس نموذج الإنشاء"
       url={`/shipping/${shipping.id}/edit`}
       actions={[{ label: 'حفظ التغييرات', icon: <Save className="h-4 w-4" />, variant: 'default' as const, onClick: handleSubmit }]}
       backUrl={route('shipping.index')}
@@ -166,7 +166,7 @@ export default function EditShipping() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-1">
-                <Label htmlFor="name" required>اسم طريقة الشحن</Label>
+                <Label htmlFor="name" required>اسم طريقة التوصيل</Label>
                 <Input id="name" name="name" value={formData.name} onChange={handleInputChange} aria-invalid={!!errors.name} />
                 <InputError message={errors.name} />
               </div>
@@ -204,7 +204,7 @@ export default function EditShipping() {
 
         {/* Zones + Fulfillment unified */}
         <Card>
-          <CardHeader><CardTitle>مناطق الشحن</CardTitle><p className="text-sm text-muted-foreground">حدد أين تطبق طريقة الشحن ومن سينفذها.</p></CardHeader>
+          <CardHeader><CardTitle>مناطق التوصيل</CardTitle><p className="text-sm text-muted-foreground">حدد أين تطبق طريقة التوصيل ومن سينفذها.</p></CardHeader>
           <CardContent className="space-y-6">
             <div>
               <Label required>أين توصل؟</Label>

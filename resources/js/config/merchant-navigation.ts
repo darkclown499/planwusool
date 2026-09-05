@@ -59,7 +59,7 @@ export interface PrimaryArea {
 }
 
 export const MERCHANT_PRIMARY_AREAS: PrimaryArea[] = [
-    { id: 'dashboard', labelKey: 'Dashboard', labelAr: 'الرئيسية', icon: LayoutDashboard },
+    { id: 'dashboard', labelKey: 'Dashboard', labelAr: 'لوحة التحكم', icon: LayoutDashboard },
     { id: 'orders', labelKey: 'Orders', labelAr: 'الطلبات', icon: ShoppingCart, permissionAny: ['manage-orders'] },
     { id: 'delivery', labelKey: 'Delivery', labelAr: 'التوصيل', icon: Truck, permissionAny: ['manage-orders'] },
     { id: 'payments', labelKey: 'Payments', labelAr: 'المدفوعات', icon: CreditCard, permissionAny: ['manage-cod-payments', 'manage-orders'] },
@@ -77,7 +77,7 @@ export const MERCHANT_PRIMARY_AREAS: PrimaryArea[] = [
 // Backend route names are NOT changed.
 // ─────────────────────────────────────────────────────────────
 export const MERCHANT_AR_LABELS: Record<string, string> = {
-    Dashboard: 'الرئيسية',
+    Dashboard: 'لوحة التحكم',
     Orders: 'الطلبات',
     Returns: 'المرتجعات',
     Delivery: 'التوصيل',
