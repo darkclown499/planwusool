@@ -80,6 +80,11 @@ export function SkrillPaymentForm({
         });
         document.body.appendChild(form);
         form.submit();
+      } else if (response.ok && data.success && data.zero_total) {
+        // $0 total (e.g. 100% coupon) was activated server-side
+        toast.success(t('Plan activated'));
+        setIsProcessing(false);
+        onSuccess();
       } else {
         toast.error(data.message || t('Payment failed. Please try again.'));
         setIsProcessing(false);

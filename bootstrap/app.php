@@ -57,6 +57,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // strict CSP blocks them all, causing a blank page).
             CspNonceMiddleware::class,
             \App\Http\Middleware\DomainResolver::class,
+            // Origin pinning for state-changing requests — MUST run after
+            // DomainResolver so storefront pages and resolved subdomain flows
+            // (which return early or are exempt) never see a false positive.
+            \App\Http\Middleware\VerifyDashboardOrigin::class,
             ShareGlobalSettings::class,
             ShareStoresData::class,
             HandleInertiaRequests::class,

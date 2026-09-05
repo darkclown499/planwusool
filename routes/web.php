@@ -260,6 +260,16 @@ Route::post('store/razorpay/webhook', [\App\Http\Controllers\Store\GatewayWebhoo
 Route::post('store/paystack/webhook', [StorePaystackController::class, 'webhook'])->middleware('webhook.signature:paystack')->name('store.paystack.webhook');
 Route::post('store/mercadopago/webhook', [StoreMercadoPagoController::class, 'webhook'])->middleware('webhook.signature:mercadopago')->name('store.mercadopago.webhook');
 
+// ---------------------------------------------------------------------------
+// Plan subscription payment callbacks — gateway servers POST these WITHOUT a
+// browser session, so they MUST live outside the authenticated route group.
+// CSRF is exempted for these paths in bootstrap/app.php. Verification happens
+// server-side inside each controller (Midtrans SHA512 + status API re-fetch,
+// Skrill md5sig + merchant/amount checks).
+// ---------------------------------------------------------------------------
+Route::post('payments/skrill/callback', [SkrillPaymentController::class, 'callback'])->middleware('webhook.signature:skrill')->name('skrill.callback');
+Route::post('payments/midtrans/callback', [MidtransPaymentController::class, 'callback'])->middleware('webhook.signature:midtrans')->name('midtrans.callback');
+
 // Legacy redirects: keep old /store/{slug} links working after the move to subdomains
 Route::get('store/{storeSlug}', function ($storeSlug) {
     return redirect()->route('store.home', ['storeSlug' => $storeSlug]);
@@ -741,7 +751,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('midtrans/create-payment', [MidtransPaymentController::class, 'createPayment'])->name('midtrans.create-payment');
     
     // Payment success/callback routes
-    Route::post('payments/skrill/callback', [SkrillPaymentController::class, 'callback'])->middleware('webhook.signature:skrill')->name('skrill.callback');
     Route::get('payments/paytr/success', [PayTRPaymentController::class, 'success'])->name('paytr.success');
     Route::get('payments/paytr/failure', [PayTRPaymentController::class, 'failure'])->name('paytr.failure');
     Route::get('payments/mollie/success', [MolliePaymentController::class, 'success'])->name('mollie.success');
@@ -757,7 +766,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('payments/cinetpay/callback', [CinetPayPaymentController::class, 'callback'])->middleware('webhook.signature:cinetpay')->name('cinetpay.callback');
     Route::get('payments/paiement/success', [PaiementPaymentController::class, 'success'])->name('paiement.success');
     Route::post('payments/paiement/callback', [PaiementPaymentController::class, 'callback'])->middleware('webhook.signature:paiement')->name('paiement.callback');
-    Route::post('payments/midtrans/callback', [MidtransPaymentController::class, 'callback'])->middleware('webhook.signature:midtrans')->name('midtrans.callback');
     Route::get('mercadopago/success', [MercadoPagoController::class, 'success'])->name('mercadopago.success');
     Route::get('mercadopago/failure', [MercadoPagoController::class, 'failure'])->name('mercadopago.failure');
     Route::get('mercadopago/pending', [MercadoPagoController::class, 'pending'])->name('mercadopago.pending');

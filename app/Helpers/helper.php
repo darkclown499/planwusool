@@ -1074,6 +1074,49 @@ if (! function_exists('validatePaymentMethodConfig')) {
     }
 }
 
+if (! function_exists('getAuthoritativeStoreId')) {
+    /**
+     * Resolve the store a request is legitimately scoped to, in priority order:
+     *  1. store resolved from the (sub)domain by DomainResolver;
+     *  2. owner preview store id (unpublished store owner preview);
+     *  3. the authenticated storefront customer's own store;
+     *  4. the store captured on the session by DomainResolver.
+     *
+     * Returns null when no authority is known — storefront mutations must then
+     * rely on the existing per-store ownership checks (product-belongs-to-store,
+     * session-bound carts/orders, customer-bound addresses).
+     */
+    function getAuthoritativeStoreId(?\Illuminate\Http\Request $request = null)
+    {
+        $request = $request ?: request();
+
+        $resolved = $request->attributes->get('resolved_store');
+        if ($resolved instanceof \App\Models\Store) {
+            return (int) $resolved->id;
+        }
+        if (is_numeric($resolved)) {
+            return (int) $resolved;
+        }
+
+        $preview = $request->attributes->get('preview_store_id');
+        if (is_numeric($preview)) {
+            return (int) $preview;
+        }
+
+        $customer = $request->user('customer');
+        if ($customer && !empty($customer->store_id)) {
+            return (int) $customer->store_id;
+        }
+
+        $storeContextId = session('store_context.store_id');
+        if (is_numeric($storeContextId)) {
+            return (int) $storeContextId;
+        }
+
+        return null;
+    }
+}
+
 if (! function_exists('calculatePlanPricing')) {
     function calculatePlanPricing($plan, $couponCode = null, $billingCycle = 'yearly', $userId = null) // yearly only
     {

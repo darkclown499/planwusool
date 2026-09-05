@@ -22,8 +22,26 @@ class CartController extends Controller
         $this->abandonedCartService = $abandonedCartService;
     }
 
+    /**
+     * Enforce store scope when an authoritative store is known (resolved
+     * domain, customer membership, or session context). When no authority is
+     * known the request is left to the existing per-store ownership checks.
+     */
+    private function storeScopeRejection(Request $request): ?\Illuminate\Http\JsonResponse
+    {
+        $authoritativeStoreId = getAuthoritativeStoreId($request);
+        if ($authoritativeStoreId !== null && (int) $request->store_id !== $authoritativeStoreId) {
+            return response()->json(['message' => 'Store not authorized.', 'error' => true], 403);
+        }
+        return null;
+    }
+
     public function index(Request $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $storeId = $request->store_id;
         $calculation = CartCalculationService::calculateCartTotals(
             $storeId, 
@@ -108,6 +126,10 @@ class CartController extends Controller
 
     public function add(AddToCartRequest $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $product = Product::with('category')->findOrFail($request->product_id);
         // Store isolation: product must belong to requested store
         if ((int)$product->store_id !== (int)$request->store_id) {
@@ -219,6 +241,10 @@ class CartController extends Controller
 
     public function update(UpdateCartRequest $request, $id)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $cartItem = $this->getCartItems($request->store_id, $request)->with('product')->findOrFail($id);
         // Stock guard on quantity update — variant-aware
         $product = $cartItem->product;
@@ -253,6 +279,10 @@ class CartController extends Controller
 
     public function remove($id, CartStoreRequest $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $cartItem = $this->getCartItems($request->store_id, $request)->findOrFail($id);
         $cartItem->delete();
         
@@ -263,6 +293,10 @@ class CartController extends Controller
 
     public function sync(CartStoreRequest $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         // The session id is ALWAYS taken from the server-side session cookie,
         // never from a client-supplied value. This prevents an attacker from
         // claiming or poisoning another guest's cart.

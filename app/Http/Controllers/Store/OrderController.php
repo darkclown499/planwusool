@@ -99,6 +99,17 @@ class OrderController extends Controller
             // P0 ORDER FLOODING: early per-store+IP throttling is handled by throttle:order-place middleware.
             // Additional intelligent abuse controls (email/phone/session) run after validation below.
 
+            // Store-scope enforcement: when an authoritative store is known
+            // (resolved domain, customer membership, or session context) the
+            // client-supplied store_id must match it exactly.
+            $authoritativeStoreId = getAuthoritativeStoreId($request);
+            if ($authoritativeStoreId !== null && (int) $request->store_id !== $authoritativeStoreId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Store not authorized.',
+                ], 403);
+            }
+
             $validationRules = [
                 'store_id' => 'required|exists:stores,id',
                 'customer_first_name' => 'required|string|max:255',

@@ -62,6 +62,13 @@ export function MidtransPaymentForm({
 
       const data = await response.json();
 
+      if (data.zero_total) {
+        // $0 total (e.g. 100% coupon) was activated server-side
+        setIsLoading(false);
+        onSuccess();
+        return;
+      }
+
       if (data.success) {
         initializeMidtransSnap(data.snap_token, data.order_id);
       } else {

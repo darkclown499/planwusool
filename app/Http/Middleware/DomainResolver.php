@@ -137,6 +137,18 @@ class DomainResolver
             // Set store context for the request
             $request->attributes->set('resolved_store', $store);
             $request->attributes->set('store_theme', $store->theme);
+
+            // Remember the resolved store on the session so store-scoped
+            // mutations can be bound to an authoritative store even without
+            // domain resolution (main-domain /api/* calls). Safely skip when
+            // the session is unavailable (stateless API group).
+            if ($request->hasSession()) {
+                try {
+                    $request->session()->put('store_context.store_id', (int) $store->id);
+                } catch (\Throwable $e) {
+                    // Never break domain resolution over session failures
+                }
+            }
             
             // If it's a "store/{slug}" path but we are on a custom domain, redirect to clean path
             // Only redirect GET requests to avoid breaking form submissions

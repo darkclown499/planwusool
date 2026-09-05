@@ -23,8 +23,26 @@ class WishlistController extends Controller
         return response()->json(['message' => __('Product does not belong to this store.')], 422);
     }
 
+    /**
+     * Enforce store scope when an authoritative store is known (resolved
+     * domain, customer membership, or session context). When no authority is
+     * known the request is left to the existing per-store ownership checks.
+     */
+    private function storeScopeRejection(Request $request)
+    {
+        $authoritativeStoreId = getAuthoritativeStoreId($request);
+        if ($authoritativeStoreId !== null && (int) $request->store_id !== $authoritativeStoreId) {
+            return response()->json(['message' => 'Store not authorized.', 'error' => true], 403);
+        }
+        return null;
+    }
+
     public function index(Request $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $storeId = $request->store_id;
         $query = WishlistItem::where('store_id', $storeId)
             ->with(['product.category']);
@@ -64,6 +82,10 @@ class WishlistController extends Controller
 
     public function add(WishlistRequest $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $product = Product::find($request->product_id);
 
         if (! $product || (int) $product->store_id !== (int) $request->store_id) {
@@ -110,6 +132,10 @@ class WishlistController extends Controller
 
     public function remove($id, Request $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $query = WishlistItem::where('store_id', $request->store_id);
         
         if (Auth::guard('customer')->check()) {
@@ -127,6 +153,10 @@ class WishlistController extends Controller
 
     public function toggle(WishlistRequest $request)
     {
+        if ($rejected = $this->storeScopeRejection($request)) {
+            return $rejected;
+        }
+
         $product = Product::find($request->product_id);
 
         if (! $product || (int) $product->store_id !== (int) $request->store_id) {

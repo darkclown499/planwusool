@@ -97,6 +97,42 @@ class PlanOrder extends Model
         assignPlanToUser($this->user, $this->plan, $this->billing_cycle);
     }
 
+    /**
+     * Idempotent, atomic approval of a payment-bound pending order.
+     * Locks the row so concurrent gateway callbacks (or a browser Snap
+     * success racing the IPN) cannot double-activate a subscription.
+     * Returns false when the order is missing or no longer pending.
+     */
+    public function approveIfPending(?int $processedBy = null, array $extra = []): bool
+    {
+        try {
+            return \DB::transaction(function () use ($processedBy, $extra) {
+                $locked = PlanOrder::whereKey($this->id)->lockForUpdate()->first();
+
+                if (! $locked || $locked->status !== 'pending') {
+                    return false;
+                }
+
+                $locked->update(array_merge([
+                    'status' => 'approved',
+                    'processed_at' => now(),
+                    'processed_by' => $processedBy,
+                ], $extra));
+
+                if ($locked->coupon_id) {
+                    Coupon::where('id', $locked->coupon_id)->increment('used_count');
+                }
+
+                assignPlanToUser($locked->user, $locked->plan, $locked->billing_cycle);
+
+                return true;
+            });
+        } catch (\Exception $e) {
+            \Log::error('PlanOrder approval failed: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
     public function calculatePrices($planPrice, $coupon = null)
     {
         $this->original_price = $planPrice;

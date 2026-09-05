@@ -18,6 +18,13 @@ class OrderController extends Controller
 
         $storeId = $request->store_id;
 
+        // Enforce store scope when an authoritative store is known (resolved
+        // domain, customer membership, or session context).
+        $authoritativeStoreId = getAuthoritativeStoreId($request);
+        if ($authoritativeStoreId !== null && (int) $storeId !== $authoritativeStoreId) {
+            return response()->json(['error' => 'Store not authorized'], 403);
+        }
+
         if (Auth::guard('customer')->check()) {
             $orders = Order::where('store_id', $storeId)
                 ->where('customer_id', Auth::guard('customer')->id())
@@ -74,6 +81,13 @@ class OrderController extends Controller
         $store = \App\Models\Store::where('slug', $request->store_slug)->first();
         if (!$store) {
             return response()->json(['error' => 'Store not found'], 404);
+        }
+
+        // Enforce store scope when an authoritative store is known (resolved
+        // domain, customer membership, or session context).
+        $authoritativeStoreId = getAuthoritativeStoreId($request);
+        if ($authoritativeStoreId !== null && (int) $store->id !== $authoritativeStoreId) {
+            return response()->json(['error' => 'Store not authorized'], 403);
         }
 
         $query = Order::where('order_number', $orderNumber)
