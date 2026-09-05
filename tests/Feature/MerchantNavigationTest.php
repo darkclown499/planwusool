@@ -155,13 +155,14 @@ class MerchantNavigationTest extends TestCase
         $this->assertStringContainsString("MerchantContextNav", $content);
         $this->assertStringContainsString("resolvePrimaryId", $content);
         $this->assertStringContainsString("getMerchantContextNav", $content);
-        // Premium widths: primary ~80px (5rem) + context ~176px (11rem) = 16rem total, not 19rem/304px
-        $this->assertStringContainsString("'16rem'", $content, "Sidebar width should be 16rem with context (80+176)");
-        $this->assertStringContainsString("'5rem'", $content, "Sidebar width should be 5rem without context (80px)");
+        // Refined widths: primary 168px + context 180px = 348px (21.75rem);
+        // primary-only (dashboard/analytics/store-settings) collapses to 10.5rem.
+        $this->assertStringContainsString("'21.75rem'", $content, "Sidebar width should be 21.75rem with context (168+180)");
+        $this->assertStringContainsString("'10.5rem'", $content, "Sidebar width should be 10.5rem without context (168px)");
         $this->assertStringNotContainsString("'19rem'", $content, "Stale 19rem/304px width must be removed");
         $this->assertStringNotContainsString("5.75rem", $content);
-        $this->assertStringContainsString("w-[80px]", $content, "Primary nav target ~80px");
-        $this->assertStringContainsString("w-[176px]", $content, "Context nav target ~176px (160-190)");
+        $this->assertStringContainsString("w-[168px]", $content, "Primary nav column is 168px");
+        $this->assertStringContainsString("w-[180px]", $content, "Context nav column is 180px");
     }
 
     /** Desktop navigation hierarchy is lighter premium style */
@@ -171,10 +172,10 @@ class MerchantNavigationTest extends TestCase
         // Quieter inactive, emerald active without heavy border/shadow
         $this->assertStringContainsString("bg-emerald-50", $primary, "Active should use subtle emerald background");
         $this->assertStringNotContainsString("shadow-[0_1px_3px", $primary, "Should not have heavy card shadow on primary items");
-        $this->assertStringContainsString("text-gray-500", $primary, "Inactive should be quieter");
+        $this->assertStringContainsString("text-gray-600", $primary, "Inactive should be quieter");
 
         $context = file_get_contents(resource_path('js/components/merchant/MerchantContextNav.tsx'));
-        $this->assertStringContainsString("text-[11px]", $context, "Context section title should be small muted");
+        $this->assertStringContainsString("text-[10.5px]", $context, "Context section title should be small muted");
         $this->assertStringContainsString("uppercase", $context);
         $this->assertStringNotContainsString("rounded-xl", $context, "Context should not use large cards");
         $this->assertStringContainsString("bg-emerald-50", $context);
@@ -227,7 +228,7 @@ class MerchantNavigationTest extends TestCase
     {
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
         // Compact row: small zap icon, plan name, Upgrade link, no rounded-xl heavy card
-        $this->assertStringContainsString("h-6 w-6", $sidebar, "Compact plan icon 6x6");
+        $this->assertStringContainsString("h-7 w-7", $sidebar, "Compact plan icon 7x7");
         $this->assertStringNotContainsString("rounded-xl bg-white border border-gray-200/60 p-3 shadow-sm", $sidebar, "Large detached plan card must be removed");
         $this->assertStringContainsString("Upgrade", $sidebar);
         $this->assertStringContainsString("border-t border-gray-100", $sidebar, "Compact row uses subtle border, not huge card");
@@ -269,20 +270,23 @@ class MerchantNavigationTest extends TestCase
     {
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
         $this->assertStringContainsString("--sidebar-width", $sidebar);
-        $this->assertStringContainsString("16rem", $sidebar);
+        $this->assertStringContainsString("21.75rem", $sidebar);
         $this->assertStringNotContainsString("304px", $sidebar);
 
         $ui = file_get_contents(resource_path('js/components/ui/sidebar.tsx'));
         $this->assertStringContainsString("--sidebar-width", $ui);
-        $this->assertStringContainsString("peer-data-[side=right]:pr-[var(--sidebar-width)]", $ui, "RTL offset must use pr with sidebar width");
-        $this->assertStringContainsString("overflow-x-clip", $ui);
+        // Tailwind v4 parenthesized var syntax drives the sidebar column width
+        // and the content offset (SVB: relative flex sibling + flex-1 inset)
+        $this->assertStringContainsString("w-(--sidebar-width)", $ui, "Offset must be driven by the --sidebar-width CSS variable");
+        $this->assertStringContainsString("group-data-[side=right]:border-l", $ui, "RTL border must flip to the opposite side");
+        $this->assertStringContainsString("overflow-x-hidden", $ui, "No horizontal scroll from the sidebar");
     }
 
     /** Horizontal scroll eliminated, RTL correct */
     public function test_no_horizontal_scroll_and_rtl(): void
     {
         $shell = file_get_contents(resource_path('js/components/app-shell.tsx'));
-        $this->assertStringContainsString("overflow-x-hidden", $shell);
+        $this->assertStringContainsString("overflow-hidden", $shell);
         $this->assertStringContainsString("max-w-full", $shell);
         $this->assertStringContainsString("min-w-0", $shell);
 

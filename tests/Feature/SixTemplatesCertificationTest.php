@@ -58,11 +58,13 @@ class SixTemplatesCertificationTest extends TestCase
         $content = file_get_contents($file);
         // The bug was {heading} without declaration
         $this->assertStringNotContainsString('{heading}', $content, 'ElectronicsHub still has undefined {heading}');
-        // Should contain fallback to electronics_brands_heading or الماركات
-        $this->assertTrue(
-            str_contains($content, 'electronics_brands_heading') || str_contains($content, 'الماركات'),
-            'ElectronicsHub must have brands heading fallback'
-        );
+        // The v2 data model no longer has a dedicated brands heading key; hero
+        // headings are declared per-media via heroContentForMedia (c.heading)
+        // with the global banner title (hero.heading || banner?.title || '')
+        // and eff.title/promise legacy fallbacks. Assert headings are declared
+        // with fallbacks, never a bare {heading}.
+        $this->assertStringContainsString('c.heading', $content, 'ElectronicsHub must read per-media hero heading from declared key');
+        $this->assertStringContainsString("hero.heading || banner?.title || ''", $content, 'ElectronicsHub hero heading must have a declared fallback');
         // Ensure no other template has raw {heading} without dot
         foreach (Store::ALL_TEMPLATES as $slug) {
             $files = glob(resource_path("js/templates-v2/$slug/*.tsx"));

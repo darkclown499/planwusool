@@ -474,7 +474,7 @@ class GrowthSuiteIntegrationTest extends TestCase
         $this->assertStringContainsString('partner.dashboard', $nav);
 
         $ar = file_get_contents(resource_path('lang/ar.json'));
-        $this->assertStringContainsString('خلاصات المنتجات', $ar);
+        $this->assertStringContainsString('ربط المنتجات مع Google', $ar);
         $this->assertStringContainsString('برنامج الشركاء', $ar);
     }
 

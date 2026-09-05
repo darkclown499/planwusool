@@ -173,15 +173,35 @@ class OnboardingMediaUploadTest extends TestCase
 
         $this->actingAs($user);
 
-        // Backend caps each file at min(config max, 10240) KB. Use a file
-        // bigger than the 10 MB upper bound so it is rejected regardless of
-        // the tenant-specific configured limit (no config in the test env).
-        $huge = UploadedFile::fake()->image('huge.jpg', 2000, 2000)->size(20000);
+        // Backend caps each file at a hard 50 MB safety ceiling in the batch
+        // validator. Use a file above that bound so it is rejected regardless
+        // of any tenant-specific setting.
+        $huge = UploadedFile::fake()->image('huge.jpg', 2000, 2000)->size(60000);
 
         $this->postJson('/api/media/batch', ['files' => [$huge]])
             ->assertStatus(422);
 
         $this->assertSame(0, Media::count());
+    }
+
+    public function test_upload_size_boundaries_at_50mb_ceiling(): void
+    {
+        Storage::fake('public');
+        $user = $this->nonOnboardedCompanyUser();
+
+        $this->actingAs($user);
+
+        // Just below the 50 MB ceiling -> accepted
+        $this->postJson('/api/media/batch', ['files' => [UploadedFile::fake()->image('below.jpg', 2000, 2000)->size(51199)]])
+            ->assertStatus(200);
+
+        // Exactly at the 50 MB ceiling (51200 KB) -> accepted (`max:51200` is inclusive)
+        $this->postJson('/api/media/batch', ['files' => [UploadedFile::fake()->image('at.jpg', 2000, 2000)->size(51200)]])
+            ->assertStatus(200);
+
+        // Just above the 50 MB ceiling -> rejected
+        $this->postJson('/api/media/batch', ['files' => [UploadedFile::fake()->image('above.jpg', 2000, 2000)->size(51201)]])
+            ->assertStatus(422);
     }
 
     public function test_unauthenticated_media_upload_is_rejected(): void
