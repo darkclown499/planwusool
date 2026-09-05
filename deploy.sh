@@ -442,6 +442,7 @@ echo "==> rate-limited endpoint OK (all non-500):$rl_codes"
 echo "==> [8/8d] Verifying public build assets (manifest-driven, origin + CF edge)"
 ASSET_HOST="$(echo "$APP_URL_PROBE" | sed -E 's#^https?://([^/?]+).*#\1#')"
 FAILED_ASSETS=()
+EDGE_FAILS=()
 HARD_FAILS=0
 while IFS= read -r name; do
     [ -z "$name" ] || [ "$name" = "." ] && continue
@@ -481,19 +482,34 @@ while IFS= read -r name; do
     done
     if [ "$pub_ok" -ne 1 ]; then
         echo "FATAL: '$rel' unreachable at Cloudflare edge (public HTTP $pcode) while ORIGIN healthy -> CDN EDGE FAILURE" >&2
-        FAILED_ASSETS+=("$rel:CDN_EDGE_FAILURE")
-        HARD_FAILS=$((HARD_FAILS + 1))
-        if [ "$HARD_FAILS" -ge 3 ]; then
-            echo "FATAL: too many assets failing at Cloudflare edge (${FAILED_ASSETS[*]}) -> aborting" >&2
-            exit 1
-        fi
+        EDGE_FAILS+=("$rel")
     else
         echo "==> '$rel' served publicly OK (HTTP $pcode, ${psize}b)"
     fi
 done < <(run_www "$PHP" -r '$m=json_decode(file_get_contents($argv[1]), true); echo "manifest.json", PHP_EOL; foreach ($m as $e) { if (isset($e["file"])) echo basename($e["file"]), PHP_EOL; }' -- "public/build/manifest.json")
 if [ "${#FAILED_ASSETS[@]}" -ne 0 ]; then
-    echo "FATAL: build asset verification failed (${FAILED_ASSETS[*]})" >&2
+    echo "FATAL: build asset verification failed at ORIGIN (${FAILED_ASSETS[*]})" >&2
     exit 1
+fi
+if [ "${#EDGE_FAILS[@]}" -ne 0 ]; then
+    echo "==> ${#EDGE_FAILS[@]} asset(s) flaky at CF edge; cooling down 30s then re-verifying..."
+    sleep 30
+    REMAIN=()
+    for rel in "${EDGE_FAILS[@]}"; do
+        r_ok=0; rc=000; rs=0
+        for t in 1 2; do
+            pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+            rc=$(echo "$pub" | cut -d' ' -f1); rs=$(echo "$pub" | cut -d' ' -f3)
+            if [ "$rc" = "200" ] && [ "${rs:-0}" -gt 0 ]; then r_ok=1; break; fi
+            sleep 3
+        done
+        if [ "$r_ok" -ne 1 ]; then REMAIN+=("$rel"); else echo "==> '$rel' edge flake recovered (HTTP $rc, ${rs}b)"; fi
+    done
+    if [ "${#REMAIN[@]}" -ne 0 ]; then
+        echo "FATAL: persistent Cloudflare edge failure for (${REMAIN[*]}) -> CDN EDGE FAILURE (origin healthy)" >&2
+        exit 1
+    fi
+    echo "==> CF edge transient failures auto-recovered (${#EDGE_FAILS[@]} assets); continuing"
 fi
 echo "==> verify_public_assets OK: all manifest assets healthy at origin AND through public HTTPS"
 
