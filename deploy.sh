@@ -492,24 +492,30 @@ if [ "${#FAILED_ASSETS[@]}" -ne 0 ]; then
     exit 1
 fi
 if [ "${#EDGE_FAILS[@]}" -ne 0 ]; then
-    echo "==> ${#EDGE_FAILS[@]} asset(s) flaky at CF edge; cooling down 30s then re-verifying..."
-    sleep 30
-    REMAIN=()
-    for rel in "${EDGE_FAILS[@]}"; do
-        r_ok=0; rc=000; rs=0
-        for t in 1 2; do
-            pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 -H "Cache-Control: no-cache" "https://$ASSET_HOST/$rel" 2>/dev/null || true)
-            rc=$(echo "$pub" | cut -d' ' -f1); rs=$(echo "$pub" | cut -d' ' -f3)
-            if [ "$rc" = "200" ] && [ "${rs:-0}" -gt 0 ]; then r_ok=1; break; fi
-            sleep 3
+    echo "==> ${#EDGE_FAILS[@]} asset(s) flaky at CF edge (512/522 negative cache up to ~5min); re-verifying with windowed backoff (origin healthy)"
+    REMAIN=("${EDGE_FAILS[@]}")
+    attempts=0
+    while [ "${#REMAIN[@]}" -ne 0 ] && [ "$attempts" -lt 18 ]; do
+        attempts=$((attempts + 1))
+        sleep 20
+        NEXT=()
+        for rel in "${REMAIN[@]}"; do
+            r_ok=0; rc=000; rs=0
+            for t in 1 2; do
+                pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 -H "Cache-Control: no-cache" "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+                rc=$(echo "$pub" | cut -d' ' -f1); rs=$(echo "$pub" | cut -d' ' -f3)
+                if [ "$rc" = "200" ] && [ "${rs:-0}" -gt 0 ]; then r_ok=1; break; fi
+                sleep 2
+            done
+            if [ "$r_ok" -ne 1 ]; then NEXT+=("$rel"); else echo "==> '$rel' edge flake recovered (HTTP $rc, ${rs}b, attempt $attempts)"; fi
         done
-        if [ "$r_ok" -ne 1 ]; then REMAIN+=("$rel"); else echo "==> '$rel' edge flake recovered (HTTP $rc, ${rs}b)"; fi
+        REMAIN=("${NEXT[@]}")
     done
     if [ "${#REMAIN[@]}" -ne 0 ]; then
-        echo "FATAL: persistent Cloudflare edge failure for (${REMAIN[*]}) -> CDN EDGE FAILURE (origin healthy)" >&2
+        echo "FATAL: persistent Cloudflare edge failure after ${attempts} attempts for (${REMAIN[*]}) -> CDN EDGE FAILURE (origin healthy)" >&2
         exit 1
     fi
-    echo "==> CF edge transient failures auto-recovered (${#EDGE_FAILS[@]} assets); continuing"
+    echo "==> CF edge transient failures auto-recovered; continuing"
 fi
 echo "==> verify_public_assets OK: all manifest assets healthy at origin AND through public HTTPS"
 
