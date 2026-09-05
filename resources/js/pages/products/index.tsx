@@ -20,7 +20,7 @@ import UpgradeModal from '@/components/UpgradeModal';
 
 export default function Products() {
   const { t } = useTranslation();
-  const { products: paginatedProducts, stats, auth, planLimits, categories, lowStockThreshold, filters } = usePage().props as any;
+  const { products: paginatedProducts, stats, auth, planLimits, planTiers, categories, lowStockThreshold, filters } = usePage().props as any;
   const [productToDelete, setProductToDelete] = useState<number | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -176,7 +176,7 @@ export default function Products() {
         { title: t('Products') },
       ]}
     >
-      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} limitType="resource" current={planLimits?.current_products} max={planLimits?.max_products} />
+      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} limitType="resource" current={planLimits?.current_products} max={planLimits?.max_products} tiers={planTiers} />
 
       <div className="space-y-4">
         {planLimits && !planLimits.can_create && (

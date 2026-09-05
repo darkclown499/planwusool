@@ -8,7 +8,7 @@ import ProductForm from './ProductForm';
 
 export default function CreateProduct() {
   const { t } = useTranslation();
-  const { categories, taxes, errors, planLimits } = usePage().props as any;
+  const { categories, taxes, errors, planLimits, planTiers } = usePage().props as any;
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   return (
@@ -23,7 +23,7 @@ export default function CreateProduct() {
         { title: t('Create Product') },
       ]}
     >
-      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} limitType="resource" current={planLimits?.current_products} max={planLimits?.max_products} />
+      <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} limitType="resource" current={planLimits?.current_products} max={planLimits?.max_products} tiers={planTiers} />
       {planLimits && !planLimits.can_create && (
         <div className="mb-4 flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-800">
           <AlertTriangle className="h-5 w-5 shrink-0" />

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Plan;
 use App\Models\ProductImportBatch;
 use App\Services\ProductImportService;
 use Illuminate\Http\Request;
@@ -12,6 +13,28 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
+    /**
+     * Small normalized payload for the product-limit upgrade modal. The tiers
+     * a merchant can move up to are read from the same authoritative Plan
+     * source (max_products_per_store) — never hardcoded in the UI — so any
+     * future plan-limit change flows to the merchant automatically.
+     *
+     * @param  \App\Models\Plan|null  $currentPlan
+     * @return array<int, array{name: string, max_products: int}>
+     */
+    private function upgradePlanTiers($currentPlan = null): array
+    {
+        return Plan::query()
+            ->where('is_default', false)
+            ->when($currentPlan?->id, fn ($q, $id) => $q->where('id', '!=', $id))
+            ->orderBy('max_products_per_store')
+            ->limit(2)
+            ->get(['name', 'max_products_per_store'])
+            ->map(fn ($p) => ['name' => $p->name, 'max_products' => (int) ($p->max_products_per_store ?? 0)])
+            ->values()
+            ->all();
+    }
+
     /**
      * Display a listing of the products.
      */
@@ -129,6 +152,7 @@ class ProductController extends Controller
             'products' => $products,
             'categories' => $categories,
             'planLimits' => $planLimits,
+            'planTiers' => $this->upgradePlanTiers($plan),
             'lowStockThreshold' => $lowStockThreshold,
             'filters' => [
                 'search' => (string) $request->input('search', ''),
@@ -183,6 +207,7 @@ class ProductController extends Controller
             'categories' => $categories,
             'taxes' => $taxes,
             'planLimits' => $planLimits,
+            'planTiers' => $this->upgradePlanTiers($plan),
         ]);
     }
 

@@ -12,9 +12,10 @@ interface UpgradeModalProps {
   limitType?: string;
   current?: number;
   max?: number;
+  tiers?: { name: string; max_products: number }[];
 }
 
-export default function UpgradeModal({ open, onOpenChange, feature, limitType, current, max }: UpgradeModalProps) {
+export default function UpgradeModal({ open, onOpenChange, feature, limitType, current, max, tiers }: UpgradeModalProps) {
   const { t } = useTranslation();
 
   return (
@@ -46,14 +47,12 @@ export default function UpgradeModal({ open, onOpenChange, feature, limitType, c
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 py-4">
-          <div className="rounded-lg border bg-emerald-50 p-3 text-sm">
-            <div className="font-semibold text-emerald-700">{t('Growth Plan')}</div>
-            <div className="text-emerald-600">500 {t('products')} · {t('Shipping')} · {t('PWA')}</div>
-          </div>
-          <div className="rounded-lg border bg-amber-50 p-3 text-sm">
-            <div className="font-semibold text-amber-700">{t('Professional Plan')}</div>
-            <div className="text-amber-600">10000+ {t('products')} · {t('Custom Domain')} · {t('Mobile App')} · {t('VIP Support')}</div>
-          </div>
+          {tiers && tiers.length > 0 && tiers.map((tier) => (
+            <div key={tier.name} className="rounded-lg border bg-emerald-50 p-3 text-sm">
+              <div className="font-semibold text-emerald-700">{tier.name}</div>
+              <div className="text-emerald-600">{tier.max_products} {t('products')}</div>
+            </div>
+          ))}
         </div>
         <DialogFooter className="flex flex-col gap-2 sm:flex-row">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
