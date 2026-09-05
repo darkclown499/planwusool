@@ -473,7 +473,7 @@ while IFS= read -r name; do
     echo "==> '$rel' healthy at origin (HTTP $ocode, $otype, ${asize}b)"
     pub_ok=0; pcode=000; psize=0
     for t in 1 2 3 4; do
-        pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+        pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 -H "Cache-Control: no-cache" "https://$ASSET_HOST/$rel" 2>/dev/null || true)
         pcode=$(echo "$pub" | cut -d' ' -f1); psize=$(echo "$pub" | cut -d' ' -f3)
         if [ "$pcode" = "200" ] && [ "${psize:-0}" -gt 0 ]; then
             pub_ok=1; break
@@ -498,7 +498,7 @@ if [ "${#EDGE_FAILS[@]}" -ne 0 ]; then
     for rel in "${EDGE_FAILS[@]}"; do
         r_ok=0; rc=000; rs=0
         for t in 1 2; do
-            pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+            pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 -H "Cache-Control: no-cache" "https://$ASSET_HOST/$rel" 2>/dev/null || true)
             rc=$(echo "$pub" | cut -d' ' -f1); rs=$(echo "$pub" | cut -d' ' -f3)
             if [ "$rc" = "200" ] && [ "${rs:-0}" -gt 0 ]; then r_ok=1; break; fi
             sleep 3
