@@ -465,10 +465,10 @@ while IFS= read -r name; do
     fi
     echo "==> '$rel' healthy at origin (HTTP $ocode, $otype, ${asize}b)"
     pub_ok=0; pcode=000; psize=0
-    for t in 1 2 3; do
-        pub=$(curl -s -o /dev/null -w '%{http_code} %{size_download}' --max-time 30 "https://$ASSET_HOST/$rel" 2>/dev/null || true)
+    for t in 1 2 3 4; do
+        pub=$(curl -s -o /dev/null -w '%{http_code} %{content_type} %{size_download}' --max-time 30 "https://$ASSET_HOST/$rel" 2>/dev/null || true)
         pcode=$(echo "$pub" | cut -d' ' -f1); psize=$(echo "$pub" | cut -d' ' -f3)
-        if [ "$pcode" = "200" ] && [ "$psize" -gt 0 ]; then
+        if [ "$pcode" = "200" ] && [ "${psize:-0}" -gt 0 ]; then
             pub_ok=1; break
         fi
         sleep 3
