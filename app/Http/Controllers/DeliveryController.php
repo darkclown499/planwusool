@@ -208,6 +208,24 @@ class DeliveryController extends Controller
             'free_shipping_threshold' => $freeThresholdVal,
         ];
 
+        // Delivery setup readiness — a truthful read-model computed from the same
+        // store-scoped facts the checkout uses. A single active method is enough:
+        // the storefront checkout API only exposes methods when is_active = true.
+        // Local delivery zones are an optional coverage layer and are never a
+        // prerequisite for a method to be usable.
+        $activeMethods = $shippings->where('is_active', true);
+        $inactiveMethods = $shippings->where('is_active', false);
+        $deliveryReadiness = [
+            'entitled' => (bool) $shippingEnabled,
+            'has_methods' => $shippings->count() > 0,
+            'has_active_method' => $activeMethods->count() > 0,
+            'active_methods_count' => $activeMethods->count(),
+            'methods_total' => $shippings->count(),
+            'zones_active_count' => (int) $zonesDetailed->where('is_active', true)->count(),
+            'zones_optional' => true,
+            'first_inactive_method_id' => $inactiveMethods->first()?->id ?? null,
+        ];
+
         return Inertia::render('delivery/index', [
             'orders' => $orders,
             'zones' => $zones,
@@ -223,6 +241,7 @@ class DeliveryController extends Controller
             'courierIntegrations' => $courierIntegrations,
             'courierRequests' => $courierRequests,
             'shippingEnabled' => $shippingEnabled,
+            'deliveryReadiness' => $deliveryReadiness,
             'freeShipping' => [
                 'enabled' => $freeEnabled,
                 'threshold' => $freeThresholdVal,

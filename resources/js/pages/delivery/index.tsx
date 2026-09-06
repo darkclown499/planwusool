@@ -3,7 +3,7 @@ import { PageTemplate } from '@/components/page-template';
 import {
   Truck, MapPin, User, Phone, Clock, Search, Filter, ChevronLeft, ChevronRight,
   ArrowUpDown, Package, AlertTriangle, CheckCircle2, XCircle, RotateCcw, Play,
-  UserPlus, UserX, Loader2, Eye, Calendar, Settings, Boxes, Building2, Info, Plus, Edit, Trash2, ToggleLeft, ToggleRight, Shield,
+  UserPlus, UserX, Loader2, Eye, Calendar, Settings, Boxes, Building2, Info, Plus, Edit, Trash2, ToggleLeft, ToggleRight, Shield, Lock, Zap,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -95,9 +95,22 @@ const HUB_TABS = [
 export default function DeliveryHub() {
   const { t } = useTranslation();
   const pageProps = usePage().props as any;
-  const { orders, zones, drivers, counts, filters: serverFilters, currentTab, hubStats, shippings, shippingStats, zonesDetailed, driversDetailed, courierIntegrations, courierRequests, freeShipping, shippingEnabled } = pageProps;
+  const { orders, zones, drivers, counts, filters: serverFilters, currentTab, hubStats, shippings, shippingStats, zonesDetailed, driversDetailed, courierIntegrations, courierRequests, freeShipping, shippingEnabled, deliveryReadiness } = pageProps;
 
   const activeTab = (currentTab as string) || 'overview';
+
+  // Server-computed delivery setup readiness (falls back to the same store-scoped
+  // facts locally so the hub stays coherent without the new prop).
+  const readiness = deliveryReadiness || {
+    entitled: !!shippingEnabled,
+    has_methods: !!(shippings && shippings.length > 0),
+    has_active_method: !!(shippings && shippings.some((s: any) => s.is_active)),
+    active_methods_count: (shippings || []).filter((s: any) => s.is_active).length,
+    methods_total: (shippings || []).length,
+    zones_active_count: hubStats?.zones_active ?? 0,
+    zones_optional: true,
+    first_inactive_method_id: null,
+  };
 
   const [filters, setFilters] = useState<FiltersData>({
     bucket: serverFilters?.bucket || 'unassigned',
@@ -259,6 +272,86 @@ export default function DeliveryHub() {
 
   const hasTracking = (shippings || []).some((s: any) => s.tracking_available);
 
+  // Compact setup/readiness verdict for the top of the Delivery Hub. One reason
+  // and one next action; the verdict comes from the server-computed read-model.
+  const renderReadinessHeader = () => {
+    if (!readiness.entitled) {
+      return (
+        <Card className="border-amber-300 bg-amber-50/70">
+          <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                <Lock className="h-5 w-5 text-amber-600" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-amber-900">التوصيل غير متاح في خطتك الحالية</h2>
+                <p className="text-xs text-amber-800 mt-0.5">أضف طرق توصيل ومناطق تغطية ليتمكن عملاؤك من اختيار التوصيل عند الدفع.</p>
+                <p className="text-xs text-amber-700 mt-0.5">متاح في خطة Growth أو أعلى.</p>
+              </div>
+            </div>
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 ms-auto shrink-0" onClick={() => router.visit(route('plan-orders.index'))}>
+              <Zap className="h-4 w-4 me-1" /> ترقية الخطة
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
+    if (readiness.has_active_method) {
+      return (
+        <Card className="border-emerald-200 bg-emerald-50/70">
+          <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-emerald-900">التوصيل جاهز</h2>
+                <p className="text-xs text-emerald-800 mt-0.5">لديك {readiness.active_methods_count} طريقة توصيل مفعلة متاحة للعملاء عند الدفع.</p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="ms-auto shrink-0" onClick={() => navigateTab('methods')}>إدارة طرق التوصيل</Button>
+          </CardContent>
+        </Card>
+      );
+    }
+    const noMethods = !readiness.has_methods;
+    return (
+      <Card className="border-blue-200 bg-blue-50/70">
+        <CardContent className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
+              <Truck className="h-5 w-5 text-blue-600" />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold text-blue-900">{noMethods ? 'لم تتم إضافة طريقة توصيل بعد' : 'طريقة التوصيل غير مفعلة'}</h2>
+              <p className="text-xs text-blue-800 mt-0.5">
+                {noMethods
+                  ? 'أضف طريقة توصيل وحدد التغطية المناسبة لمتجرك ليتمكن العملاء من اختيارها عند الدفع.'
+                  : 'فعّل طريقة توصيل واحدة على الأقل حتى يتمكن العملاء من اختيارها عند الدفع.'}
+              </p>
+              {readiness.has_methods && readiness.methods_total > 1 && (
+                <p className="text-xs text-blue-700 mt-0.5">يملك المتجر {readiness.methods_total} طرق توصيل — لكن لا توجد طريقة مفعلة.</p>
+              )}
+            </div>
+          </div>
+          {noMethods ? (
+            shippingEnabled && hasPermission('create-shipping') && (
+              <Button size="sm" className="ms-auto shrink-0" onClick={() => router.visit(route('shipping.create'))}>
+                <Plus className="h-4 w-4 me-1" /> إضافة طريقة توصيل
+              </Button>
+            )
+          ) : (
+            shippingEnabled && hasPermission('edit-shipping') && readiness.first_inactive_method_id && (
+              <Button size="sm" className="ms-auto shrink-0" onClick={() => router.visit(route('shipping.edit', readiness.first_inactive_method_id))}>
+                <Play className="h-4 w-4 me-1" /> تفعيل طريقة التوصيل
+              </Button>
+            )
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <>
       <PageTemplate
@@ -293,6 +386,9 @@ export default function DeliveryHub() {
               );
             })}
           </div>
+
+          {/* Readiness / next-action header — same verdict across every hub tab */}
+          <div className="pt-1">{renderReadinessHeader()}</div>
 
           {/* TAB CONTENT */}
           {activeTab === 'overview' && (
@@ -550,7 +646,7 @@ export default function DeliveryHub() {
           {activeTab === 'methods' && (
             <div className="space-y-3">
               {!shippingEnabled && (
-                <FeatureLockedOverlay featureName="Shipping Methods" requiredPlan="Growth" />
+                <FeatureLockedOverlay featureName="Delivery Method" requiredPlan="Growth" />
               )}
               <Card>
                 <CardHeader>
@@ -564,8 +660,8 @@ export default function DeliveryHub() {
                   {(!shippings || shippings.length === 0) ? (
                     <div className="text-center py-12">
                       <Truck className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                      <h3 className="mt-4 text-lg font-medium">لا توجد طرق توصيل بعد</h3>
-                      <p className="mt-2 text-sm text-muted-foreground">أنشئ طريقة توصيل ليتمكن العملاء من اختيارها عند الدفع.</p>
+                      <h3 className="mt-4 text-lg font-medium">لم تتم إضافة طريقة توصيل بعد</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">أضف طريقة توصيل وحدد التغطية المناسبة لمتجرك ليتمكن العملاء من اختيارها عند الدفع.</p>
                       {shippingEnabled && hasPermission('create-shipping') && (
                         <Button className="mt-4" onClick={() => router.visit(route('shipping.create'))}>
                           <Plus className="h-4 w-4 me-2" /> إضافة طريقة توصيل
@@ -579,7 +675,7 @@ export default function DeliveryHub() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-bold text-sm">{s.name}</span>
-                              <Badge variant={s.is_active ? 'default' : 'secondary'}>{s.is_active ? 'مفعّل' : 'معطّل'}</Badge>
+                              <Badge variant={s.is_active ? 'default' : 'secondary'}>{s.is_active ? <CheckCircle2 className="h-3 w-3 me-1" /> : <XCircle className="h-3 w-3 me-1" />}{s.is_active ? 'مفعّل' : 'معطّل'}</Badge>
                               <Badge variant="outline" className="text-xs">{s.type?.replace('_', ' ')}</Badge>
                               {s.tracking_available && <Badge variant="outline" className="text-xs text-emerald-600">تتبع</Badge>}
                             </div>
@@ -621,7 +717,7 @@ export default function DeliveryHub() {
           {activeTab === 'zones' && (
             <div className="space-y-3">
               {!shippingEnabled && (
-                <FeatureLockedOverlay featureName="Local Delivery Zones" requiredPlan="Growth" />
+                <FeatureLockedOverlay featureName="Delivery Zone" requiredPlan="Growth" />
               )}
               <Card>
                 <CardHeader>
@@ -697,7 +793,7 @@ export default function DeliveryHub() {
           {activeTab === 'drivers' && (
             <div className="space-y-3">
               {!shippingEnabled && (
-                <FeatureLockedOverlay featureName="Delivery Drivers" requiredPlan="Growth" />
+                <FeatureLockedOverlay featureName="Drivers" requiredPlan="Growth" />
               )}
               <Card className="border-blue-100 bg-blue-50/50">
                 <CardContent className="p-3 flex items-start gap-3">
