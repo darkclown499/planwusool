@@ -87,16 +87,16 @@ interface OnboardingProps {
     };
 }
 
-const STEP_META: { key: string; icon: LucideIcon }[] = [
-    { key: 'welcome', icon: Sparkles },
-    { key: 'name', icon: User },
-    { key: 'store', icon: Store },
-    { key: 'details', icon: Contact },
-    { key: 'branding', icon: Brush },
-    { key: 'language', icon: Languages },
-    { key: 'currency', icon: Coins },
-    { key: 'theme', icon: Palette },
-    { key: 'confirm', icon: CheckCircle2 },
+const STEP_META: { key: string; labelKey: string; icon: LucideIcon }[] = [
+    { key: 'welcome', labelKey: 'Welcome', icon: Sparkles },
+    { key: 'name', labelKey: 'Your Name', icon: User },
+    { key: 'store', labelKey: 'Store name', icon: Store },
+    { key: 'details', labelKey: 'How customers reach you', icon: Contact },
+    { key: 'branding', labelKey: 'Brand your store', icon: Brush },
+    { key: 'language', labelKey: 'Language', icon: Languages },
+    { key: 'currency', labelKey: 'Currency', icon: Coins },
+    { key: 'theme', labelKey: 'Design', icon: Palette },
+    { key: 'confirm', labelKey: 'Review', icon: CheckCircle2 },
 ];
 
 // Maps every form field to the step index that owns it so we can jump the
@@ -198,9 +198,16 @@ export default function Onboarding({
 
     const checkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     const autosaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const saveResetTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
 
     const stepKey = STEP_META[step].key;
-    const progress = ((step + 1) / STEP_META.length) * 100;
+
+    const flashSaved = () => {
+        setSaveState('saved');
+        if (saveResetTimeout.current) clearTimeout(saveResetTimeout.current);
+        saveResetTimeout.current = setTimeout(() => setSaveState('idle'), 1600);
+    };
 
     // Debounced autosave of the wizard progress so a refresh or a closed tab
     // never loses what the merchant already typed.
@@ -208,6 +215,7 @@ export default function Onboarding({
         if (stepKey === 'welcome') return;
         if (autosaveTimeout.current) clearTimeout(autosaveTimeout.current);
         autosaveTimeout.current = setTimeout(() => {
+            setSaveState('saving');
             axios
                 .post(route('onboarding.progress'), {
                     step: step + 1,
@@ -231,14 +239,18 @@ export default function Onboarding({
                         publishStore: data.publish_store,
                     },
                 })
+                .then(() => {
+                    flashSaved();
+                })
                 .catch(() => {
+                    setSaveState('idle');
                     /* autosave is best-effort; the final submit persists everything */
                 });
         }, 800);
         return () => {
             if (autosaveTimeout.current) clearTimeout(autosaveTimeout.current);
+            if (saveResetTimeout.current) clearTimeout(saveResetTimeout.current);
         };
-         
     }, [data, step, stepKey]);
 
     const confettiPieces = useMemo(
@@ -637,23 +649,86 @@ export default function Onboarding({
 
                 {/* Wizard column � clean step-by-step forms */}
                 <main className="flex flex-col px-4 py-8 lg:col-span-7 lg:px-10 xl:px-16">
-                    {/* Progress header � bar + step counter */}
+                    {/* Progress header — step counter + step stepper */}
                     <div className="mx-auto w-full max-w-xl">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between gap-3">
                             <img
                                 src="/images/logos/wusool-logo.png"
                                 alt={titleText}
                                 className="h-8 w-auto shrink-0 lg:hidden"
                             />
-                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
-                                <div
-                                    className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-                                    style={{ width: `${progress}%` }}
-                                />
-                            </div>
+                            <span
+                                role="status"
+                                className="inline-flex min-h-4 min-w-[92px] shrink-0 items-center justify-start gap-1 text-[11px] font-medium text-gray-400 tabular-nums"
+                            >
+                                {saveState === 'saving' && (
+                                    <>
+                                        <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+                                        {t('Saving…')}
+                                    </>
+                                )}
+                                {saveState === 'saved' && (
+                                    <>
+                                        <Check className="h-3 w-3 shrink-0 text-emerald-500" />
+                                        {t('All changes saved')}
+                                    </>
+                                )}
+                            </span>
                             <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-500">
                                 {t('Step {{current}} of {{total}}', { current: step + 1, total: STEP_META.length })}
                             </span>
+                        </div>
+
+                        <ol className="mt-3 flex items-center" aria-label={t('Store setup steps')}>
+                            {STEP_META.map((meta, i) => {
+                                const isCurrent = i === step;
+                                const isCompleted = i < step;
+                                const StepIcon = meta.icon;
+                                return (
+                                    <li
+                                        key={meta.key}
+                                        aria-current={isCurrent ? 'step' : undefined}
+                                        aria-label={t(meta.labelKey)}
+                                        className="flex min-w-0 flex-1 items-center"
+                                    >
+                                        {i > 0 && (
+                                            <span
+                                                aria-hidden
+                                                className={`mx-0.5 h-0.5 min-w-1 flex-1 rounded-full transition-colors duration-300 ${
+                                                    i <= step ? 'bg-emerald-500' : 'bg-gray-200'
+                                                }`}
+                                            />
+                                        )}
+                                        <span
+                                            aria-hidden
+                                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-7 sm:w-7 ${
+                                                isCurrent
+                                                    ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm ring-4 ring-emerald-500/15'
+                                                    : isCompleted
+                                                      ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
+                                                      : 'border-gray-200 bg-white text-gray-300'
+                                            }`}
+                                        >
+                                            {isCompleted ? (
+                                                <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={3} />
+                                            ) : (
+                                                <StepIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                            )}
+                                        </span>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 text-xs">
+                            <span className="font-semibold text-gray-800">
+                                {t(STEP_META[step].labelKey)}
+                            </span>
+                            {step < STEP_META.length - 1 && (
+                                <span className="text-gray-400">
+                                    {t('Next')}: {t(STEP_META[step + 1].labelKey)}
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -959,7 +1034,7 @@ export default function Onboarding({
                                                             {t('Brand your store')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Describe your business and make it yours � everything here is optional.')}
+                                                            {t('Describe your business and make it yours — everything here is optional.')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1010,7 +1085,7 @@ export default function Onboarding({
                                                                 {t('Store logo')}
                                                             </Label>
                                                             <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
-                                                                {t('Recommended size: 500 � 500 px')}
+                                                                {t('Recommended size: 500 × 500 px')}
                                                             </span>
                                                         </div>
                                                         <MediaPicker
@@ -1352,7 +1427,7 @@ export default function Onboarding({
                                                             {t('Choose a design')}
                                                         </h2>
                                                         <p className="text-sm text-gray-500">
-                                                            {t('Pick the perfect look for your store � preview any design live or change it anytime later.')}
+                                                            {t('Pick the perfect look for your store — preview any design live or change it anytime later.')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1671,6 +1746,11 @@ export default function Onboarding({
                                                 </Button>
                                             )}
                                         </div>
+                                    )}
+                                    {stepKey !== 'welcome' && stepKey !== 'confirm' && !canProceed() && (
+                                        <p className="mt-3 text-center text-xs text-amber-600">
+                                            {t('Complete the required fields to continue')}
+                                        </p>
                                     )}
                             </div>
                         </div>
