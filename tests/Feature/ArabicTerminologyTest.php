@@ -59,12 +59,17 @@ class ArabicTerminologyTest extends TestCase
         $this->assertStringNotContainsString("label: 'تم التسليم'}, next: 'delivered'", $source, 'shipped action must not reuse delivered label');
     }
 
-    public function test_orders_list_uses_delivered_not_done(): void
+    public function test_orders_list_grouped_tabs_are_canonical_arabic(): void
     {
         $source = file_get_contents(resource_path('js/pages/orders/index.tsx'));
-        $this->assertStringContainsString("{ key: 'shipped', label: 'تم الشحن' }", $source);
-        $this->assertStringContainsString("{ key: 'delivered', label: 'تم التسليم' }", $source);
-        $this->assertStringNotContainsString("{ key: 'delivered', label: 'مكتمل' }", $source, 'delivered tab must not be labeled مكتمل');
+        $this->assertStringContainsString("{ key: '', label: 'الكل' }", $source);
+        $this->assertStringContainsString("{ key: 'new', label: 'جديد' }", $source);
+        $this->assertStringContainsString("{ key: 'in_progress', label: 'قيد التنفيذ' }", $source);
+        $this->assertStringContainsString("{ key: 'completed', label: 'مكتملة' }", $source);
+        $this->assertStringContainsString("{ key: 'issues', label: 'مشاكل/أخرى' }", $source);
+        $this->assertStringNotContainsString("{ key: 'completed', label: 'مكتمل' }", $source, 'completed tab must be مكتملة, never مكتمل');
+        $this->assertStringNotContainsString("{ key: 'completed', label: 'تم التسليم' }", $source, 'completed tab must not reuse the delivered row label');
+        $this->assertStringContainsString('{tOrderStatus(order.status)}', $source, 'order rows must render individual statuses via the shared util');
     }
 
     public function test_orders_show_delivered_badge_is_canonical(): void

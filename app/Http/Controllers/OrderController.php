@@ -16,6 +16,19 @@ use Inertia\Inertia;
 class OrderController extends Controller
 {
     /**
+     * Workflow groups for the merchant order tabs. Each group maps plain
+     * order statuses (the raw taxonomy is never renamed) to a merchant-facing
+     * bucket. 'new' + 'in_progress' + 'completed' + 'issues' cover every
+     * possible order status exactly once.
+     */
+    public const ORDER_GROUPS = [
+        'new'         => ['pending', 'confirmed'],
+        'in_progress' => ['processing', 'shipped'],
+        'completed'   => ['delivered'],
+        'issues'      => ['cancelled', 'failed', 'refunded'],
+    ];
+
+    /**
      * Display a listing of orders with search, filtering, and pagination.
      */
     public function index(Request $request)
@@ -38,8 +51,13 @@ class OrderController extends Controller
             });
         }
 
-        // ── Filter by status ──
-        if ($status = $request->input('status')) {
+        // ── Filter by workflow group (preferred) or raw status (backward compatible) ──
+        if ($group = $request->input('group')) {
+            $group = strtolower($group);
+            if (isset(self::ORDER_GROUPS[$group])) {
+                $query->whereIn('status', self::ORDER_GROUPS[$group]);
+            }
+        } elseif ($status = $request->input('status')) {
             $query->where('status', strtolower($status));
         }
 
@@ -73,6 +91,12 @@ class OrderController extends Controller
         $paidOrders = (clone $statsQuery)->where('payment_status', 'paid');
         $totalRevenue = $paidOrders->sum('total_amount');
         $avgOrderValue = $paidOrders->count() > 0 ? $totalRevenue / $paidOrders->count() : 0;
+
+        // ── Per-group tab counts, always store-scoped and filter-free ──
+        $groupCounts = ['total' => $totalOrders];
+        foreach (self::ORDER_GROUPS as $groupKey => $rawStatuses) {
+            $groupCounts[$groupKey] = (clone $statsQuery)->whereIn('status', $rawStatuses)->count();
+        }
 
         // ── Pagination ──
         $perPage = min((int) $request->input('per_page', 15), 50);
@@ -121,6 +145,7 @@ class OrderController extends Controller
             ],
             'filters' => [
                 'search' => $request->input('search', ''),
+                'group' => $request->input('group', ''),
                 'status' => $request->input('status', ''),
                 'payment_status' => $request->input('payment_status', ''),
                 'payment_method' => $request->input('payment_method', ''),
@@ -134,6 +159,7 @@ class OrderController extends Controller
                 'totalRevenue' => $totalRevenue,
                 'avgOrderValue' => $avgOrderValue,
             ],
+            'groupCounts' => $groupCounts,
         ]);
     }
 

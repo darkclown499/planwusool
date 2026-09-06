@@ -36,6 +36,7 @@ interface PaginationData {
 
 interface FiltersData {
   search: string;
+  group: string;
   status: string;
   payment_status: string;
   payment_method: string;
@@ -54,19 +55,18 @@ interface OrdersProps {
     totalRevenue: number;
     avgOrderValue: number;
   };
+  groupCounts?: Record<string, number>;
 }
 
-const STATUS_TABS = [
+const STATUS_GROUPS = [
   { key: '', label: 'الكل' },
-  { key: 'pending', label: 'جديد' },
-  { key: 'confirmed', label: 'مؤكد' },
-  { key: 'processing', label: 'قيد التجهيز' },
-  { key: 'shipped', label: 'تم الشحن' },
-  { key: 'delivered', label: 'تم التسليم' },
-  { key: 'cancelled', label: 'ملغي' },
+  { key: 'new', label: 'جديد' },
+  { key: 'in_progress', label: 'قيد التنفيذ' },
+  { key: 'completed', label: 'مكتملة' },
+  { key: 'issues', label: 'مشاكل/أخرى' },
 ];
 
-export default function Orders({ orders = [], pagination, filters: initialFilters, stats }: OrdersProps) {
+export default function Orders({ orders = [], pagination, filters: initialFilters, stats, groupCounts }: OrdersProps) {
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
   const [orderToDelete, setOrderToDelete] = useState<number | null>(null);
@@ -74,6 +74,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FiltersData>({
     search: initialFilters?.search || '',
+    group: initialFilters?.group || '',
     status: initialFilters?.status || '',
     payment_status: initialFilters?.payment_status || '',
     payment_method: initialFilters?.payment_method || '',
@@ -82,8 +83,12 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
     date_to: initialFilters?.date_to || '',
   });
 
+  const groupKeys = STATUS_GROUPS.map((g) => g.key);
+  const effectiveGroup = groupKeys.includes(activeFilters.group) ? activeFilters.group : '';
+
   const applyFilters = useCallback((newFilters: Partial<FiltersData>) => {
     const merged = { ...activeFilters, ...newFilters };
+    if (newFilters.group !== undefined && newFilters.status === undefined) merged.status = '';
     setActiveFilters(merged);
     const params: Record<string, string> = {};
     Object.entries(merged).forEach(([k, v]) => { if (v) params[k] = v; });
@@ -93,7 +98,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
 
   const clearFilters = useCallback(() => {
     setSearch('');
-    setActiveFilters({ search: '', status: '', payment_status: '', payment_method: '', source: '', date_from: '', date_to: '' });
+    setActiveFilters({ search: '', group: '', status: '', payment_status: '', payment_method: '', source: '', date_from: '', date_to: '' });
     router.get(route('orders.index'), {}, { preserveState: true, replace: true });
   }, []);
 
@@ -146,6 +151,13 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
 
   const hasActiveFilters = Object.values(activeFilters).some(v => v !== '');
 
+  const groupEmptyTitle =
+    effectiveGroup === 'new' ? t('No new orders yet')
+    : effectiveGroup === 'in_progress' ? t('No in-progress orders')
+    : effectiveGroup === 'completed' ? t('No completed orders')
+    : effectiveGroup === 'issues' ? t('No orders with issues')
+    : null;
+
   return (
     <PageTemplate
       title={t('Orders')}
@@ -173,7 +185,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-sm transition-shadow" onClick={() => applyFilters({ status: 'pending' })}>
+          <Card className="cursor-pointer hover:shadow-sm transition-shadow" onClick={() => applyFilters({ group: '', status: 'pending' })}>
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -244,14 +256,18 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
             </Button>
           </form>
 
-          {/* Status tabs — horizontal scroll on mobile */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
-            {STATUS_TABS.map((tab) => {
-              const isActive = activeFilters.status === tab.key;
+          {/* Workflow group tabs — horizontal scroll on mobile */}
+          <div role="tablist" aria-label={t('Order groups')} className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-thin">
+            {STATUS_GROUPS.map((tab) => {
+              const isActive = effectiveGroup === tab.key;
+              const count = tab.key === '' ? (groupCounts?.total ?? 0) : (groupCounts?.[tab.key] ?? 0);
               return (
                 <button
                   key={tab.key}
-                  onClick={() => applyFilters({ status: tab.key })}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => applyFilters({ group: tab.key })}
                   className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground'
@@ -259,6 +275,9 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
                   }`}
                 >
                   {tab.label}
+                  <span className={`ltr-num ms-1.5 text-[10px] ${isActive ? 'bg-white/25' : 'bg-white'} rounded-full px-1.5 py-0.5`}>
+                    {count}
+                  </span>
                 </button>
               );
             })}
@@ -418,12 +437,14 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
                   <ShoppingCart className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  {hasActiveFilters ? t('No orders match your filters') : t('No orders yet')}
+                  {groupEmptyTitle ?? (hasActiveFilters ? t('No orders match your filters') : t('No orders yet'))}
                 </h3>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                  {hasActiveFilters
+                  {groupEmptyTitle
                     ? t('Try adjusting your search or filter criteria.')
-                    : t('Orders will appear here after the first purchase. Make sure your store is published and shared.')
+                    : hasActiveFilters
+                      ? t('Try adjusting your search or filter criteria.')
+                      : t('Orders will appear here after the first purchase. Make sure your store is published and shared.')
                   }
                 </p>
                 {hasActiveFilters ? (
