@@ -175,7 +175,10 @@ class DeliverySetupClarityTest extends TestCase
         $source = $this->hubSource();
         $this->assertStringContainsString('التوصيل غير متاح في خطتك الحالية', $source, 'locked headline must name the module التوصيل');
         $this->assertStringContainsString('متاح في خطة Growth أو أعلى', $source, 'plan requirement is already available source-wide');
-        $this->assertStringContainsString("route('plan-orders.index')", $source, 'locked state must offer the existing upgrade CTA');
+        // P2E-01: the canonical plan-locked CTA drives to the plan shop (/plans),
+        // never to subscription/invoice history.
+        $this->assertStringContainsString("route('plans.index')", $source, 'locked state must offer the canonical plan-shop upgrade CTA');
+        $this->assertStringNotContainsString("route('plan-orders.index')", $source, 'locked state must never target invoice history');
     }
 
     // 6. Locked plan direct create mutation still blocked server-side.
@@ -220,7 +223,10 @@ class DeliverySetupClarityTest extends TestCase
         $this->assertStringContainsString('تفعيل طريقة التوصيل', $source, 'activate-method CTA uses طريقة التوصيل');
         $this->assertStringNotContainsString('طريقة الشحن', $source, 'no legacy shipping-method term in the hub');
         $this->assertStringNotContainsString('طرق الشحن', $source, 'no legacy shipping-methods term in the hub');
-        $this->assertStringContainsString('featureName="Delivery Method"', $source, 'locked method feature resolves via canonical key');
+        // P2E-01: the hub locks at page level (single readiness header), so the
+        // per-tab method lock overlay no longer exists; the canonical key itself
+        // still resolves in ar.json (asserted above).
+        $this->assertStringNotContainsString('featureName="Delivery Method"', $source, 'per-tab method lock overlay must be gone — single page-level lock only');
     }
 
     // 10. Setup CTA resolves to /delivery or the specific method route as context requires.
