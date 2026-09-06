@@ -43,6 +43,11 @@ class StoreReadinessStatusTest extends TestCase
             'enable_custdomain' => 'off',
             'enable_custsubdomain' => 'off',
             'template_editor_level' => 'none',
+            // Default fixtures assume a shipping-capable plan so these tests
+            // isolate the ACTIVE-METHOD dimension of delivery readiness. The
+            // entitlement dimension is covered by the dedicated regression
+            // test_entitlement_off_with_active_method_is_not_delivery_ready.
+            'enable_shipping_method' => 'on',
         ]);
         $user->plan_id = $plan->id;
         $user->plan_is_active = 1;
@@ -147,6 +152,48 @@ class StoreReadinessStatusTest extends TestCase
         $onboarding = $this->get(route('dashboard'))->inertiaPage()['props']['onboarding'];
         $this->assertFalse($onboarding['isReadyToPublish']);
         $this->assertSame('add_product', $onboarding['nextAction']['type']);
+    }
+
+    public function test_entitlement_off_with_active_method_is_not_delivery_ready(): void
+    {
+        // P2C RELEASE BLOCKER: a store on a plan WITHOUT the shipping_method
+        // entitlement cannot offer its active shipping method to customers —
+        // the storefront checkout API returns no methods/zones and order
+        // placement rejects shipping/delivery (422). So the dashboard must NOT
+        // report delivery ready (nor 5/5 readyToSell) from an active method
+        // alone on an unentitled plan. This mirrors the Delivery hub locked state.
+        $user = User::factory()->create(['type' => 'company', 'onboarded_at' => now()]);
+        $plan = Plan::factory()->create([
+            'max_stores' => 5,
+            'max_products_per_store' => 100,
+            'enable_custdomain' => 'off',
+            'enable_custsubdomain' => 'off',
+            'template_editor_level' => 'none',
+            'enable_shipping_method' => 'off',
+        ]);
+        $user->plan_id = $plan->id;
+        $user->plan_is_active = 1;
+        $user->save();
+        $store = $this->createStore($user, 'readiness-noentitle');
+        $this->addActiveProduct($store);
+        $this->addShipping($store);
+        $this->addCodPayment($user, $store);
+        $this->actingAs($user);
+
+        $readiness = $this->getReadiness();
+
+        $this->assertFalse($store->canUsePlanFeature('shipping_method'), 'fixture must model a plan without the shipping entitlement');
+        $this->assertTrue($readiness['items']['products']);
+        $this->assertTrue($readiness['items']['payment']);
+        $this->assertFalse($readiness['items']['delivery'], 'an active method without the shipping entitlement must NOT count as delivery ready');
+        $this->assertFalse($readiness['readyToSell'], 'store must not become 5/5 ready solely from an unentitled active method');
+        $this->assertSame('delivery', $readiness['nextStep']['key']);
+
+        // The existing commerce readiness and CTA priority must also downgrade:
+        // not ready to publish (delivery missing), next action = set up delivery.
+        $onboarding = $this->get(route('dashboard'))->inertiaPage()['props']['onboarding'];
+        $this->assertFalse($onboarding['isReadyToPublish']);
+        $this->assertSame('setup_delivery', $onboarding['nextAction']['type']);
     }
 
     public function test_inactive_shipping_methods_do_not_count_as_delivery_ready(): void

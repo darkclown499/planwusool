@@ -32,6 +32,9 @@ class MerchantOnboardingPublishTest extends TestCase
             'enable_custdomain' => 'off',
             'enable_custsubdomain' => 'off',
             'template_editor_level' => 'none',
+            // Ready-to-publish fixtures model shipping-capable plans; the
+            // shipping_method entitlement is now part of delivery readiness.
+            'enable_shipping_method' => 'on',
         ]);
         $user->plan_id = $plan->id;
         $user->plan_is_active = 1;

@@ -44,6 +44,10 @@ class DashboardNextActionTest extends TestCase
             'enable_custdomain' => 'off',
             'enable_custsubdomain' => 'off',
             'template_editor_level' => 'none',
+            // These fixtures exercise the full ready-to-live journey, so the
+            // plan must carry the shipping entitlement (otherwise resolveNextAction
+            // stops at setup_delivery as the entitlement is a part of readiness).
+            'enable_shipping_method' => 'on',
         ]);
         $user->plan_id = $plan->id;
         $user->plan_is_active = 1;

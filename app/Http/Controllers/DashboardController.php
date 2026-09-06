@@ -128,11 +128,16 @@ class DashboardController extends Controller
         $hasProducts = Product::where('store_id', $store->id)->where('is_active', true)->exists();
         $hasInventory = \App\Models\Product::where('store_id', $store->id)->where('stock', '>', 0)->exists();
         // Delivery readiness matches the SAME truth the Delivery hub and the
-        // storefront checkout expose: only ACTIVE shipping methods qualify.
-        // The legacy config fallback (shipping_enabled/shipping_methods) is never
-        // consumed by the storefront, so counting it fabricated a ready state
-        // with no actual deliverable method.
-        $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
+        // storefront checkout expose: the shipping_method plan entitlement AND
+        // at least one ACTIVE shipping method. Without the entitlement the
+        // storefront checkout returns no methods/zones and order placement
+        // rejects shipping/delivery (422), so an active method alone does NOT
+        // make the store delivery-ready. The legacy config fallback
+        // (shipping_enabled/shipping_methods) is never consumed by the
+        // storefront, so counting it would fabricate a ready state with no
+        // actual deliverable method for the customer.
+        $hasShippingEntitlement = $store->canUsePlanFeature('shipping_method');
+        $hasShipping = $hasShippingEntitlement && \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
         $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
         $hasTaxes = \App\Models\Tax::where('store_id', $store->id)->exists();
         $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);

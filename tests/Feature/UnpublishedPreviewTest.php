@@ -28,7 +28,7 @@ class UnpublishedPreviewTest extends TestCase
     private function merchant(): User
     {
         $user = User::factory()->create(['type' => 'company', 'onboarded_at' => now()]);
-        $plan = \App\Models\Plan::factory()->create(['max_stores' => 5, 'max_products_per_store' => 100]);
+        $plan = \App\Models\Plan::factory()->create(['max_stores' => 5, 'max_products_per_store' => 100, 'enable_shipping_method' => 'on']);
         $user->plan_id = $plan->id;
         $user->plan_is_active = 1;
         $user->save();
