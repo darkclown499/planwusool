@@ -127,12 +127,12 @@ class DashboardController extends Controller
         // exposes is_active products, so readiness must not count drafts.
         $hasProducts = Product::where('store_id', $store->id)->where('is_active', true)->exists();
         $hasInventory = \App\Models\Product::where('store_id', $store->id)->where('stock', '>', 0)->exists();
-        // Shipping: check if any shipping method exists for this store
-        $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->exists();
-        // Fallback: also check store configuration for shipping
-        if (!$hasShipping) {
-            $hasShipping = !empty($config['shipping_enabled']) || !empty($config['shipping_methods']);
-        }
+        // Delivery readiness matches the SAME truth the Delivery hub and the
+        // storefront checkout expose: only ACTIVE shipping methods qualify.
+        // The legacy config fallback (shipping_enabled/shipping_methods) is never
+        // consumed by the storefront, so counting it fabricated a ready state
+        // with no actual deliverable method.
+        $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
         $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
         $hasTaxes = \App\Models\Tax::where('store_id', $store->id)->exists();
         $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);

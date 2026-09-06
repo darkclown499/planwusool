@@ -149,6 +149,38 @@ class StoreReadinessStatusTest extends TestCase
         $this->assertSame('add_product', $onboarding['nextAction']['type']);
     }
 
+    public function test_inactive_shipping_methods_do_not_count_as_delivery_ready(): void
+    {
+        $user = $this->merchant();
+        $store = $this->createStore($user, 'readiness-inactiveship');
+        $this->addActiveProduct($store);
+        $this->addCodPayment($user, $store);
+        // Inactive method only — the storefront checkout never offers it.
+        Shipping::create([
+            'store_id' => $store->id, 'name' => 'Draft', 'type' => 'flat_rate',
+            'cost' => 10, 'is_active' => false, 'zone_type' => 'domestic',
+        ]);
+        StoreConfiguration::forgetConfiguration($store->id);
+        Cache::forget('store_configuration.' . $store->id);
+        $this->actingAs($user);
+
+        $readiness = $this->getReadiness();
+
+        $this->assertFalse($readiness['items']['delivery'], 'delivery readiness must follow the Delivery hub truth (active methods only)');
+        $this->assertFalse($readiness['readyToSell']);
+        $this->assertSame('delivery', $readiness['nextStep']['key']);
+        $onboarding = $this->get(route('dashboard'))->inertiaPage()['props']['onboarding'];
+        $this->assertFalse($onboarding['isReadyToPublish']);
+        $this->assertSame('setup_delivery', $onboarding['nextAction']['type']);
+
+        // Legacy config flags alone must NOT fabricate delivery readiness.
+        StoreConfiguration::setConfiguration($store->id, 'shipping_enabled', 'true');
+        StoreConfiguration::setConfiguration($store->id, 'shipping_methods', 'flat_rate');
+        StoreConfiguration::forgetConfiguration($store->id);
+        Cache::forget('store_configuration.' . $store->id);
+        $this->assertFalse($this->getReadiness()['items']['delivery'], 'legacy config fallback must not gate delivery readiness');
+    }
+
     public function test_active_product_without_payment_instructs_payment_next(): void
     {
         $user = $this->merchant();
