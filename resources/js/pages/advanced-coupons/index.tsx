@@ -211,6 +211,16 @@ export default function AdvancedCoupons() {
           <CardContent>
             <div className="space-y-4">
               {!coupons || !coupons.data || coupons.data.length === 0 ? (
+                filtersActive ? (
+                  <div className="text-center py-12">
+                    <Search className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
+                    <p className="mt-2 text-muted-foreground">لا توجد كوبونات متقدمة تطابق البحث أو الفلاتر الحالية</p>
+                    <Button variant="outline" className="mt-4" onClick={resetFilters}>
+                      <RotateCcw className="h-4 w-4 me-2" />
+                      {t('Reset Filters')}
+                    </Button>
+                  </div>
+                ) : (
                 <div className="text-center py-12">
                   <Gift className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
                   <p className="mt-2 text-muted-foreground">{t('No advanced coupons found')}</p>
@@ -221,6 +231,7 @@ export default function AdvancedCoupons() {
                     </Button>
                   )}
                 </div>
+                )
               ) : (
                 coupons.data.map((coupon: any) => (
                   <div key={coupon.id} className="flex flex-wrap items-center justify-between gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors">

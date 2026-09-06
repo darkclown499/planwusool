@@ -36,6 +36,8 @@ export default function AbandonedCarts() {
   const [loadingActions, setLoadingActions] = useState<Record<number, string>>({});
   const didMount = useRef(false);
 
+  const hasActiveFilters = !!(filters.search || (filters.status && filters.status !== 'all') || filters.date_from || filters.date_to);
+
   const currencySymbol: string = typeof currency_symbol === 'string' && currency_symbol ? currency_symbol : '₪';
 
   useEffect(() => {
@@ -132,6 +134,24 @@ export default function AbandonedCarts() {
       }
     } catch {}
     window.open(route('abandoned-carts.export'), '_blank');
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatus('all');
+    router.get(
+      getIndexRoute(),
+      {},
+      { preserveState: true, replace: true, preserveScroll: true }
+    );
+  };
+
+  const openWhatsAppAutomation = () => {
+    try {
+      if (activeStoreId && route().has('stores.notifications.whatsapp')) {
+        router.visit(route('stores.notifications.whatsapp', activeStoreId));
+      }
+    } catch {}
   };
 
   const handleDelete = () => {
@@ -302,6 +322,19 @@ export default function AbandonedCarts() {
           <CardContent>
             <div className="space-y-4">
               {carts.data.length === 0 ? (
+                hasActiveFilters ? (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+                      <Search className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h3 className="mt-4 text-base font-semibold">لا توجد سلال متروكة تطابق البحث أو الفلاتر الحالية</h3>
+                    <p className="mt-2 max-w-md text-sm text-muted-foreground">جرّب تعديل البحث أو اختيار حالة أخرى لعرض النتائج.</p>
+                    <Button type="button" variant="outline" className="mt-6" onClick={clearFilters}>
+                      <Search className="h-4 w-4 me-2" />
+                      مسح الفلاتر
+                    </Button>
+                  </div>
+                ) : (
                 <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
                   <div className="relative">
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
@@ -315,11 +348,14 @@ export default function AbandonedCarts() {
                   <p className="mt-2 max-w-md text-sm text-muted-foreground">
                     {t('Abandoned carts will appear here when customers leave without completing checkout, so you can remind them and win them back.')}
                   </p>
-                  <Button type="button" className="mt-6" onClick={() => router.visit(route('settings'))}>
-                    <MessageCircle className="h-4 w-4 me-2" />
-                    {t('Set up WhatsApp reminder automation')}
-                  </Button>
+                  {activeStoreId && (
+                    <Button type="button" className="mt-6" onClick={openWhatsAppAutomation}>
+                      <MessageCircle className="h-4 w-4 me-2" />
+                      {t('Set up WhatsApp reminder automation')}
+                    </Button>
+                  )}
                 </div>
+                )
               ) : (
                 <div className="relative overflow-x-auto">
                   <table className="w-full text-sm">

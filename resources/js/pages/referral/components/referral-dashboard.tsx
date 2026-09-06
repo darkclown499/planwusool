@@ -273,6 +273,11 @@ export default function ReferralDashboard({ userType, stats, referralLink, recen
                 <p className="text-sm text-muted-foreground">
                   {t('No referred users yet')}
                 </p>
+                {Number(stats.totalReferrals || 0) === 0 && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    لم ينضم أحد بعد من خلال رابطك — تُحتسب الإحالة عند تسجيل مستخدم جديد في المنصة عبر رابطك.
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

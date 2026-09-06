@@ -104,6 +104,14 @@ export default function CouponSystem() {
     });
   }, [allCoupons, searchQuery, statusFilter, typeFilter]);
 
+  const filtersActive = !!(searchQuery.trim() || statusFilter !== 'all' || typeFilter !== 'all');
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setTypeFilter('all');
+  };
+
   const pageActions = [
     ...(hasPermission('export-coupon-system') ? [{
       label: t('Export'),
@@ -213,27 +221,33 @@ export default function CouponSystem() {
               ) : filteredCoupons.length === 0 ? (
                 <div className="text-center py-8">
                   <Search className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-                  <p className="mt-2 text-muted-foreground">{t('No coupons found')}</p>
+                  <p className="mt-2 text-muted-foreground">لا توجد كوبونات تطابق البحث أو الفلاتر الحالية</p>
+                  {filtersActive && (
+                    <Button variant="outline" className="mt-4" onClick={clearFilters}>
+                      <Search className="h-4 w-4 me-2" />
+                      مسح الفلاتر
+                    </Button>
+                  )}
                 </div>
               ) : (
                 filteredCoupons.map((coupon: any) => (
-                  <div key={coupon.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <div key={coupon.id} className="flex flex-wrap items-center justify-between gap-3 p-4 border rounded-lg">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                         {coupon.type === 'percentage' ? (
                           <Percent className="h-6 w-6 text-primary" />
                         ) : (
                           <Banknote className="h-6 w-6 text-primary" />
                         )}
                       </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-semibold">{coupon.name}</h3>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-semibold truncate">{coupon.name}</h3>
                           <Badge variant={coupon.status ? 'default' : 'secondary'}>
                             {coupon.status ? t('Active') : t('Inactive')}
                           </Badge>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <code className="text-sm bg-muted px-2 py-1 rounded">{coupon.code}</code>
                           <Button
                             variant="ghost"
@@ -246,7 +260,7 @@ export default function CouponSystem() {
                             <Copy className="h-3 w-3" />
                           </Button>
                         </div>
-                        <div className="flex items-center space-x-4 mt-1">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
                           <span className="text-xs text-muted-foreground">
                             {coupon.type === 'percentage' ? t('Percentage') : t('Fixed')}:
                             {coupon.type === 'percentage' ? `${coupon.discount_amount}%` : formatCurrency(coupon.discount_amount)}
@@ -262,7 +276,7 @@ export default function CouponSystem() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {hasPermission('view-coupon-system') && (
                         <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-coupon-system', coupon.id)}>
                           <Eye className="h-4 w-4" />
@@ -274,7 +288,7 @@ export default function CouponSystem() {
                         </Button>
                       )}
                       {hasPermission('toggle-status-coupon-system') && (
-                        <div className="flex items-center space-x-2 me-2">
+                        <div className="flex items-center gap-2 me-1">
                           <Switch
                             checked={!!coupon.status}
                             onCheckedChange={() => handleActionClick('toggle-status', 'toggle-status-coupon-system', coupon.id)}

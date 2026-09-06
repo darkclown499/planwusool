@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PageTemplate } from '@/components/page-template';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
-import { router, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { Star, TrendingUp, TrendingDown, Users } from 'lucide-react';
 
 export default function LoyaltyTransactions() {
@@ -77,6 +77,9 @@ export default function LoyaltyTransactions() {
                 <div className="text-center py-8">
                   <Star className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
                   <p className="mt-2 text-muted-foreground">{t('No transactions found')}</p>
+                  <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+                    لا توجد حركة نقاط بعد. ستظهر هنا معاملات كسب نقاط الولاء واستردادها لعملاء متجرك عند تفعيل البرنامج.
+                  </p>
                 </div>
               ) : (
                 <div className="relative overflow-x-auto">
