@@ -16,7 +16,7 @@ class ReturnController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
 
-        $query = OrderReturn::where('store_id', $storeId)->with(['order','items.orderItem'])->orderBy('created_at','desc');
+        $query = OrderReturn::where('store_id', $storeId)->with(['order','items.orderItem','customer'])->orderBy('created_at','desc');
 
         if ($status = $request->input('status')) {
             $query->where('status', $status);

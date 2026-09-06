@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { usePage, router } from '@inertiajs/react';
+import { usePage, router, Link } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/currency-helper';
 import { tReturnStatus, tReturnRefundStatus } from '@/utils/order-status';
@@ -31,6 +31,18 @@ const REASONS: Record<string, string> = {
 function getReasonText(reason?: string | null): string {
   if (!reason) return '-';
   return REASONS[reason] ?? reason;
+}
+
+function formatDateValue(value?: string | null): string {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString('ar', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function customerName(c?: any): string {
+  if (!c) return '';
+  return c.full_name || c.email || c.phone || '';
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -85,7 +97,7 @@ export default function ReturnShow() {
 
   return (
     <PageTemplate
-      title={`الإرجاع ${ret.return_number}`}
+      title={`المرتجع ${ret.return_number}`}
       url={`/returns/${ret.id}`}
       breadcrumbs={[{ title: 'المرتجعات', href: route('returns.index') }, { title: ret.return_number }]}
     >
@@ -94,14 +106,19 @@ export default function ReturnShow() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              الإرجاع {ret.return_number}
+              المرتجع {ret.return_number}
               <StatusBadge status={status} />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <p><span className="text-muted-foreground">الطلب الأصلي:</span> {order?.order_number ?? ret.order_id}</p>
-              <p><span className="text-muted-foreground">العميل:</span> {ret.customer?.name || ret.customer_email || '-'}</p>
+              <p className="flex flex-wrap items-center gap-1">
+                <span className="text-muted-foreground">الطلب الأصلي:</span>
+                <Link href={route('orders.show', order?.id ?? ret.order_id)} className="font-semibold text-primary hover:underline ltr-num">
+                  {order?.order_number ?? ret.order_id}
+                </Link>
+              </p>
+              <p><span className="text-muted-foreground">العميل:</span> {customerName(ret.customer) || ret.customer_email || '-'}</p>
               <p><span className="text-muted-foreground">سبب الإرجاع:</span> {getReasonText(ret.reason)}</p>
               <p>
                 <span className="text-muted-foreground">حالة الاسترداد:</span>{' '}
@@ -232,7 +249,7 @@ export default function ReturnShow() {
                   <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
                   <div>
                     <p className="text-muted-foreground text-xs">{t.label}</p>
-                    <p className="ltr-num text-xs">{t.value}</p>
+                    <p className="ltr-num text-xs">{formatDateValue(t.value)}</p>
                   </div>
                 </div>
               ))}

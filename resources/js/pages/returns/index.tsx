@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RotateCcw, Search, X, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
-import { router, usePage } from '@inertiajs/react';
+import { router, usePage, Link } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { tReturnStatus, tReturnRefundStatus } from '@/utils/order-status';
 
@@ -17,6 +17,7 @@ const RETURN_STATUS_TABS = [
   { key: 'in_transit', label: 'قيد الشحن' },
   { key: 'received', label: 'مستلم' },
   { key: 'completed', label: 'مكتمل' },
+  { key: 'cancelled', label: 'ملغي' },
 ];
 
 export default function ReturnsIndex() {
@@ -69,6 +70,18 @@ export default function ReturnsIndex() {
       other: 'سبب آخر',
     };
     return reasons[reason] ?? reason;
+  };
+
+  const formatDateValue = (value?: string | null): string => {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return value;
+    return d.toLocaleDateString('ar', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const customerName = (r: any): string => {
+    const name = r.customer?.full_name || (r.customer?.first_name ? r.customer.first_name : '');
+    return name || r.customer_email || '-';
   };
 
   return (
@@ -125,7 +138,7 @@ export default function ReturnsIndex() {
 
         {/* Results count */}
         {pagination && (
-          <p className="text-xs text-muted-foreground ltr-num">{pagination.total} طلب إرجاع</p>
+          <p className="text-xs text-muted-foreground ltr-num">{pagination.total} مرتجع</p>
         )}
 
         {/* Returns list */}
@@ -136,8 +149,11 @@ export default function ReturnsIndex() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
                   <RotateCcw className="h-8 w-8 text-slate-400" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">لا توجد طلبات إرجاع</h3>
+                <h3 className="text-lg font-bold text-slate-900">لا توجد مرتجعات حالياً</h3>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                  ستظهر هنا طلبات الإرجاع عند إنشائها.
+                </p>
+                <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
                   عندما يقدّم أحد العملاء طلب إرجاع، سيظهر هنا لتتمكن من مراجعته ومتابعته حتى استلام المنتج وإنهاء الإرجاع.
                 </p>
               </CardContent>
@@ -152,7 +168,7 @@ export default function ReturnsIndex() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-bold text-sm">{r.return_number}</h3>
+                      <h3 className="font-bold text-sm ltr-num">{r.return_number}</h3>
                       <Badge variant={getStatusVariant(r.status) as any} className="text-[10px]">
                         {tReturnStatus(r.status)}
                       </Badge>
@@ -165,25 +181,44 @@ export default function ReturnsIndex() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      الطلب الأصلي: {r.order?.order_number ?? r.order_id}
-                      {r.customer?.name || r.customer_email ? ` • ${r.customer?.name || r.customer_email}` : ''}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {getReasonText(r.reason) ? `سبب الإرجاع: ${getReasonText(r.reason)}` : ''}
-                    </p>
-                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+
+                    <div className="mt-2 flex items-center gap-2 flex-wrap text-xs">
+                      <span className="text-muted-foreground">الطلب الأصلي:</span>
+                      <Link
+                        href={route('orders.show', r.order_id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-semibold text-primary hover:underline ltr-num"
+                      >
+                        {r.order?.order_number || `#${r.order_id}`}
+                      </Link>
+                      <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-slate-300" />
+                      <span className="text-muted-foreground">العميل:</span>
+                      <span className="font-medium">{customerName(r)}</span>
+                    </div>
+
+                    <div className="mt-1.5 flex items-center gap-3 flex-wrap text-xs">
                       {r.refund_amount > 0 && (
-                        <span className="text-xs font-bold">{formatCurrency(r.refund_amount)}</span>
+                        <span className="font-bold">{formatCurrency(r.refund_amount)}</span>
                       )}
                       {r.items?.length > 0 && (
                         <span className="text-[10px] text-muted-foreground">{r.items.length} منتج</span>
                       )}
-                      <span className="text-[10px] text-muted-foreground">{r.created_at}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatDateValue(r.requested_at || r.created_at)}
+                      </span>
+                      {getReasonText(r.reason) && (
+                        <span className="text-[10px] text-muted-foreground">سبب الإرجاع: {getReasonText(r.reason)}</span>
+                      )}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={(e) => { e.stopPropagation(); router.visit(route('returns.show', r.id)); }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 shrink-0 gap-1"
+                    onClick={(e) => { e.stopPropagation(); router.visit(route('returns.show', r.id)); }}
+                  >
                     <Eye className="h-4 w-4" />
+                    <span className="hidden xl:inline">عرض التفاصيل</span>
                   </Button>
                 </div>
               </div>
