@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette, type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -72,6 +72,16 @@ interface Props {
       done: boolean;
       href: string | null;
     }[];
+    isReadyToPublish: boolean;
+    isPublishable: boolean;
+    missingForPublish: string[];
+    nextAction?: {
+      type: string;
+      title: string;
+      description: string;
+      cta: string;
+      href: string | null;
+    } | null;
   };
   isSuperAdmin: boolean;
 }
@@ -84,6 +94,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const [qrOpen, setQrOpen] = useState(false);
   const qrDialogRef = useRef<HTMLDivElement>(null);
   const [checklistExpanded, setChecklistExpanded] = useState(false);
+  const nextAction = onboarding?.nextAction ?? null;
 
   const formatPrice = (value: number | string) => {
     const formatted = formatCurrency(value);
@@ -822,24 +833,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           </Card>
         )}
 
-        {/* NEXT BEST ACTION — يقلل الحمل الذهني: خطوة واحدة واضحة */}
-        {onboarding && !isSuperAdmin && (() => {
-          const nextStep = onboarding.steps.find((s: any) => !s.done && s.href);
-          if (!nextStep) return null;
-          const actionMap: Record<string, { cta: string; desc: string; icon: any }> = {
-            store_info: { cta: 'إكمال معلومات المتجر', desc: 'أكمل اسم المتجر ومعلوماته الأساسية', icon: Building2 },
-            design: { cta: 'تخصيص المتجر', desc: 'اختر القالب والألوان والشعار', icon: Palette },
-            categories: { cta: 'إضافة تصنيف', desc: 'أنشئ أول تصنيف لتنظيم منتجاتك', icon: Folder },
-            products: { cta: 'إضافة منتج', desc: 'أضف أول منتج ليظهر في متجرك', icon: Package },
-            inventory: { cta: 'مراجعة المخزون', desc: 'تأكد أن منتجاتك بها كمية متاحة', icon: Boxes },
-            shipping: { cta: 'إعداد الشحن', desc: 'أضف طريقة توصيل حتى يتمكن العملاء من الطلب', icon: Truck },
-            payments: { cta: 'إضافة طريقة دفع', desc: 'فعّل الدفع عند الاستلام أو الدفع الإلكتروني', icon: CreditCard },
-            taxes: { cta: 'إعداد الضرائب', desc: 'أضف قواعد الضرائب إذا كان متجرك يحتاجها', icon: Percent },
-            domain: { cta: 'ربط الدومين', desc: 'اربط دومينك الخاص لظهور احترافي', icon: Globe },
-            published: { cta: 'نشر المتجر', desc: 'متجرك جاهز — انشره الآن', icon: CheckCircle },
+        {/* NEXT BEST ACTION — خطوة واحدة واضحة اختارها الخادم من حالة المتجر */}
+        {nextAction && !isSuperAdmin && (() => {
+          const nextActionIcons: Record<string, LucideIcon> = {
+            add_product: Package,
+            setup_payment: CreditCard,
+            setup_delivery: Truck,
+            publish_store: CheckCircle,
+            review_orders: ShoppingCart,
+            share_store: Globe,
           };
-          const meta = actionMap[nextStep.key] || { cta: 'متابعة الإعداد', desc: 'أكمل الخطوة التالية', icon: Zap };
-          const NextIcon = meta.icon;
+          const NextIcon = nextActionIcons[nextAction.type] || Zap;
+          const isShare = nextAction.type === 'share_store';
           return (
             <Card className="border-emerald-200 bg-gradient-to-l from-emerald-50 via-white to-white shadow-sm">
               <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -849,13 +854,18 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                   </span>
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-emerald-600">الخطوة التالية</p>
-                    <h3 className="mt-1 text-lg font-extrabold text-slate-900">{meta.cta}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{meta.desc}</p>
+                    <h3 className="mt-1 text-lg font-extrabold text-slate-900">{nextAction.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{nextAction.description}</p>
                   </div>
                 </div>
-                <Button size="lg" className="shrink-0 gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={() => router.visit(nextStep.href!)}>
-                  {meta.cta}
-                  <ChevronRight className="h-4 w-4" />
+                <Button
+                  size="lg"
+                  className="shrink-0 gap-2 bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => isShare ? copyToClipboard() : router.visit(nextAction.href!)}
+                >
+                  {isShare && <Copy className="h-4 w-4" />}
+                  {nextAction.cta}
+                  {!isShare && <ChevronRight className="h-4 w-4" />}
                 </Button>
               </CardContent>
             </Card>

@@ -136,12 +136,14 @@ class DashboardController extends Controller
         $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);
         $hasSeo = !empty($config['meta_title']) || !empty($config['seo_title']);
         $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
+
         // Commerce-ready vs publishable distinction:
         // - PUBLISHABLE = store_status can be true at any time (preview before inventory complete)
         // - READY TO ACCEPT ORDERS = at least one active product + shipping + payment
         // Keep publish step about store visibility, commerce-ready about order capability
         $isReadyToPublish = $hasProducts && $hasShipping && $hasPayments;
         $isPublishable = $storePublished;
+        $nextAction = $this->resolveNextAction($store, $hasProducts, $hasPayments, $hasShipping, $isPublishable);
 
         try {
             $canManageStoreSettings = $user->can('settings-stores') || $user->type === 'company';
@@ -219,6 +221,77 @@ class DashboardController extends Controller
                 !$hasPayments ? 'طرق الدفع' : null,
                 !$hasProducts ? 'المنتجات' : null,
             ])),
+            'nextAction' => $nextAction,
+        ];
+    }
+
+    /**
+     * Next Best Action — derives ONE clear merchant CTA from existing readiness
+     * facts (products/payments/delivery/publish state + live order queue) with a
+     * fixed priority, never inventing unsupported states.
+     */
+    private function resolveNextAction(Store $store, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable): array
+    {
+        if (!$hasProducts) {
+            return [
+                'type' => 'add_product',
+                'title' => 'أضف أول منتج',
+                'description' => 'أضف أول منتج ليظهر في متجرك ويتمكن العملاء من الطلب.',
+                'cta' => 'إضافة منتج',
+                'href' => route('products.create'),
+            ];
+        }
+
+        if (!$hasPayments) {
+            return [
+                'type' => 'setup_payment',
+                'title' => 'فعّل طريقة دفع',
+                'description' => 'فعّل الدفع عند الاستلام أو الدفع الإلكتروني ليكتمل استلام الطلبات.',
+                'cta' => 'إعداد الدفع',
+                'href' => '/stores/' . $store->id . '/settings?tab=payments',
+            ];
+        }
+
+        if (!$hasShipping) {
+            return [
+                'type' => 'setup_delivery',
+                'title' => 'إعداد التوصيل',
+                'description' => 'أضف طريقة توصيل حتى يتمكن العملاء من استلام طلباتهم.',
+                'cta' => 'إعداد التوصيل',
+                'href' => route('delivery.index'),
+            ];
+        }
+
+        if (!$isPublishable) {
+            return [
+                'type' => 'publish_store',
+                'title' => 'انشر متجرك',
+                'description' => 'متجرك جاهز — انشره ليصبح متاحاً للعملاء.',
+                'cta' => 'نشر المتجر',
+                'href' => route('stores.settings', $store->id) . '?tab=general',
+            ];
+        }
+
+        $pendingOrders = Order::where('store_id', $store->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->count();
+
+        if ($pendingOrders > 0) {
+            return [
+                'type' => 'review_orders',
+                'title' => 'راجع الطلبات الجديدة',
+                'description' => 'لديك طلبات جديدة بانتظار المراجعة.',
+                'cta' => 'عرض الطلبات',
+                'href' => route('orders.index'),
+            ];
+        }
+
+        return [
+            'type' => 'share_store',
+            'title' => 'شارك رابط متجرك',
+            'description' => 'أرسل رابط متجرك للعملاء وابدأ باستقبال الطلبات.',
+            'cta' => 'نسخ الرابط',
+            'href' => null,
         ];
     }
     
