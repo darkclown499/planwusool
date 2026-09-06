@@ -243,6 +243,7 @@ export default function PosIndex() {
                             onChange={(e) => onQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && onBarcodeEnter()}
                             autoFocus
+                            data-testid="pos-search"
                         />
                     </div>
                     {categories.length > 0 && (
@@ -280,6 +281,10 @@ export default function PosIndex() {
                                 type="button"
                                 onClick={() => addToCart(r)}
                                 disabled={available !== null && available <= 0}
+                                aria-label={available !== null && available <= 0
+                                    ? `${t('Add to cart')}: ${r.name} (${t('Out of stock')})`
+                                    : `${t('Add to cart')}: ${r.name}`}
+                                data-testid="pos-product"
                                 className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-start shadow-xs transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <div className="flex h-20 items-center justify-center bg-muted/40 p-2">
@@ -326,23 +331,37 @@ export default function PosIndex() {
                         {cart.length === 0 ? (
                             <p className="py-6 text-center text-sm text-muted-foreground">{t('No items yet')}</p>
                         ) : (
-                            <ul className="max-h-72 space-y-2 overflow-y-auto">
+                            <ul className="max-h-72 space-y-2 overflow-y-auto" data-testid="pos-cart-lines">
                                 {cart.map((l) => (
-                                    <li key={l.key} className="flex items-center justify-between gap-2 rounded-md border border-border/70 p-2">
-                                        <div className="min-w-0">
-                                            <p className="truncate text-[13px] font-medium">{l.name}</p>
-                                            {l.variant_label && <p className="text-[11px] text-muted-foreground">{l.variant_label}</p>}
-                                            <p className="text-[11px] text-muted-foreground">
-                                                {fmt(l.unit_price)} {storeCurrency} × {l.qty}
+                                    <li key={l.key} className="flex items-center justify-between gap-3 rounded-md border border-border/70 p-3">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-medium">{l.name}</p>
+                                            {l.variant_label && <p className="text-xs text-muted-foreground">{l.variant_label}</p>}
+                                            <p className="mt-0.5 text-xs text-muted-foreground">
+                                                <span className="ltr-num">{fmt(l.unit_price)} {storeCurrency}</span> ×{' '}
+                                                <span className="ltr-num">{l.qty}</span>
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => changeQty(l.key, -1)}>
-                                                <Minus className="h-3 w-3" />
+                                        <div className="flex shrink-0 items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-9 w-9"
+                                                onClick={() => changeQty(l.key, -1)}
+                                                aria-label={t('Decrease')}
+                                            >
+                                                <Minus className="h-4 w-4" />
                                             </Button>
-                                            <span className="w-6 text-center text-sm font-semibold">{l.qty}</span>
-                                            <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => changeQty(l.key, 1)}>
-                                                <Plus className="h-3 w-3" />
+                                            <span aria-live="polite" className="ltr-num min-w-7 text-center text-sm font-semibold tabular-nums">{l.qty}</span>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-9 w-9"
+                                                onClick={() => changeQty(l.key, 1)}
+                                                disabled={l.stock_limit !== null && l.qty >= l.stock_limit}
+                                                aria-label={t('Increase')}
+                                            >
+                                                <Plus className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </li>
@@ -355,7 +374,7 @@ export default function PosIndex() {
                         <div className="space-y-1.5 text-sm">
                             <div className="flex justify-between"><span className="text-muted-foreground">{t('Subtotal')}</span><span>{fmt(totals.subtotal)} {storeCurrency}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">{t('Tax')}</span><span>{fmt(totals.tax)} {storeCurrency}</span></div>
-                            <div className="flex justify-between border-t pt-1.5 text-base font-bold"><span>{t('Total')}</span><span>{fmt(totals.total)} {storeCurrency}</span></div>
+                            <div className="flex justify-between border-t pt-1.5 text-base font-bold"><span>{t('Total')}</span><span data-testid="pos-total" className="ltr-num">{fmt(totals.total)} {storeCurrency}</span></div>
                         </div>
                     </div>
 
@@ -398,7 +417,7 @@ export default function PosIndex() {
                             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder={t('optional')} />
                         </div>
                         {saleError && <p className="text-sm text-destructive">{saleError}</p>}
-                        <Button className="w-full" size="lg" disabled={cart.length === 0 || submitting} onClick={submitSale}>
+                        <Button className="w-full" size="lg" disabled={cart.length === 0 || submitting} onClick={submitSale} data-testid="pos-complete-sale">
                             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                             {t('Complete Sale')}
                         </Button>
