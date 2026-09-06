@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
 import { useTranslation } from 'react-i18next';
 import { Link, router, usePage } from '@inertiajs/react';
 import QRCode from 'react-qr-code';
@@ -82,6 +81,22 @@ interface Props {
       cta: string;
       href: string | null;
     } | null;
+    readiness?: {
+      items: {
+        basics: boolean;
+        products: boolean;
+        payment: boolean;
+        delivery: boolean;
+        published: boolean;
+      };
+      readyToSell: boolean;
+      completeCount: number;
+      totalCount: number;
+      nextStep: {
+        key: string;
+        href: string | null;
+      } | null;
+    };
   };
   isSuperAdmin: boolean;
 }
@@ -708,90 +723,102 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           </div>
         </div>
 
-        {/* Onboarding Stepper */}
-        {onboarding?.show && !isSuperAdmin && (() => {
-          const doneCount = Math.max(onboarding.totalCount - (onboarding.pendingCount || 0), 0);
-          const percent = onboarding.totalCount > 0 ? Math.round((doneCount / onboarding.totalCount) * 100) : 0;
-          // Commerce-ready takes precedence over 100% checklist — a store with
-          // products+shipping+payments is order-capable even if optional steps
-          // (taxes/domain) remain. Show celebration as soon as commerce-ready.
-          const isComplete = onboarding.isReadyToPublish;
+        {/* Merchant Readiness — P2C-01 compact card.
+            Status only: each of the five basics (الأساسيات / المنتجات /
+            المدفوعات / التوصيل / النشر) is READY or NOT READY from server-sourced
+            data. The single primary CTA stays the P2B-03 next-action card below;
+            NOT READY rows deep-link to their canonical setup route without
+            becoming a competing primary CTA. */}
+        {onboarding?.readiness && currentStore && !isSuperAdmin && (() => {
+          const readinessItems: { key: string; label: string; icon: LucideIcon; ready: boolean; href: string }[] = [
+            { key: 'basics', label: 'الأساسيات', icon: Building2, ready: onboarding.readiness.items.basics, href: `/stores/${currentStore.id}/settings?tab=general` },
+            { key: 'products', label: 'المنتجات', icon: Package, ready: onboarding.readiness.items.products, href: route('products.create') },
+            { key: 'payment', label: 'المدفوعات', icon: CreditCard, ready: onboarding.readiness.items.payment, href: `/stores/${currentStore.id}/settings?tab=payments` },
+            { key: 'delivery', label: 'التوصيل', icon: Truck, ready: onboarding.readiness.items.delivery, href: route('delivery.index') },
+            { key: 'published', label: 'النشر', icon: CheckCircle, ready: onboarding.readiness.items.published, href: `/stores/${currentStore.id}/settings?tab=general` },
+          ];
+          const isReadyToSell = onboarding.readiness.readyToSell;
+          const completeCount = onboarding.readiness.completeCount;
           return (
-            <Card className={isComplete ? "border-emerald-200 bg-emerald-50" : "border-primary/30 bg-primary/5"}>
+            <Card className={isReadyToSell ? "border-emerald-200 bg-emerald-50" : "border-primary/30 bg-primary/5"}>
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    {isComplete ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <Zap className="h-4 w-4 text-primary" />}
-                    <CardTitle className={isComplete ? "text-base text-emerald-800" : "text-base"}>{isComplete ? 'متجرك جاهز 🎉' : t('ابدأ من هنا')}</CardTitle>
+                    {isReadyToSell ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <Zap className="h-4 w-4 text-primary" />}
+                    <CardTitle className={isReadyToSell ? "text-base text-emerald-800" : "text-base"}>
+                      {isReadyToSell ? 'متجرك جاهز للبيع 🎉' : t('جاهزية المتجر للبيع')}
+                    </CardTitle>
                   </div>
-                  <span className={isComplete ? "text-sm font-semibold text-emerald-700" : "text-sm font-semibold text-primary"}>
-                    <span className="ltr-num" dir="ltr">{percent}%</span> {isComplete ? ' — جاهز للنشر' : t('إكمال تهيئة المتجر')}
+                  <span className={isReadyToSell ? "text-sm font-semibold text-emerald-700" : "text-sm font-semibold text-primary"}>
+                    <span className="ltr-num" dir="ltr">{completeCount}/{onboarding.readiness.totalCount}</span> {isReadyToSell ? '— جاهز للبيع' : 'مكتمل'}
                   </span>
                 </div>
-                <Progress value={percent} className="mt-3 h-2" />
-                {isComplete && (
-                  <div className="mt-3 space-y-2">
-                    <p className="text-sm text-emerald-700">ممتاز! أكملت جميع الخطوات الأساسية. متجرك جاهز لاستقبال الطلبات.</p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700" onClick={() => window.open(storeUrl!, '_blank')}>
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        فتح المتجر
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50" onClick={() => router.visit(route('orders.index'))}>
-                        <ShoppingCart className="h-3.5 w-3.5" />
-                        عرض الطلبات
-                      </Button>
-                    </div>
-                  </div>
+                {isReadyToSell && (
+                  <p className="mt-1 text-sm text-emerald-700">ممتاز! المتجر منشور وجاهز لاستقبال الطلبات.</p>
                 )}
               </CardHeader>
-              {isComplete && !checklistExpanded ? (
-                <CardContent>
-                  <button type="button" onClick={() => setChecklistExpanded(true)} className="flex w-full items-center justify-between rounded-lg border border-dashed border-emerald-300 bg-white px-3 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50">
-                    <span>تحسينات اختيارية — الضرائب، الدومين والمزيد</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </CardContent>
-              ) : (
               <CardContent>
-                {isComplete && (
-                  <div className="mb-3 flex justify-between">
-                    <span className="text-xs font-semibold text-emerald-700">تحسينات اختيارية</span>
-                    <button type="button" onClick={() => setChecklistExpanded(false)} className="text-xs text-muted-foreground hover:text-foreground">تصغير</button>
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {onboarding.steps.map((step) => {
-                    const stepMeta = {
-                      store_info: { icon: Building2, label: t('إعداد معلومات المتجر') },
-                      design: { icon: Palette, label: t('اختيار التصميم') },
-                      categories: { icon: Folder, label: t('إضافة التصنيفات') },
-                      products: { icon: Package, label: t('إضافة المنتجات') },
-                      inventory: { icon: Boxes, label: t('إعداد المخزون') },
-                      shipping: { icon: Truck, label: t('إعداد الشحن والتوصيل') },
-                      payments: { icon: CreditCard, label: t('إعداد طرق الدفع') },
-                      taxes: { icon: Percent, label: t('إعداد الضرائب') },
-                      domain: { icon: Globe, label: t('ربط الدومين') },
-                      whatsapp: { icon: MessageSquare, label: t('Set up WhatsApp') },
-                      published: { icon: CheckCircle, label: t('نشر المتجر') },
-                    }[step.key] || { icon: CheckCircle, label: step.key };
-                    const Icon = stepMeta.icon;
-                    return step.done ? (
-                      <div key={step.key} className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
-                        <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span className="truncate text-xs font-medium text-green-800">{stepMeta.label}</span>
-                      </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {readinessItems.map((item) => {
+                    const Icon = item.icon;
+                    const inner = (
+                      <>
+                        <Icon className={item.ready ? "h-4 w-4 flex-shrink-0 text-green-600" : "h-4 w-4 flex-shrink-0 text-amber-600"} />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.label}</span>
+                        {item.ready ? (
+                          <Badge variant="outline" className="shrink-0 border-green-200 bg-green-50 text-xs text-green-700">جاهز</Badge>
+                        ) : (
+                          <Badge variant="outline" className="shrink-0 border-amber-200 bg-amber-50 text-xs text-amber-700">غير جاهز</Badge>
+                        )}
+                      </>
+                    );
+                    return item.ready ? (
+                      <div key={item.key} className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5">{inner}</div>
                     ) : (
-                      <Link key={step.key} href={step.href || '#'} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm transition-colors hover:border-primary hover:bg-primary/5">
-                        <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
-                        <span className="min-w-0 flex-1 truncate text-xs font-medium">{stepMeta.label}</span>
+                      <Link key={item.key} href={item.href} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2.5 shadow-sm transition-colors hover:border-primary hover:bg-primary/5">
+                        {inner}
                         <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                       </Link>
                     );
                   })}
                 </div>
+                <button type="button" onClick={() => setChecklistExpanded((v) => !v)} className="mt-3 flex w-full items-center justify-between rounded-lg border border-dashed bg-white px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                  <span>{checklistExpanded ? 'تصغير الخطوات الاختيارية' : 'عرض جميع الخطوات'}</span>
+                  <ChevronRight className={checklistExpanded ? "h-4 w-4 rotate-90" : "h-4 w-4"} />
+                </button>
+                {checklistExpanded && (
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {onboarding.steps.map((step) => {
+                      const stepMeta = {
+                        store_info: { icon: Building2, label: t('إعداد معلومات المتجر') },
+                        design: { icon: Palette, label: t('اختيار التصميم') },
+                        categories: { icon: Folder, label: t('إضافة التصنيفات') },
+                        products: { icon: Package, label: t('إضافة المنتجات') },
+                        inventory: { icon: Boxes, label: t('إعداد المخزون') },
+                        shipping: { icon: Truck, label: t('إعداد الشحن والتوصيل') },
+                        payments: { icon: CreditCard, label: t('إعداد طرق الدفع') },
+                        taxes: { icon: Percent, label: t('إعداد الضرائب') },
+                        domain: { icon: Globe, label: t('ربط الدومين') },
+                        whatsapp: { icon: MessageSquare, label: t('Set up WhatsApp') },
+                        published: { icon: CheckCircle, label: t('نشر المتجر') },
+                      }[step.key] || { icon: CheckCircle, label: step.key };
+                      const Icon = stepMeta.icon;
+                      return step.done ? (
+                        <div key={step.key} className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                          <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />
+                          <span className="truncate text-xs font-medium text-green-800">{stepMeta.label}</span>
+                        </div>
+                      ) : (
+                        <Link key={step.key} href={step.href || '#'} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm transition-colors hover:border-primary hover:bg-primary/5">
+                          <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
+                          <span className="min-w-0 flex-1 truncate text-xs font-medium">{stepMeta.label}</span>
+                          <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
-              )}
             </Card>
           );
         })()}

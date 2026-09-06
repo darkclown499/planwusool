@@ -123,7 +123,9 @@ class DashboardController extends Controller
         $hasStoreInfo = !empty($store->name) && !empty($store->slug);
         $hasDesign = !empty($store->theme) || !empty($config['design_tokens']) || !empty($config['template_overrides']);
         $hasCategories = \App\Models\Category::where('store_id', $store->id)->exists();
-        $hasProducts = Product::where('store_id', $store->id)->exists();
+        // Sale-ready products are the ACTIVE ones — the storefront catalog only
+        // exposes is_active products, so readiness must not count drafts.
+        $hasProducts = Product::where('store_id', $store->id)->where('is_active', true)->exists();
         $hasInventory = \App\Models\Product::where('store_id', $store->id)->where('stock', '>', 0)->exists();
         // Shipping: check if any shipping method exists for this store
         $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->exists();
@@ -144,6 +146,12 @@ class DashboardController extends Controller
         $isReadyToPublish = $hasProducts && $hasShipping && $hasPayments;
         $isPublishable = $storePublished;
         $nextAction = $this->resolveNextAction($store, $hasProducts, $hasPayments, $hasShipping, $isPublishable);
+
+        // P2C-01 — single-source merchant readiness snapshot. Every flag is
+        // derived from the same persisted truth used above (no fabricated
+        // toggles): products counts only ACTIVE products (matching the
+        // storefront catalog), readiness never mutates business rules.
+        $readiness = $this->buildReadinessSnapshot($store, $user, $config, $hasProducts, $hasPayments, $hasShipping, $isPublishable);
 
         try {
             $canManageStoreSettings = $user->can('settings-stores') || $user->type === 'company';
@@ -222,6 +230,53 @@ class DashboardController extends Controller
                 !$hasProducts ? 'المنتجات' : null,
             ])),
             'nextAction' => $nextAction,
+            'readiness' => $readiness,
+        ];
+    }
+
+    /**
+     * P2C-01 — normalized merchant store readiness snapshot.
+     *
+     * Every item derives from the SAME persisted truth consumed by the rest of
+     * the dashboard (products = active catalog, payment = enabled methods,
+     * delivery = shipping methods/config, publish = store_status). All booleans
+     * are real DB state — nothing is padded or fabricated. `readyToSell` is true
+     * only when ALL five basics are met. `nextStep` carries the single next
+     * canonical CTA route in priority order: basics → products → payment →
+     * delivery → publish → null (fully ready).
+     */
+    private function buildReadinessSnapshot(Store $store, $user, array $config, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable): array
+    {
+        $hasBasics = !empty($store->name) && !empty($store->slug);
+
+        $items = [
+            'basics'    => ['ready' => $hasBasics,    'href' => route('stores.settings', $store->id) . '?tab=general'],
+            'products'  => ['ready' => $hasProducts,  'href' => route('products.create')],
+            'payment'   => ['ready' => $hasPayments,  'href' => '/stores/' . $store->id . '/settings?tab=payments'],
+            'delivery'  => ['ready' => $hasShipping,  'href' => route('delivery.index')],
+            'published' => ['ready' => $isPublishable, 'href' => route('stores.settings', $store->id) . '?tab=general'],
+        ];
+
+        $nextStep = null;
+        foreach ($items as $key => $item) {
+            if (!$item['ready']) {
+                $nextStep = ['key' => $key, 'href' => $item['href']];
+                break;
+            }
+        }
+
+        return [
+            'items' => [
+                'basics'    => $hasBasics,
+                'products'  => $hasProducts,
+                'payment'   => $hasPayments,
+                'delivery'  => $hasShipping,
+                'published' => $isPublishable,
+            ],
+            'readyToSell' => $hasBasics && $hasProducts && $hasPayments && $hasShipping && $isPublishable,
+            'completeCount' => count(array_filter($items, fn ($item) => $item['ready'])),
+            'totalCount' => 5,
+            'nextStep' => $nextStep,
         ];
     }
 
