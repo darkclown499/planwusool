@@ -17,7 +17,6 @@ import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission } from '@/utils/permissions';
 import { toast } from '@/components/custom-toast';
 import { apiPost } from '@/utils/api';
-import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
 
 interface OrderItem {
   id: number;
@@ -289,7 +288,7 @@ export default function DeliveryHub() {
                 <p className="text-xs text-amber-700 mt-0.5">متاح في خطة Growth أو أعلى.</p>
               </div>
             </div>
-            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 ms-auto shrink-0" onClick={() => router.visit(route('plan-orders.index'))}>
+            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 ms-auto shrink-0" onClick={() => router.visit(route('plans.index'))}>
               <Zap className="h-4 w-4 me-1" /> ترقية الخطة
             </Button>
           </CardContent>
@@ -645,9 +644,6 @@ export default function DeliveryHub() {
 
           {activeTab === 'methods' && (
             <div className="space-y-3">
-              {!shippingEnabled && (
-                <FeatureLockedOverlay featureName="Delivery Method" requiredPlan="Growth" />
-              )}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -716,9 +712,6 @@ export default function DeliveryHub() {
 
           {activeTab === 'zones' && (
             <div className="space-y-3">
-              {!shippingEnabled && (
-                <FeatureLockedOverlay featureName="Delivery Zone" requiredPlan="Growth" />
-              )}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -792,9 +785,6 @@ export default function DeliveryHub() {
 
           {activeTab === 'drivers' && (
             <div className="space-y-3">
-              {!shippingEnabled && (
-                <FeatureLockedOverlay featureName="Drivers" requiredPlan="Growth" />
-              )}
               <Card className="border-blue-100 bg-blue-50/50">
                 <CardContent className="p-3 flex items-start gap-3">
                   <Info className="h-5 w-5 text-blue-600 mt-0.5" />

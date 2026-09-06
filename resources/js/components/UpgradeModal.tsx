@@ -61,7 +61,7 @@ export default function UpgradeModal({ open, onOpenChange, feature, limitType, c
           <Button
             onClick={() => {
               onOpenChange(false);
-              router.visit(route('plan-orders.index'));
+              router.visit(route('plans.index'));
             }}
             className="bg-amber-600 hover:bg-amber-700"
           >

@@ -3885,6 +3885,7 @@
     "This domain is already in use.": "This domain is already in use.",
     "This domain is managed automatically. Use your own domain name instead.": "This domain is managed automatically. Use your own domain name instead.",
     "This domain is reserved.": "This domain is reserved.",
+    "This feature is not available in your current plan.": "This feature is not available in your current plan.",
     "This feature requires the {{plan}} plan or higher.": "This feature requires the {{plan}} plan or higher.",
     "This is a page meant for more advanced users, simply ignore it if you don't understand what cache is.": "This is a page meant for more advanced users, simply ignore it if you don't understand what cache is.",
     "This is a secure area of the application. Please confirm your password before continuing.": "This is a secure area of the application. Please confirm your password before continuing.",

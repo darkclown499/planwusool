@@ -363,24 +363,24 @@ export default function Settings() {
             </section>
           )}
 
-          {/* Webhook Settings Section */}
+          {/* Webhook Settings Section — permission-gated only (manage-settings).
+              No webhook plan entitlement exists server-side, so the section must
+              never claim an upgrade is required. */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
             <section id="webhook-settings" ref={webhookSettingsRef} className="mb-8 scroll-mt-24">
-              {planFeatures?.enable_custdomain || auth.user?.type === 'superadmin' ? (
-                <WebhookSettings webhooks={webhooks} availableModules={availableModules} />
-              ) : (
-                <FeatureLockedOverlay featureName="Webhook Settings" requiredPlan="Growth" />
-              )}
+              <WebhookSettings webhooks={webhooks} availableModules={availableModules} />
             </section>
           )}
 
-          {/* Accounting Integration Section */}
+          {/* Accounting Integration Section — gated on the real
+              enable_accounting_integration plan flag server-side. The required
+              tier is not guaranteed across plans, so no specific tier is claimed. */}
           {auth.permissions?.includes('manage-settings') && auth.user?.type !== 'superadmin' && (
             <section id="accounting-integration" ref={accountingIntegrationRef} className="mb-8 scroll-mt-24">
               {planFeatures?.enable_accounting_integration ? (
                 <AccountingIntegration />
               ) : (
-                <FeatureLockedOverlay featureName="الربط المحاسبي" requiredPlan="Growth" />
+                <FeatureLockedOverlay featureName="الربط المحاسبي" />
               )}
             </section>
           )}
