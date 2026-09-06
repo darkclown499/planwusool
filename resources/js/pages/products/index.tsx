@@ -165,6 +165,79 @@ export default function Products() {
 
   const selectedTotal = useMemo(() => selected.size, [selected.size]);
 
+  // Centralized stock/inventory presentation. Reused verbatim by the desktop
+  // table and the mobile product cards so mobile never forks product/inventory
+  // business logic — it only re-renders the same server-driven state.
+  const stockMeta = (product: any) => {
+    const isVariant = (product.inventory_mode === 'variant') && !!product.track_inventory && Array.isArray(product.variant_combinations) && product.variant_combinations.length > 0;
+    const untracked = !product.track_inventory;
+    let stockDisplay: any = null;
+    let stockColor = 'bg-emerald-100 text-emerald-800';
+    let statusLabel = 'متوفر';
+    let stockDot = 'bg-emerald-500';
+    let isLowStock = false;
+    if (untracked) {
+      stockDisplay = <span className="text-xs text-muted-foreground">غير متتبع</span>;
+      stockColor = 'bg-slate-100 text-slate-600';
+      statusLabel = 'غير متتبع';
+      stockDot = 'bg-slate-400';
+    } else if (isVariant) {
+      const combos = product.variant_combinations || [];
+      const total = combos.reduce((a: number, c: any) => a + (parseInt(String(c.stock ?? 0)) || 0), 0);
+      const outCount = combos.filter((c: any) => (parseInt(String(c.stock ?? 0)) || 0) <= 0 && !product.allow_backorder).length;
+      const lowCount = combos.filter((c: any) => {
+        const s = parseInt(String(c.stock ?? 0)) || 0;
+        const th = parseInt(String(c.low_stock_warning ?? product.low_stock_warning ?? lowStockThreshold)) || Number(lowStockThreshold);
+        return s > 0 && s < th;
+      }).length;
+      isLowStock = lowCount > 0;
+      const allOut = combos.length > 0 && combos.every((c: any) => (parseInt(String(c.stock ?? 0)) || 0) <= 0 && !product.allow_backorder);
+      if (product.allow_backorder) {
+        stockColor = 'bg-emerald-100 text-emerald-800';
+        statusLabel = 'متوفر (طلب مسبق)';
+        stockDot = 'bg-emerald-500';
+      } else if (allOut) {
+        stockColor = 'bg-red-100 text-red-800';
+        statusLabel = 'نفد المخزون';
+        stockDot = 'bg-red-500';
+      } else if (isLowStock) {
+        stockColor = 'bg-amber-100 text-amber-800';
+        statusLabel = 'مخزون منخفض';
+        stockDot = 'bg-amber-500';
+      }
+      stockDisplay = (
+        <span className="inline-flex flex-col gap-0.5">
+          <span className="inline-flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${stockDot}`} /><span className="ltr-num font-bold tabular-nums">{total}</span><span className="text-xs text-muted-foreground">عبر {combos.length} خيارات</span></span>
+          {outCount > 0 && !allOut && <span className="text-[11px] text-red-600">{outCount} خيارات نفدت</span>}
+        </span>
+      );
+    } else {
+      isLowStock = Number(product.stock) < Number(lowStockThreshold) && Number(product.stock) > 0;
+      const out = Number(product.stock) <= 0 && !product.allow_backorder;
+      if (product.allow_backorder) {
+        stockColor = 'bg-emerald-100 text-emerald-800';
+        statusLabel = 'متوفر (طلب مسبق)';
+        stockDot = 'bg-emerald-500';
+      } else if (out) {
+        stockColor = 'bg-red-100 text-red-800';
+        statusLabel = 'نفد المخزون';
+        stockDot = 'bg-red-500';
+      } else if (isLowStock) {
+        stockColor = 'bg-amber-100 text-amber-800';
+        statusLabel = 'مخزون منخفض';
+        stockDot = 'bg-amber-500';
+      }
+      stockDisplay = (
+        <span className="inline-flex items-center gap-1.5">
+          <span className={`h-2 w-2 rounded-full ${stockDot}`} />
+          <span className="ltr-num font-bold tabular-nums">{product.stock}</span>
+          <span className="text-xs text-muted-foreground">{product.stock === 1 ? 'قطعة' : 'قطع'}</span>
+        </span>
+      );
+    }
+    return { stockDisplay, stockColor, statusLabel, stockDot, isLowStock };
+  };
+
   return (
     <PageTemplate
       title={t('Products')}
@@ -406,7 +479,90 @@ export default function Products() {
                 </div>
               );
             })() : (
-              <div className="overflow-x-auto rounded-md border">
+              <>
+              {/* Mobile / tablet product cards — compact, actionable rows using
+                  the same server data as the desktop table. No product business
+                  logic is duplicated; only presentation changes. */}
+              <div className="space-y-3 md:hidden">
+                {products.map((product: any) => {
+                  const meta = stockMeta(product);
+                  return (
+                    <div
+                      key={product.id}
+                      data-testid="mobile-product-card"
+                      className={`rounded-xl border p-4 ${selected.has(product.id) ? 'border-primary/60 bg-muted/30' : ''}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
+                          {getProductThumbnail(product) ? (
+                            <img src={getImageUrl(getProductThumbnail(product))} alt={product.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <Package className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="font-medium leading-snug">{product.name}</div>
+                              {product.sku && (
+                                <div className="mt-0.5 truncate text-xs text-muted-foreground" dir="ltr">{product.sku}</div>
+                              )}
+                            </div>
+                            <Checkbox
+                              checked={selected.has(product.id)}
+                              aria-label={t('Select product')}
+                              onCheckedChange={() => toggleSelect(product.id)}
+                              className="mt-0.5"
+                            />
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                            <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                              {product.is_active ? t('Active') : t('Inactive')}
+                            </Badge>
+                            <Badge className={meta.stockColor}>
+                              {meta.statusLabel}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="ltr-num font-bold text-gray-900">{formatCurrency(product.sale_price || product.price)}</div>
+                          {product.sale_price && (
+                            <div className="text-xs text-gray-400 line-through ltr-num">{formatCurrency(product.price)}</div>
+                          )}
+                        </div>
+                        <div className="text-end">
+                          {meta.stockDisplay}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
+                        <div className="flex items-center gap-1">
+                          {hasPermission('view-products') && (
+                            <Button variant="ghost" size="sm" onClick={() => handleActionClick('view', 'view-products', product.id)} title={t('View')}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {hasPermission('delete-products') && (
+                            <Button variant="ghost" size="sm" onClick={() => handleActionClick('delete', 'delete-products', product.id)} title={t('Delete')}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        {hasPermission('edit-products') && (
+                          <Button variant="default" size="sm" onClick={() => handleActionClick('edit', 'edit-products', product.id)}>
+                            <Edit className="h-4 w-4 me-1.5" />
+                            {t('Edit')}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -452,72 +608,7 @@ export default function Products() {
                   </TableHeader>
                   <TableBody>
                     {products.map((product: any) => {
-                      const isVariant = (product.inventory_mode === 'variant') && !!product.track_inventory && Array.isArray(product.variant_combinations) && product.variant_combinations.length > 0;
-                      const untracked = !product.track_inventory;
-                      let stockDisplay: any = null;
-                      let stockColor = 'bg-emerald-100 text-emerald-800';
-                      let statusLabel = 'متوفر';
-                      let stockDot = 'bg-emerald-500';
-                      let isLowStock = false;
-                      if (untracked) {
-                        stockDisplay = <span className="text-xs text-muted-foreground">غير متتبع</span>;
-                        stockColor = 'bg-slate-100 text-slate-600';
-                        statusLabel = 'غير متتبع';
-                        stockDot = 'bg-slate-400';
-                      } else if (isVariant) {
-                        const combos = product.variant_combinations || [];
-                        const total = combos.reduce((a: number, c: any) => a + (parseInt(String(c.stock ?? 0)) || 0), 0);
-                        const outCount = combos.filter((c: any) => (parseInt(String(c.stock ?? 0)) || 0) <= 0 && !product.allow_backorder).length;
-                        const lowCount = combos.filter((c: any) => {
-                          const s = parseInt(String(c.stock ?? 0)) || 0;
-                          const th = parseInt(String(c.low_stock_warning ?? product.low_stock_warning ?? lowStockThreshold)) || Number(lowStockThreshold);
-                          return s > 0 && s < th;
-                        }).length;
-                        isLowStock = lowCount > 0;
-                        const allOut = combos.length > 0 && combos.every((c: any) => (parseInt(String(c.stock ?? 0)) || 0) <= 0 && !product.allow_backorder);
-                        if (product.allow_backorder) {
-                          stockColor = 'bg-emerald-100 text-emerald-800';
-                          statusLabel = 'متوفر (طلب مسبق)';
-                          stockDot = 'bg-emerald-500';
-                        } else if (allOut) {
-                          stockColor = 'bg-red-100 text-red-800';
-                          statusLabel = 'نفد المخزون';
-                          stockDot = 'bg-red-500';
-                        } else if (isLowStock) {
-                          stockColor = 'bg-amber-100 text-amber-800';
-                          statusLabel = 'مخزون منخفض';
-                          stockDot = 'bg-amber-500';
-                        }
-                        stockDisplay = (
-                          <span className="inline-flex flex-col gap-0.5">
-                            <span className="inline-flex items-center gap-1.5"><span className={`h-2 w-2 rounded-full ${stockDot}`} /><span className="ltr-num font-bold tabular-nums">{total}</span><span className="text-xs text-muted-foreground">عبر {combos.length} خيارات</span></span>
-                            {outCount > 0 && !allOut && <span className="text-[11px] text-red-600">{outCount} خيارات نفدت</span>}
-                          </span>
-                        );
-                      } else {
-                        isLowStock = Number(product.stock) < Number(lowStockThreshold) && Number(product.stock) > 0;
-                        const out = Number(product.stock) <= 0 && !product.allow_backorder;
-                        if (product.allow_backorder) {
-                          stockColor = 'bg-emerald-100 text-emerald-800';
-                          statusLabel = 'متوفر (طلب مسبق)';
-                          stockDot = 'bg-emerald-500';
-                        } else if (out) {
-                          stockColor = 'bg-red-100 text-red-800';
-                          statusLabel = 'نفد المخزون';
-                          stockDot = 'bg-red-500';
-                        } else if (isLowStock) {
-                          stockColor = 'bg-amber-100 text-amber-800';
-                          statusLabel = 'مخزون منخفض';
-                          stockDot = 'bg-amber-500';
-                        }
-                        stockDisplay = (
-                          <span className="inline-flex items-center gap-1.5">
-                            <span className={`h-2 w-2 rounded-full ${stockDot}`} />
-                            <span className="ltr-num font-bold tabular-nums">{product.stock}</span>
-                            <span className="text-xs text-muted-foreground">{product.stock === 1 ? 'قطعة' : 'قطع'}</span>
-                          </span>
-                        );
-                      }
+                      const meta = stockMeta(product);
                       return (
                         <TableRow key={product.id} className={selected.has(product.id) ? 'bg-muted/30' : undefined}>
                           <TableCell>
@@ -550,15 +641,15 @@ export default function Products() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {stockDisplay}
+                            {meta.stockDisplay}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <Badge variant={product.is_active ? 'default' : 'secondary'}>
                                 {product.is_active ? t('Active') : t('Inactive')}
                               </Badge>
-                              <Badge className={stockColor}>
-                                {statusLabel}
+                              <Badge className={meta.stockColor}>
+                                {meta.statusLabel}
                               </Badge>
                             </div>
                           </TableCell>
@@ -588,6 +679,7 @@ export default function Products() {
                   </TableBody>
                 </Table>
               </div>
+              </>
             )}
           </CardContent>
         </Card>
