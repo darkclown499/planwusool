@@ -26,6 +26,7 @@ import { getImageUrl } from '@/utils/image-helper';
 interface Props {
   store: any;
   settings: any;
+  storeUrl?: string;
   publishReadiness?: { hasProducts: boolean; hasShipping: boolean; hasPayments: boolean; isReady: boolean; missing: string[] };
 }
 
@@ -148,7 +149,7 @@ function initSocialLinks(s: any): any[] {
   return legacy;
 }
 
-export default function StoreSettings({ store, settings, publishReadiness }: Props) {
+export default function StoreSettings({ store, settings, storeUrl, publishReadiness }: Props) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<any>(settings || {});
   const [socialLinks, setSocialLinks] = useState<any[]>(() => initSocialLinks(settings));
@@ -274,6 +275,9 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
   const storeStatusOn = formData.store_status === true || formData.store_status === 'true';
 
   const seoPreviewUrl = useMemo(() => {
+    // Server-computed canonical URL (Store::getStoreUrl) — includes verified
+    // custom domains and the request scheme. Same truth as the store view page.
+    if (storeUrl) return storeUrl;
     const domain = store.custom_domain || store.custom_subdomain || '';
     if (domain) {
       return domain.startsWith('http') ? domain : `https://${domain}`;
@@ -283,7 +287,7 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
     } catch {
       return '';
     }
-  }, [store]);
+  }, [storeUrl, store]);
 
   const isHttps = useMemo(() => {
     try { return new URL(seoPreviewUrl).protocol === 'https:'; } catch { return seoPreviewUrl.startsWith('https://'); }
@@ -403,9 +407,16 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <Label>{t('Store Status')}</Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">عند الإيقاف لا يستطيع العملاء تصفح المتجر</p>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Label>{t('Store Status')}</Label>
+                      <Badge variant={storeStatusOn ? 'success' : 'outline'} className={storeStatusOn ? 'bg-emerald-600' : ''}>
+                        {storeStatusOn ? 'متاح للعملاء' : 'مخفي عن العملاء'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      عند التفعيل يُنشر المتجر ويصبح متاحًا للعملاء عبر رابط المتجر. عند الإيقاف لا يستطيع العملاء تصفح المتجر مع بقاء الإعدادات محفوظة.
+                    </p>
                   </div>
                   <Switch
                     checked={storeStatusOn}
@@ -466,10 +477,14 @@ export default function StoreSettings({ store, settings, publishReadiness }: Pro
                 </div>
                 <div className="rounded-lg border bg-muted/30 p-3 flex items-start gap-2.5">
                   <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium">الرابط الأساسي للمتجر</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium">رابط المتجر — الرابط الذي يستخدمه العملاء</p>
                     <p className="text-xs text-muted-foreground break-all mt-1 ltr" dir="ltr">{seoPreviewUrl || '—'}</p>
-                    <p className="text-xs text-muted-foreground mt-1">يُستخدم في المعاينات والروابط المشاركة. للإعداد الكامل استخدم صفحة الدومينات.</p>
+                    <p className="text-xs text-muted-foreground mt-1">متجرك متاح دائمًا على هذا الرابط. لإضافة دومين مخصص (مثل example.com) وربط المتجر به، استخدم صفحة الدومين.</p>
+                    <a href={route('stores.domains', store.id)} className="inline-flex items-center gap-1 pt-1.5 text-xs font-medium text-emerald-700 underline-offset-2 hover:underline">
+                      <Link2 className="h-3 w-3" />
+                      إدارة الدومين (دومين مخصص)
+                    </a>
                   </div>
                 </div>
               </CardContent>

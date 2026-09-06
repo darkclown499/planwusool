@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ArrowLeft, CheckCircle2, Save } from 'lucide-react';
+import { Globe, Link2, Palette, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
@@ -31,7 +32,7 @@ interface EditStoreProps {
  serverIp: string;
 }
 
-export default function EditStore({ store, planPermissions, serverIp }: EditStoreProps) {
+export default function EditStore({ store, planPermissions }: EditStoreProps) {
  const { errors } = usePage().props as any;
  const { t } = useTranslation();
  const [formData, setFormData] = useState({
@@ -64,9 +65,6 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  setFormData(prev => ({
  ...prev,
  [field]: checked,
- // If enabling one, disable the other
- ...(field === 'enable_custom_domain' && checked ? { enable_custom_subdomain: false } : {}),
- ...(field === 'enable_custom_subdomain' && checked ? { enable_custom_domain: false } : {}),
  }));
  };
 
@@ -85,29 +83,29 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
 
  return (
  <PageTemplate
- title={t('Edit Store')}
+ title="معلومات المتجر"
  url="/stores/edit"
  actions={pageActions}
  backUrl={route('stores.index')}
  breadcrumbs={[
- { title: t('Dashboard'), href: route('dashboard') },
- { title: t('Store Management'), href: route('stores.index') },
- { title: t('Edit Store') }
+ { title: 'لوحة التحكم', href: route('dashboard') },
+ { title: 'إدارة المتجر', href: route('stores.index') },
+ { title: 'معلومات المتجر' }
  ]}
  >
  <form noValidate onSubmit={handleSubmit} className="space-y-6">
  <Tabs defaultValue="info" className="w-full">
  <TabsList className={`grid w-full ${planPermissions?.pwa_business ? 'grid-cols-2' : 'grid-cols-1'}`}>
-  <TabsTrigger value="info">{t('Store Information')}</TabsTrigger>
-  {planPermissions?.pwa_business && (
-  <TabsTrigger value="pwa">{t('PWA Settings')}</TabsTrigger>
-  )}
+   <TabsTrigger value="info">معلومات المتجر</TabsTrigger>
+   {planPermissions?.pwa_business && (
+   <TabsTrigger value="pwa">{t('PWA Settings')}</TabsTrigger>
+   )}
  </TabsList>
 
-  <TabsContent value="info" dir="rtl" className="space-y-4 pt-4">
-  <Card>
+   <TabsContent value="info" dir="rtl" className="space-y-4 pt-4">
+   <Card>
  <CardHeader>
- <CardTitle>{t('Store Information')}</CardTitle>
+ <CardTitle>معلومات المتجر</CardTitle>
  </CardHeader>
  <CardContent className="space-y-4">
  <div className="grid grid-cols-2 gap-4">
@@ -123,7 +121,7 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  </div>
  <div>
  <Label htmlFor="slug">{t('Store Slug')}</Label>
-  <Input id="slug" value={store?.slug || ''} dir="ltr" disabled />
+   <Input id="slug" value={store?.slug || ''} dir="ltr" disabled />
  </div>
  </div>
  <div>
@@ -132,169 +130,64 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  </div>
  <div className="grid gap-1 mb-4">
  <Label htmlFor="email" required>{t('Store Email')}</Label>
-  <Input
-  id="email"
-  type="email"
-  dir="ltr"
-  value={formData.email}
+   <Input
+   id="email"
+   type="email"
+   dir="ltr"
+   value={formData.email}
  onChange={handleChange}
  aria-invalid={!!errors.email}
  />
  <InputError message={errors.email} />
  </div>
-  </CardContent>
-  </Card>
+   </CardContent>
+   </Card>
 
-  {/* Theme Selection */}
-  <Card>
-  <CardHeader>
-  <CardTitle>{t('Store Theme')}</CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-4">
-  <div className="grid gap-3 sm:grid-cols-2">
-  {[
-  { value: 'core-minimal', name: t('Core Minimal'), desc: t('تصميم بسيط وحديث يناسب جميع المتاجر') },
-  { value: 'core-bold', name: t('Core Bold'), desc: t('شبكة منتجات كثيفة مع بانر بعرض كامل') },
-  { value: 'core-sidebar', name: t('Core Sidebar'), desc: t('تخطيط جانبي مع تنقل جانبي ثابت') },
-  { value: 'core-dark', name: t('Core Dark'), desc: t('ثيم داكن تقني حديث') },
-  { value: 'core-bazaar', name: t('Core Bazaar'), desc: t('تصميم ملون مثالي للسوبرماركت') },
-  { value: 'core-elegant', name: t('Core Elegant'), desc: t('ثيم راقٍ هادئ للعلامات الفاخرة') },
-  { value: 'core-showcase', name: t('Core Showcase'), desc: t('هيرو كبير بفيديو وعروض مميزة') }
-  ].map((theme) => (
-  <button
-  key={theme.value}
-  type="button"
-  onClick={() => setFormData(prev => ({ ...prev, theme: theme.value }))}
-  className={`rounded-xl border-2 p-4 text-start transition ${formData.theme === theme.value ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}`}
-  >
-  <div className="flex items-center justify-between">
-  <span className="font-semibold">{theme.name}</span>
-  {formData.theme === theme.value && <CheckCircle2 className="h-5 w-5 text-primary" />}
-  </div>
-  <p className="mt-1 text-sm text-muted-foreground">{theme.desc}</p>
-  </button>
-  ))}
-  </div>
-  </CardContent>
-  </Card>
-
-  {/* Domain Configuration */}
- <Card>
+   {/* Store template / design — canonical destination is the Designer (six production templates) */}
+   <Card>
  <CardHeader>
- <CardTitle>{t('Domain Configuration')}</CardTitle>
+ <CardTitle>{t('Store Template')}</CardTitle>
  </CardHeader>
- <CardContent className="space-y-6">
- {/* Custom Domain */}
- {planPermissions?.enable_custdomain && (
- <div className="space-y-3">
- <div className="flex items-center justify-between">
- <div>
- <Label htmlFor="enable_custom_domain">{t('Enable Custom Domain')}</Label>
+ <CardContent className="space-y-3">
  <p className="text-sm text-muted-foreground">
- {t('Use your own domain (e.g., example.com)')}
+ قالب المتجر وتخصيص شكله ومحتواه (الألوان، الشعار، الواجهة) يتم من مصمم المتجر.
  </p>
- </div>
-  <div className="flex items-center gap-2">
-  <Switch
-  id="enable_custom_domain"
-  checked={formData.enable_custom_domain}
-  onCheckedChange={(checked) => handleSwitchChange('enable_custom_domain', checked)}
-  />
-  <ToggleStatus enabled={formData.enable_custom_domain} />
-  </div>
-  </div>
- {formData.enable_custom_domain && (
- <div className="grid gap-1 mb-4">
- <Label htmlFor="custom_domain">{t('Custom Domain')}</Label>
-  <Input
-  id="custom_domain"
-  dir="ltr"
-  placeholder={t('example.com')}
- value={formData.custom_domain}
- onChange={handleChange}
- aria-invalid={!!errors.custom_domain}
- required
- />
- <InputError message={errors.custom_domain} />
- <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
- <p className="text-sm text-blue-800">
- <strong>{t('Your Server IP Is:')} {serverIp}</strong>
- </p>
- <p className="text-xs text-blue-600 mt-1">
- {t('Point your domain A record to this IP address')}
- </p>
- </div>
- {errors.custom_domain && <p className="text-xs text-red-500 mt-1">{errors.custom_domain}</p>}
- <p className="text-xs text-muted-foreground mt-1">
- {t('Point your domain A record to your server IP')}
- </p>
- </div>
- )}
- </div>
- )}
-
- {/* Custom Subdomain */}
- {planPermissions?.enable_custsubdomain && (
- <div className="space-y-3">
- <div className="flex items-center justify-between">
- <div>
- <Label htmlFor="enable_custom_subdomain">{t('Enable Custom Subdomain')}</Label>
- <p className="text-sm text-muted-foreground">
- {t('Use a subdomain (e.g., mystore.yourdomain.com)')}
- </p>
- </div>
-  <div className="flex items-center gap-2">
-  <Switch
-  id="enable_custom_subdomain"
-  checked={formData.enable_custom_subdomain}
-  onCheckedChange={(checked) => handleSwitchChange('enable_custom_subdomain', checked)}
-  />
-  <ToggleStatus enabled={formData.enable_custom_subdomain} />
-  </div>
-  </div>
- {formData.enable_custom_subdomain && (
- <div className="grid gap-1 mb-4">
- <Label htmlFor="custom_subdomain">{t('Subdomain')}</Label>
-  <Input
-  id="custom_subdomain"
-  dir="ltr"
-  placeholder={t('mystore')}
- value={formData.custom_subdomain}
- onChange={handleChange}
- aria-invalid={!!errors.custom_subdomain}
- required
- />
- <InputError message={errors.custom_subdomain} />
- <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
- <p className="text-sm text-green-800">
- <strong>{t('Your Sub Domain IP Is:')} {serverIp}</strong>
- </p>
- <p className="text-xs text-green-600 mt-1">
- {t('Configure your subdomain DNS to point to this IP address')}
- </p>
- </div> 
- {errors.custom_subdomain && <p className="text-xs text-red-500 mt-1">{errors.custom_subdomain}</p>}
- <p className="text-xs text-muted-foreground mt-1">
- {t('Will create: {{subdomain}}.yourdomain.com', { subdomain: formData.custom_subdomain || 'mystore' })}
- </p>
- </div>
- )}
- </div>
- )}
-
- {!planPermissions?.enable_custdomain && !planPermissions?.enable_custsubdomain && (
- <div className="text-center py-8">
- <p className="text-muted-foreground">
- {t('Domain features are not available in your current plan. Your store will be accessible via slug-based URL.')}
- </p>
- </div>
- )}
+ <Button type="button" variant="outline" asChild className="gap-1.5">
+ <a href={route('stores.designer', store.id)}>
+ <Palette className="h-4 w-4" />
+ فتح مصمم المتجر
+ </a>
+ </Button>
  </CardContent>
- </Card>
- </TabsContent>
+   </Card>
 
- {planPermissions?.pwa_business && (
-  <TabsContent value="pwa" className="space-y-4 pt-4">
+   {/* Store link & domain — canonical destination is the Domains page (subdomain + custom domain + DNS/SSL/verification) */}
+   <Card>
+ <CardHeader>
+ <CardTitle>رابط المتجر والدومين</CardTitle>
+ </CardHeader>
+ <CardContent className="space-y-3">
+ <p className="text-sm text-muted-foreground">
+ كل متجر يحصل تلقائيًا على رابط فرعي مجاني للعملاء. لإضافة دومين مخصص
+ (مثل example.com) وربطه بالمتجر، استخدم صفحة الدومين — يتم هناك إعداد DNS
+ والتحقق من الملكية ومتابعة شهادة SSL (حسب الباقة).
+ </p>
+ <Button type="button" variant="outline" asChild className="gap-1.5">
+ <a href={route('stores.domains', store.id)}>
+ <Globe className="h-4 w-4" />
+ إدارة الدومين (دومين مخصص)
+ </a>
+ </Button>
+ <p className="text-xs text-muted-foreground flex items-start gap-1.5">
+ <Link2 className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+ رابط المتجر الأساسي يُدار من صفحة الدومين لضمان تطابق الرابط المعروض للعملاء مع المتجر الفعلي.
+ </p>
+ </CardContent>
+   </Card>
+   </TabsContent>
+
+   {planPermissions?.pwa_business && (
+   <TabsContent value="pwa" className="space-y-4 pt-4">
  <Card>
  <CardHeader>
  <CardTitle>{t('PWA Settings')}</CardTitle>
@@ -307,15 +200,15 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  {t('Make your store installable as a mobile app')}
  </p>
  </div>
-  <div className="flex items-center gap-2">
-  <Switch
-  id="enable_pwa"
-  checked={formData.enable_pwa}
-  onCheckedChange={(checked) => handleSwitchChange('enable_pwa', checked)}
-  />
-  <ToggleStatus enabled={formData.enable_pwa} />
-  </div>
-  </div>
+   <div className="flex items-center gap-2">
+   <Switch
+   id="enable_pwa"
+   checked={formData.enable_pwa}
+   onCheckedChange={(checked) => handleSwitchChange('enable_pwa', checked)}
+   />
+   <ToggleStatus enabled={formData.enable_pwa} />
+   </div>
+   </div>
 
  {formData.enable_pwa && (
  <div className="space-y-4">
@@ -414,8 +307,8 @@ export default function EditStore({ store, planPermissions, serverIp }: EditStor
  )}
  </CardContent>
  </Card>
- </TabsContent>
- )}
+   </TabsContent>
+   )}
  </Tabs>
  </form>
  </PageTemplate>

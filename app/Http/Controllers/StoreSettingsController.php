@@ -134,6 +134,10 @@ class StoreSettingsController extends Controller
             'storeContent' => $store->getMergedStoreContent(),
             'demoStoreUrl' => app(\App\Services\DemoStoreService::class)->demoStoreUrl(),
             'publishReadiness' => $publishReadiness,
+            // Computed server-side (with the current request) so the store-link
+            // box on settings matches Store::getStoreUrl() truth (verified
+            // custom domains, request scheme/port) — same as the store view page.
+            'storeUrl' => $store->getStoreUrl($request),
         ]);
     }
 
