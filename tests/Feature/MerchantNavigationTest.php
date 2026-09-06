@@ -359,4 +359,115 @@ class MerchantNavigationTest extends TestCase
         $primary = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
         $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $primary, "Desktop primary nav must iterate canonical config");
     }
+
+    // ── P2D-01: Mobile Bottom Navigation Tests ──────────────────────
+
+    /** Mobile bottom nav component exists and exports correctly */
+    public function test_mobile_bottom_nav_component_exists(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("MerchantMobileBottomNav", $component);
+        $this->assertStringContainsString("resolvePrimaryId", $component, "Must reuse canonical route resolver");
+    }
+
+    /** Mobile bottom nav has all required primary destinations */
+    public function test_mobile_bottom_nav_has_required_destinations(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("LayoutDashboard", $component, "Dashboard icon must be present");
+        $this->assertStringContainsString("ShoppingCart", $component, "Orders icon must be present");
+        $this->assertStringContainsString("Package", $component, "Products icon must be present");
+        $this->assertStringContainsString("DollarSign", $component, "POS/Sales icon must be present");
+        $this->assertStringContainsString("MoreHorizontal", $component, "More entry must be present");
+    }
+
+    /** Mobile bottom nav resolves dashboard route correctly */
+    public function test_mobile_bottom_nav_dashboard_route(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("route('dashboard')", $component, "Dashboard must resolve via named route");
+    }
+
+    /** Mobile bottom nav resolves orders route correctly */
+    public function test_mobile_bottom_nav_orders_route(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("route('orders.index')", $component, "Orders must resolve via named route");
+    }
+
+    /** Mobile bottom nav resolves products route correctly */
+    public function test_mobile_bottom_nav_products_route(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("route('products.index')", $component, "Products must resolve via named route");
+    }
+
+    /** Mobile POS shortcut obeys permission semantics */
+    public function test_mobile_bottom_nav_pos_permission_gated(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("manage-pos", $component, "POS must be gated on manage-pos permission");
+        $this->assertStringContainsString("permissionAny", $component, "Items must use permissionAny filtering");
+    }
+
+    /** More entry opens existing full navigation drawer */
+    public function test_mobile_bottom_nav_more_opens_drawer(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("setOpenMobile", $component, "More must trigger the existing sidebar drawer");
+    }
+
+    /** Desktop navigation remains available and unaffected */
+    public function test_desktop_nav_unaffected(): void
+    {
+        $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
+        $this->assertStringContainsString("hidden xl:flex", $sidebar, "Desktop nav must remain xl:flex only");
+        $primary = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
+        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $primary, "Desktop primary nav unchanged");
+    }
+
+    /** Mobile nav does not create unauthorized links */
+    public function test_mobile_bottom_nav_uses_permission_filtering(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("hasPermission", $component, "Must filter items by permission");
+        $this->assertStringContainsString("filter", $component, "Must use Array.filter for permission gating");
+    }
+
+    /** Canonical Arabic labels are used in mobile bottom nav */
+    public function test_mobile_bottom_nav_arabic_labels(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("لوحة التحكم", $component, "Dashboard Arabic label");
+        $this->assertStringContainsString("الطلبات", $component, "Orders Arabic label");
+        $this->assertStringContainsString("المنتجات", $component, "Products Arabic label");
+        $this->assertStringContainsString("نقطة البيع", $component, "POS Arabic label");
+        $this->assertStringContainsString("المزيد", $component, "More Arabic label");
+    }
+
+    /** Mobile bottom nav does not expose tenant authority from client state */
+    public function test_mobile_bottom_nav_no_client_tenant_authority(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        // Must not trust store_id from client state as authority — route resolution is server-side
+        $this->assertStringNotContainsString("localStorage", $component, "Must not read store from localStorage");
+        $this->assertStringNotContainsString("sessionStorage", $component, "Must not read store from sessionStorage");
+    }
+
+    /** Layout integrates mobile bottom nav for merchants only, hidden for superadmin */
+    public function test_layout_integrates_bottom_nav_merchant_only(): void
+    {
+        $layout = file_get_contents(resource_path('js/layouts/app/app-sidebar-layout.tsx'));
+        $this->assertStringContainsString("MerchantMobileBottomNav", $layout, "Layout must import MerchantMobileBottomNav");
+        $this->assertStringContainsString("isMerchant", $layout, "Bottom nav must be conditional on merchant role");
+        $this->assertStringContainsString("xl:hidden", $layout, "Bottom nav must be hidden on desktop");
+    }
+
+    /** Mobile bottom nav uses aria-label for accessibility */
+    public function test_mobile_bottom_nav_accessibility(): void
+    {
+        $component = file_get_contents(resource_path('js/components/merchant/MerchantMobileBottomNav.tsx'));
+        $this->assertStringContainsString("aria-label", $component, "Must have aria-label for accessibility");
+        $this->assertStringContainsString("aria-current", $component, "Active item must use aria-current");
+    }
 }
