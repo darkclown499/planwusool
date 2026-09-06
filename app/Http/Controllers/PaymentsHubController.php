@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CodPayment;
 use App\Services\CodPaymentService;
 use App\Services\FeatureService;
+use App\Services\Payment\PaymentProviderCatalog;
 use App\Services\PaymentFinancialMetrics;
 use App\Services\PaymentOperationsData;
 use Illuminate\Http\Request;
@@ -49,6 +50,7 @@ class PaymentsHubController extends Controller
             'store' => ['id' => $storeId],
             'overview' => $overview,
             'currencies' => $overview['metrics']['currencies'] ?? [],
+            'paymentReadiness' => $this->paymentReadiness($user, $storeId),
         ];
 
         switch ($tab) {
@@ -221,6 +223,30 @@ class PaymentsHubController extends Controller
             'net_collected' => [], 'net_collected_total' => 0,
             'currencies' => [],
             'cod_pending_count' => 0, 'bank_pending_count' => 0,
+        ];
+    }
+
+    /**
+     * Payment setup clarity — one truthful readiness summary for the current
+     * authorized store only. Reuses the exact shared helper the checkout engine
+     * and dashboard use (getEnabledPaymentMethods), so "ready" always means the
+     * same thing as "checkout will offer a payment method". No duplicate engine.
+     * Only abstract state is exposed; never credential values.
+     */
+    private function paymentReadiness($user, ?int $storeId): array
+    {
+        if (!$storeId) {
+            return ['available' => false, 'ready' => false, 'active_count' => 0, 'active_labels' => []];
+        }
+
+        $enabled = getEnabledPaymentMethods($user->id, $storeId);
+        $active = array_keys($enabled);
+
+        return [
+            'available' => true,
+            'ready' => count($active) > 0,
+            'active_count' => count($active),
+            'active_labels' => array_map(fn ($m) => PaymentProviderCatalog::labelOf($m), $active),
         ];
     }
 

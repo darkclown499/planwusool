@@ -62,6 +62,8 @@ class StorePaymentController extends Controller
                 'badge_label' => $badge['label'],
                 'badge_variant' => $badge['variant'],
                 'is_partner' => ($catalog['type'] ?? '') === PaymentProviderCatalog::TYPE_PARTNER,
+                'configured' => self::isConfigured($settings, $fieldDefs),
+                'status' => self::methodStatus($enabled, self::isConfigured($settings, $fieldDefs), $catalog['type'] ?? 'international'),
             ];
         }
 
@@ -82,6 +84,8 @@ class StorePaymentController extends Controller
                     'badge_label' => $badge['label'],
                     'badge_variant' => $badge['variant'],
                     'is_partner' => $p['type'] === PaymentProviderCatalog::TYPE_PARTNER,
+                    'configured' => false,
+                    'status' => self::methodStatus(false, false, $p['type']),
                 ];
             }
         }
@@ -466,6 +470,41 @@ class StorePaymentController extends Controller
         }
 
         return ucwords(str_replace('_', ' ', $key));
+    }
+
+    /**
+     * Abstract configuration presence for a method — true when at least one of
+     * its credential/instruction fields has a saved non-empty value. This is
+     * informational only; it never carries the value itself.
+     */
+    protected static function isConfigured(array $settings, array $fieldDefs): bool
+    {
+        foreach ($fieldDefs as $def) {
+            if (!empty($settings[$def['key']])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Truthful per-method status for the merchant UI, derived only from server
+     * state (enabled flag + configured presence):
+     *   active     — enabled and usable per current backend behavior
+     *   incomplete — enabled but a real gateway has no saved credentials yet
+     *   inactive   — disabled (or contract-only partner, not connectable here)
+     * Manual methods stay 'active' when enabled because that matches the
+     * checkout engine; no invented third state for them.
+     */
+    protected static function methodStatus(bool $enabled, bool $configured, string $type): string
+    {
+        if (!$enabled) {
+            return 'inactive';
+        }
+        if (!$configured && ($type === PaymentProviderCatalog::TYPE_CONNECTED || $type === PaymentProviderCatalog::TYPE_INTERNATIONAL)) {
+            return 'incomplete';
+        }
+        return 'active';
     }
 
     /** Mask a secret for the UI while keeping a sense of its presence. */

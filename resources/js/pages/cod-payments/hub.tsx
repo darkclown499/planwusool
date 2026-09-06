@@ -26,6 +26,7 @@ interface PaymentMethod {
   method: string; label: string; enabled: boolean; fields: CredentialField[];
   type?: string; section?: string; region?: string; currencies?: string[];
   catalog_desc?: string; badge_label?: string; badge_variant?: string; is_partner?: boolean;
+  configured?: boolean; status?: string;
 }
 interface PaymentGroup { id: string; label: string; methods: PaymentMethod[]; }
 
@@ -71,6 +72,11 @@ function ProviderCard({ m, expanded, pending, saving, drafts, setDraft, onToggle
                 <span className="rounded bg-slate-50 px-1.5 py-0.5 text-[10px]">{REGION_LABEL[m.region] || m.region}</span>
               </CardDescription>
               {m.catalog_desc && <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-500">{m.catalog_desc}</p>}
+              {m.status === 'incomplete' && (
+                <p className="mt-1 flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-[11px] leading-4 font-bold text-amber-800">
+                  <Info className="h-3.5 w-3.5 shrink-0" /> مفعّلة لكن بيانات الربط غير مكتملة
+                </p>
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -198,6 +204,7 @@ function MethodsTab({ storeId }: { storeId: number | null }) {
         <div className="flex h-[40vh] items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-emerald-500" /></div>
       ) : (
         <>
+          <ReadinessBanner />
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-100 bg-white p-2 shadow-sm">
             <button type="button" onClick={() => setActiveSection('all')} className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${activeSection === 'all' ? 'bg-slate-900 text-white shadow' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <CreditCard className="h-3.5 w-3.5" /> الكل <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${activeSection === 'all' ? 'bg-white/20' : 'bg-white'}`}>{sectionCounts.all}</span>
@@ -267,6 +274,81 @@ function toastOk(message: string) {
 }
 function toastError(message: string) {
   import('@/components/custom-toast').then((m) => m.toast.error(message));
+}
+
+/* ───────────────────────── payment readiness banner ───────────────────────── */
+
+interface PaymentReadinessProp {
+  available?: boolean;
+  ready?: boolean;
+  active_count?: number;
+  active_labels?: string[];
+}
+
+function useCanConfigureMethods(): boolean {
+  const { tabs = [] } = usePage().props as { tabs?: { id: string; permission: string | null }[] };
+  return tabs.some((tb) => tb.id === 'methods' && (tb.permission === null || hasPermission(tb.permission)));
+}
+
+function ReadinessBanner() {
+  const { paymentReadiness = null } = usePage().props as { paymentReadiness?: PaymentReadinessProp | null };
+  const canConfigure = useCanConfigureMethods();
+
+  if (!paymentReadiness || paymentReadiness.available === false) return null;
+
+  const goToMethods = () => router.get(route('cod-payments.index'), { tab: 'methods' }, { preserveScroll: true });
+  const labels: string[] = paymentReadiness.active_labels || [];
+  const count = paymentReadiness.active_count || 0;
+
+  if (paymentReadiness.ready) {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex flex-col gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 lg:flex-row lg:items-center lg:justify-between"
+      >
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+            <CheckCircle2 className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-emerald-900">المدفوعات جاهزة</p>
+            <p className="mt-1 text-xs leading-5 text-emerald-700">
+              يمكن للعملاء إتمام الطلب — {count} طريقة دفع مفعّلة.
+              {labels.length > 0 && <span className="block truncate sm:inline sm:ps-1">({labels.join('، ')})</span>}
+            </p>
+          </div>
+        </div>
+        {canConfigure && (
+          <Button type="button" variant="outline" size="sm" onClick={goToMethods} className="shrink-0 self-start lg:self-center">
+            <Settings2 className="me-1.5 h-4 w-4" /> إدارة طرق الدفع
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      role="alert"
+      className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 lg:flex-row lg:items-center lg:justify-between"
+    >
+      <div className="flex min-w-0 items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+          <Info className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-amber-900">إعداد المدفوعات غير مكتمل</p>
+          <p className="mt-1 text-xs leading-5 text-amber-800">لم يتم إعداد طريقة دفع بعد — فعّل طريقة دفع واحدة على الأقل حتى يتمكن العملاء من إكمال الطلب.</p>
+        </div>
+      </div>
+      {canConfigure && (
+        <Button type="button" size="sm" onClick={goToMethods} className="shrink-0 self-start lg:self-center">
+          <Settings2 className="me-1.5 h-4 w-4" /> إعداد طرق الدفع
+        </Button>
+      )}
+    </div>
+  );
 }
 
 /* ───────────────────────── operations tab ───────────────────────── */
@@ -390,7 +472,7 @@ function OperationsTab() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-sm font-bold">سجل العمليات</CardTitle></CardHeader>
+        <CardHeader className="pb-3"><CardTitle className="text-sm font-bold">سجل المعاملات</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -690,6 +772,8 @@ function OverviewTab() {
 
   return (
     <div className="space-y-4">
+      <ReadinessBanner />
+
       <Card>
         <CardContent className="flex items-center gap-4 pt-6">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"><LayoutDashboard className="h-7 w-7" /></div>
@@ -753,7 +837,7 @@ function OverviewTab() {
         {hasPermission('manage-orders') && (
           <Card className="cursor-pointer border-violet-100 bg-violet-50/50 transition hover:border-violet-300" onClick={() => router.get(route('cod-payments.index'), { tab: 'operations' }, { preserveScroll: true })}>
             <CardContent className="flex items-start gap-4 p-6"><HandCoins className="mt-0.5 h-6 w-6 shrink-0 text-violet-600" />
-              <div><p className="text-sm font-bold">العمليات والتحصيل</p><p className="mt-1 text-xs leading-5 text-slate-600">سجل العمليات، تأكيد التحويلات، تحصيل COD، وتسويات الدفعات.</p></div>
+              <div><p className="text-sm font-bold">العمليات والتحصيل</p><p className="mt-1 text-xs leading-5 text-slate-600">سجل المعاملات، تأكيد التحويلات، تحصيل COD، وتسويات الدفعات.</p></div>
             </CardContent>
           </Card>
         )}
