@@ -1,12 +1,27 @@
 import React, { useState, useCallback } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ShoppingCart, Eye, Edit, Trash2, Package, Download, Search, X, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Eye, Edit, Trash2, Package, Download, Search, X, ChevronLeft, ChevronRight, MessageCircle, MoreVertical } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useTranslation } from 'react-i18next';
-import { router, usePage } from '@inertiajs/react';
+import { router, usePage, Link } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import { tOrderStatus, tPaymentMethod, tPaymentStatus } from '@/utils/order-status';
@@ -371,95 +386,185 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
           )}
         </div>
 
-        {/* Orders List */}
-        <div className="space-y-2">
-          {orders.length > 0 ? orders.map((order) => (
-            <div
-              key={order.id}
-              className="flex items-center justify-between gap-3 p-3 sm:p-4 border rounded-xl hover:bg-slate-50/50 transition-colors cursor-pointer"
-              onClick={() => handleActionClick('view', 'view-orders', order.id)}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                  <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-sm sm:text-base">{order.orderNumber}</h3>
-                    <Badge variant={getStatusVariant(order.status) as any} className="text-[10px] sm:text-xs">
-                      {tOrderStatus(order.status)}
-                    </Badge>
-                    {order.order_source === 'whatsapp' && (
-                      <span className="inline-flex items-center gap-0.5 bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
-                        <MessageCircle className="h-2.5 w-2.5" /> واتساب
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{order.customer}</p>
-                  <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
-                    <span className="text-xs font-bold ltr-num">{formatCurrency(order.total)}</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">{order.items} {t('items')}</span>
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">{order.date}</span>
-                    {order.paymentStatus && (
-                      <span className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full ${
-                        String(order.paymentStatus).toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-700' :
-                        String(order.paymentStatus).toLowerCase() === 'pending' ? 'bg-amber-50 text-amber-700' :
-                        'bg-slate-100 text-slate-600'
-                      }`}>
-                        {tPaymentStatus(String(order.paymentStatus))}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
-                {hasPermission('view-orders') && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleActionClick('view', 'view-orders', order.id)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                )}
-                {hasPermission('edit-orders') && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleActionClick('edit', 'edit-orders', order.id)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                )}
-                {hasPermission('delete-orders') && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleActionClick('delete', 'delete-orders', order.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          )) : (
+        {/* Desktop orders table (>= lg) */}
+        {orders.length > 0 && (
+          <div className="hidden lg:block">
             <Card>
-              <CardContent className="text-center py-12 px-4">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
-                  <ShoppingCart className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">
-                  {groupEmptyTitle ?? (hasActiveFilters ? t('No orders match your filters') : t('No orders yet'))}
-                </h3>
-                <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                  {groupEmptyTitle
-                    ? t('Try adjusting your search or filter criteria.')
-                    : hasActiveFilters
-                      ? t('Try adjusting your search or filter criteria.')
-                      : t('Orders will appear here after the first purchase. Make sure your store is published and shared.')
-                  }
-                </p>
-                {hasActiveFilters ? (
-                  <Button variant="outline" className="mt-4 gap-2" onClick={clearFilters}>
-                    <X className="h-4 w-4" /> {t('Clear Filters')}
-                  </Button>
-                ) : (
-                  <Button variant="outline" className="mt-4 gap-2" onClick={() => window.open((usePage().props as any).storeUrl || '/', '_blank')}>
-                    <Package className="h-4 w-4" /> {t('View Store')}
-                  </Button>
-                )}
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('Order')}</TableHead>
+                      <TableHead>{t('Customer')}</TableHead>
+                      <TableHead className="text-end">{t('Total')}</TableHead>
+                      <TableHead>{t('Payment')}</TableHead>
+                      <TableHead>{t('Date')}</TableHead>
+                      <TableHead>{t('Status')}</TableHead>
+                      <TableHead className="text-end">{t('Actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {orders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell>
+                          <Link href={route('orders.show', order.id)} className="font-semibold hover:underline">
+                            {order.orderNumber}
+                          </Link>
+                          {order.order_source === 'whatsapp' && (
+                            <span className="inline-flex items-center gap-0.5 bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold ms-1 align-middle">
+                              <MessageCircle className="h-2.5 w-2.5" /> واتساب
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{order.customer}</div>
+                          {order.email && <div className="text-xs text-muted-foreground ltr-num">{order.email}</div>}
+                        </TableCell>
+                        <TableCell className="text-end ltr-num font-bold">{formatCurrency(order.total)}</TableCell>
+                        <TableCell>
+                          <div className="text-xs">{tPaymentMethod(order.paymentMethod)}</div>
+                          {order.paymentStatus && (
+                            <div className="text-[10px] text-muted-foreground">{tPaymentStatus(String(order.paymentStatus))}</div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-xs ltr-num whitespace-nowrap">{order.date}</TableCell>
+                        <TableCell>
+                          <Badge variant={getStatusVariant(order.status) as any} className="text-[10px]">
+                            {tOrderStatus(order.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-end">
+                          <div className="flex items-center justify-end gap-1">
+                            {hasPermission('view-orders') && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t('View order')} onClick={() => handleActionClick('view', 'view-orders', order.id)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {hasPermission('edit-orders') && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t('Edit order')} onClick={() => handleActionClick('edit', 'edit-orders', order.id)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {hasPermission('delete-orders') && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label={t('Delete order')} onClick={() => handleActionClick('delete', 'delete-orders', order.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Mobile orders list (< lg) */}
+        {orders.length > 0 && (
+          <div className="space-y-2 lg:hidden">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="border rounded-xl p-3 bg-card hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link href={route('orders.show', order.id)} className="font-semibold text-sm hover:underline">
+                        {order.orderNumber}
+                      </Link>
+                      <Badge variant={getStatusVariant(order.status) as any} className="text-[10px]">
+                        {tOrderStatus(order.status)}
+                      </Badge>
+                      {order.order_source === 'whatsapp' && (
+                        <span className="inline-flex items-center gap-0.5 bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">
+                          <MessageCircle className="h-2.5 w-2.5" /> واتساب
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">{order.customer}</p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {hasPermission('view-orders') && (
+                      <Button variant="outline" size="sm" className="h-9 gap-1 px-2 text-xs" aria-label={t('View order')} onClick={() => handleActionClick('view', 'view-orders', order.id)}>
+                        <Eye className="h-4 w-4" /> {t('View')}
+                      </Button>
+                    )}
+                    {(hasPermission('edit-orders') || hasPermission('delete-orders')) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-9 w-9" aria-label={t('Order actions')}>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {hasPermission('edit-orders') && (
+                            <DropdownMenuItem onClick={() => handleActionClick('edit', 'edit-orders', order.id)}>
+                              <Edit className="h-4 w-4 me-2" /> {t('Edit')}
+                            </DropdownMenuItem>
+                          )}
+                          {hasPermission('edit-orders') && hasPermission('delete-orders') && <DropdownMenuSeparator />}
+                          {hasPermission('delete-orders') && (
+                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleActionClick('delete', 'delete-orders', order.id)}>
+                              <Trash2 className="h-4 w-4 me-2" /> {t('Delete')}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  <span className="text-sm font-bold ltr-num">{formatCurrency(order.total)}</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">{order.items} {t('items')}</span>
+                  <span className="text-[10px] sm:text-xs text-muted-foreground ltr-num">{order.date}</span>
+                  {order.paymentStatus && (
+                    <span className={`text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full ${
+                      String(order.paymentStatus).toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-700' :
+                      String(order.paymentStatus).toLowerCase() === 'pending' ? 'bg-amber-50 text-amber-700' :
+                      'bg-slate-100 text-slate-600'
+                    }`}>
+                      {tPaymentStatus(String(order.paymentStatus))}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {orders.length === 0 && (
+          <Card>
+            <CardContent className="text-center py-12 px-4">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50">
+                <ShoppingCart className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">
+                {groupEmptyTitle ?? (hasActiveFilters ? t('No orders match your filters') : t('No orders yet'))}
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                {groupEmptyTitle
+                  ? t('Try adjusting your search or filter criteria.')
+                  : hasActiveFilters
+                    ? t('Try adjusting your search or filter criteria.')
+                    : t('Orders will appear here after the first purchase. Make sure your store is published and shared.')
+                }
+              </p>
+              {hasActiveFilters ? (
+                <Button variant="outline" className="mt-4 gap-2" onClick={clearFilters}>
+                  <X className="h-4 w-4" /> {t('Clear Filters')}
+                </Button>
+              ) : (
+                <Button variant="outline" className="mt-4 gap-2" onClick={() => window.open((usePage().props as any).storeUrl || '/', '_blank')}>
+                  <Package className="h-4 w-4" /> {t('View Store')}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pagination */}
         {pagination && pagination.last_page > 1 && (
@@ -520,7 +625,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
             <p className="text-sm text-gray-600 mb-4">
               {t('Are you sure you want to delete this order? This action cannot be undone.')}
             </p>
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setOrderToDelete(null)}>
                 {t('Cancel')}
               </Button>
