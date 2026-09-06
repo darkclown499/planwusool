@@ -1,9 +1,7 @@
 // config/crud/categories.ts
 import { CrudConfig } from '@/types/crud';
 import { columnRenderers } from '@/utils/columnRenderers';
-import i18n from 'i18next';
-
-const t = (key: string, options?: any) => i18n.t(key, options);
+import { t } from '@/utils/i18n';
 
 export const categoriesConfig: CrudConfig = {
   entity: {

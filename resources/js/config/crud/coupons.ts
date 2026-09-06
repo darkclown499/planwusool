@@ -4,9 +4,7 @@ import { CrudConfig } from '@/types/crud';
 import { columnRenderers } from '@/utils/columnRenderers';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/custom-toast';
-import i18n from 'i18next';
-
-const t = (key: string, options?: any) => i18n.t(key, options);
+import { t } from '@/utils/i18n';
 import { formatCurrency } from '@/utils/currency-helper';
 import { router } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';

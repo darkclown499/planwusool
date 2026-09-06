@@ -1,8 +1,6 @@
 // config/crud/currencies.ts
 import { CrudConfig } from '@/types/crud';
-import i18n from 'i18next';
-
-const t = (key: string, options?: any) => i18n.t(key, options);
+import { t } from '@/utils/i18n';
 
 export const currenciesConfig: CrudConfig = {
   entity: {
