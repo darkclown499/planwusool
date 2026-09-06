@@ -179,11 +179,12 @@ export default function Products() {
       <UpgradeModal open={showUpgrade} onOpenChange={setShowUpgrade} limitType="resource" current={planLimits?.current_products} max={planLimits?.max_products} tiers={planTiers} />
 
       <div className="space-y-4">
-        {planLimits && !planLimits.can_create && (
-          <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-800">
+        {planLimits && planLimits.can_create === false && (
+          <div role="status" data-testid="products-limit-banner" className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-800">
             <AlertTriangle className="h-5 w-5 shrink-0" />
             <div className="text-sm">
-              <strong>{t('Product limit reached')}:</strong> {t('You have {{current}}/{{max}} products.', { current: planLimits.current_products, max: planLimits.max_products })}
+              <strong>{t('Product limit reached')}:</strong> {t('You have reached the limit of {{current}}/{{max}} for your current plan.', { current: planLimits.current_products, max: planLimits.max_products })}
+              {' '}
               <button onClick={() => setShowUpgrade(true)} className="me-1 font-semibold underline">{t('Upgrade your plan')}</button>
               {t('to add more products.')}
             </div>
@@ -344,40 +345,64 @@ export default function Products() {
               </div>
             )}
             {products.length === 0 ? (() => {
+              const totalCount = stats?.total ?? 0;
+              const atLimit = planLimits?.can_create === false;
               const hasActiveSearch = !!(activeFilter.search || (activeFilter.category_id && String(activeFilter.category_id) !== 'all' && String(activeFilter.category_id) !== '') || (activeFilter.status && String(activeFilter.status) !== 'all' && String(activeFilter.status) !== ''));
-              if (hasActiveSearch) {
+
+              if (hasActiveSearch || totalCount > 0) {
                 return (
-                  <div className="text-center py-12 px-4">
+                  <div className="text-center py-12 px-4" data-testid="products-empty-search">
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
                       <Search className="h-8 w-8 text-slate-400" />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">لم نجد نتائج مطابقة</h3>
+                    <h3 className="text-lg font-bold text-slate-900">{t('No products found')}</h3>
                     <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                      جرب كلمات مختلفة أو امسح الفلاتر لعرض جميع المنتجات.
+                      {t('Try adjusting your search or filters to find what you are looking for, or clear them to see all products.')}
                     </p>
                     <Button variant="outline" className="mt-6 gap-2" onClick={() => { setSearchInput(''); applyFilters({ search: '', category_id: 'all', status: 'all' }); }}>
                       <RefreshCw className="h-4 w-4" />
-                      مسح البحث والفلاتر
+                      {t('Clear search and filters')}
                     </Button>
                   </div>
                 );
               }
+
+              if (atLimit) {
+                return (
+                  <div className="text-center py-12 px-4" data-testid="products-empty-limit">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
+                      <AlertTriangle className="h-8 w-8 text-amber-600" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900">{t('Product limit reached')}</h3>
+                    <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                      {t('You have reached the limit of {{current}}/{{max}} for your current plan.', { current: planLimits.current_products, max: planLimits.max_products })}
+                      {' '}
+                      {t('Upgrade to unlock more capacity and features.')}
+                    </p>
+                    <Button variant="outline" className="mt-6 gap-2" onClick={() => setShowUpgrade(true)}>
+                      <AlertTriangle className="h-4 w-4" />
+                      {t('Upgrade your plan')}
+                    </Button>
+                  </div>
+                );
+              }
+
               return (
-                <div className="text-center py-12 px-4">
+                <div className="text-center py-12 px-4" data-testid="products-empty-first-use">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50">
                     <Package className="h-8 w-8 text-emerald-600" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">لا توجد منتجات بعد</h3>
+                  <h3 className="text-lg font-bold text-slate-900">{t('No products yet')}</h3>
                   <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                    أضف منتجاتك حتى يستطيع العملاء رؤيتها وشراؤها من متجرك. يمكنك إضافة الصور والسعر والمخزون والتصنيف.
+                    {t('Add your first product so customers can see and buy it from your store. You can add images, price, stock, and category.')}
                   </p>
-                  {hasPermission('create-products') && !selectedTotal && (
+                  {hasPermission('create-products') && planLimits?.can_create !== false && (
                     <Button className="mt-6 gap-2" onClick={() => handleActionClick('create', 'create-products')}>
                       <Plus className="h-4 w-4" />
-                      إضافة أول منتج
+                      {t('Add First Product')}
                     </Button>
                   )}
-                  <p className="mt-3 text-xs text-muted-foreground">تلميح: أضف تصنيفاً أولاً ثم أضف المنتجات داخله لتنظيم أفضل</p>
+                  <p className="mt-3 text-xs text-muted-foreground">{t('Add a category first to organize your products, then add items inside it.')}</p>
                 </div>
               );
             })() : (
