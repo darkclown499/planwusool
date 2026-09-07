@@ -29,6 +29,26 @@ yarn-error.log
 /storage/app/public/demo
 server.log
 vite.log
+
+# Generated QA / release artifacts (should never be committed)
+/build.tar.gz
+/src-changes.tar.gz
+/vite*.log
+/scripts/audit-report.json
+/playwright-report/
+/test-results/
+/browser-smoke*.mjs
+/public/test-white-screen.html
+
+# Ad-hoc QA dumps at repo root (screenshots, payload captures, import samples)
+/*.png
+/cat-*.json
+/cat-*.yml
+/products-import.csv
+/pw-smoke-launch.cjs
+/audit-report.md
+/delivery-board-postorders.yml
+/more-drawer.yml
 .env
 /.opencode/
 /vendor/pestphp/pest/.temp
