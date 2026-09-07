@@ -309,7 +309,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
                       <MoreVertical className="h-4 w-4"/> إجراءات إضافية
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56" dir="rtl">
+                  <DropdownMenuContent align="end" className="w-56">
                     {order.invoice_pdf_url && (
                       <DropdownMenuItem onClick={() => window.open(order.invoice_pdf_url, '_blank')} className="gap-2">
                         <FileText className="h-4 w-4"/> تحميل الفاتورة (PDF)
@@ -506,7 +506,7 @@ export default function ShowOrder({ order: initialOrder, returns: initialReturns
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild><Button variant="outline" size="icon" className="h-10 w-10 shrink-0"><MoreVertical className="h-5 w-5"/></Button></DropdownMenuTrigger>
-            <DropdownMenuContent align="end" dir="rtl" className="w-56">
+            <DropdownMenuContent align="end" className="w-56">
               {order.invoice_pdf_url && (
                 <DropdownMenuItem onClick={() => window.open(order.invoice_pdf_url, '_blank')}><FileText className="h-4 w-4 me-2"/> تحميل الفاتورة</DropdownMenuItem>
               )}

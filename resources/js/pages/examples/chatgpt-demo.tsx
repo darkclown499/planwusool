@@ -147,7 +147,7 @@ export default function ChatGptDemo() {
       
       {/* Demo Coupon Dialog */}
       <Dialog open={showCouponDialog} onOpenChange={setShowCouponDialog}>
-        <DialogContent modalId="demo-coupon-dialog">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Coupon</DialogTitle>
           </DialogHeader>

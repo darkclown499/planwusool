@@ -34,6 +34,8 @@ function slugify(value: string): string {
 
 type ProductLike = any;
 
+type VariantRow = { name: string; values: string[] };
+
 interface Props {
   mode: 'create' | 'edit';
   product?: ProductLike;
@@ -111,11 +113,11 @@ export default function ProductForm({ mode, product, categories: initialCategori
 
   const [quickSpecs, setQuickSpecs] = useState<{ key: string; value: string }[]>(initialQuickSpecs as any);
   const [customFields, setCustomFields] = useState<{ name: string; value: string }[]>(initialCustomFields);
-  const [variants, setVariants] = useState(() => {
+  const [variants, setVariants] = useState<VariantRow[]>(() => {
     if (product?.variants && Array.isArray(product.variants) && product.variants.length) {
-      return product.variants.map((v: any) => ({ name: v.name || '', values: Array.isArray(v.values) ? v.values : (Array.isArray(v.options) ? v.options : []) }));
+      return product.variants.map((v: { name?: string; values?: string[]; options?: string[] }) => ({ name: v.name || '', values: Array.isArray(v.values) ? v.values : (Array.isArray(v.options) ? v.options : []) }));
     }
-    return [{ name: '', values: [] as string[] }];
+    return [{ name: '', values: [] }];
   });
   const [variantsEnabled, setVariantsEnabled] = useState(() => Boolean(product?.variants && Array.isArray(product.variants) && product.variants.length > 0));
   const [comboEdits, setComboEdits] = useState<Record<string, VariantCombination>>(() => toCombinationEditsMap(product?.variant_combinations));
@@ -192,6 +194,20 @@ export default function ProductForm({ mode, product, categories: initialCategori
     const cleanedVariants = variantsEnabled ? variants.map(v => ({ ...v, values: (v.values || []).map(x => x.trim()).filter(Boolean) })).filter(v => v.name.trim() !== '') : [];
     const generated = generateVariantCombinations(cleanedVariants);
     const combos = mergeCombinationEdits(generated, comboEdits);
+    // Serialize combos/variants into plain records that satisfy Inertia's FormDataConvertible contract
+    const serializableVariants = cleanedVariants.map(v => ({ name: v.name, values: v.values }));
+    const serializableCombos = combos.map(c => ({
+      id: c.id,
+      uuid: c.uuid,
+      values: c.values,
+      label: c.label,
+      price: c.price ?? '',
+      cost_price: c.cost_price ?? '',
+      stock: c.stock ?? '',
+      low_stock_warning: c.low_stock_warning ?? '',
+      sku: c.sku ?? '',
+      image: c.image ?? '',
+    }));
     // inventory_mode: explicit merchant intent; only allow variant when variants actually exist
     const effectiveMode: 'product' | 'variant' = (formData.track_inventory && variantsEnabled && cleanedVariants.length > 0 && combos.length > 0 && inventoryMode === 'variant') ? 'variant' : 'product';
     return {
@@ -200,8 +216,8 @@ export default function ProductForm({ mode, product, categories: initialCategori
       is_active: draft ? false : formData.is_active,
       is_published: draft ? false : formData.is_active,
       quick_specs: quickSpecs.filter(s => s.key.trim() !== ''),
-      variants: cleanedVariants,
-      variant_combinations: combos,
+      variants: serializableVariants,
+      variant_combinations: serializableCombos,
       inventory_mode: effectiveMode,
       custom_fields: customFields.filter(f => f.name.trim() !== ''),
     };
