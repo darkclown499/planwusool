@@ -15,6 +15,14 @@ export function getThumbUrl(path: string, conversion: string = 'thumb'): string 
       return original;
     }
     if (!pathname.startsWith('/storage')) return original;
+    // Only derive conversion URLs for real Spatie media-library originals. Uploaded
+    // media lives under /storage/media/{media_item_id}/... (App\PathGenerators
+    // MediaPathGenerator) with legacy direct media at /storage/{media_item_id}/...
+    // Non-media storage roots (e.g. the demo placeholder set /storage/demo/*.svg)
+    // are final art with no conversions — they must keep serving as originals and
+    // never be rewritten into a /conversions/ subpath that cannot exist.
+    const isMediaOriginal = /^\/(?:storage\/)?media\/\d+\//.test(pathname) || /^\/storage\/\d+\//.test(pathname);
+    if (!isMediaOriginal) return original;
     // Build conversion path: /storage/29/abc.webp -> /storage/29/conversions/abc-thumb.webp
     const lastSlash = pathname.lastIndexOf('/');
     const dir = pathname.slice(0, lastSlash);
