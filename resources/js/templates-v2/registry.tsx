@@ -1,4 +1,5 @@
 import type { TemplateModule, V2TemplateSlug } from './types';
+export type { PlanTier, TemplateModule } from './types';
 import fashionAtelier from './fashion-atelier';
 import grocerySouq from './grocery-souq';
 import bakeryHouse from './bakery-house';

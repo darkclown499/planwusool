@@ -76,7 +76,7 @@ export const AtelierCartDrawer: React.FC<AtelierCartDrawerProps> = ({ onClose, o
               {/* RTL-aware fill: in RTL the bar should grow from the right edge — flex+margin handles via dir=rtl and inline start */}
               <div className="h-full rounded-full transition-all duration-700" style={{ width: `${Math.max(0, Math.min(100, shipping.percent))}%`, background: 'linear-gradient(90deg,#b08d57,#9d7463)', marginInlineStart: 'auto' as any, marginInlineEnd: '0' }} />
             </div>
-            <p className="mt-1.5 text-[11px] text-stone-400">حد الشحن المجاني: {formatPrice(effectiveThreshold)}</p>
+            <p className="mt-1.5 text-[11px] text-stone-400">حد الشحن المجاني: {formatPrice(effectiveThreshold ?? 0)}</p>
           </div>
         )}
 

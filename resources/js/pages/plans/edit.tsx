@@ -24,6 +24,8 @@ interface Plan {
   enable_shipping_method: string;
   enable_mobile_app: string;
   enable_sms: string;
+  enable_theme_editor: string;
+  template_editor_level: 'none' | 'limited' | 'full';
   themes: string[] | null;
   is_trial: string | null;
   trial_day: number;

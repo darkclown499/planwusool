@@ -172,8 +172,8 @@ export function formatCurrency(
       thousandsSeparator
     );
     const secondaryStr = currencySymbolPosition === 'after'
-      ? `${secondaryNumber}${space}${secondary.symbol}`
-      : `${secondary.symbol}${space}${secondaryNumber}`;
+      ? `${secondaryNumber}\u00A0${secondary.symbol}`
+      : `${secondary.symbol}\u00A0${secondaryNumber}`;
     return `${primary} ≈ ${secondaryStr}`;
   }
 

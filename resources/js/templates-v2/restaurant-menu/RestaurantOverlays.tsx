@@ -197,7 +197,7 @@ export function HayahProductModal({ product, onClose }: any) {
 }
 
 export function HayahSearchOverlay({ onClose, onProductClick }: any) {
-  return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#2563eb" placeholder="ابحث عن منتج..." variant="default" />;
+  return <SearchSheet onClose={onClose} onProductClick={onProductClick} accent="#2563eb" placeholder="ابحث عن منتج..." variant="restaurant" />;
 }
 
 // Keep backwards compat names for overlays registry

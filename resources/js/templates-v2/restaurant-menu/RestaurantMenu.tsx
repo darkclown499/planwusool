@@ -478,7 +478,7 @@ export function HayahHero({ banners }: { banners?: any[] }) {
                 {s.src ? (
                   <>
                     <img src={getOptimizedImageUrl(s.src, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${slideFit} ${s.srcMobile ? 'hidden md:block' : 'block'}`} style={{ objectPosition: slidePos }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="(max-width:768px) 100vw, 900px" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(s.src); }} width={900} height={300} />
-                    {s.srcMobile && <img src={getOptimizedImageUrl(s.srcMobile, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${slideFitMobile} block md:hidden`} style={{ objectPosition: slidePosMobile }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="100vw" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(s.srcMobile); }} width={900} height={500} />}
+                    {s.srcMobile && <img src={getOptimizedImageUrl(s.srcMobile, 'medium')} alt="" className={`absolute inset-0 h-full w-full ${slideFitMobile} block md:hidden`} style={{ objectPosition: slidePosMobile }} loading={idx === 0 ? 'eager' : 'lazy'} decoding="async" fetchPriority={idx === 0 ? 'high' : undefined as any} sizes="100vw" onError={(e) => { (e.currentTarget as HTMLImageElement).src = getImageUrl(s.srcMobile ?? ''); }} width={900} height={500} />}
                   </>
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-l from-slate-200 to-slate-100" />

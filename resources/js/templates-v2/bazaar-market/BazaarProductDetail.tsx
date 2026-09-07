@@ -315,7 +315,7 @@ export const BazaarProductDetail: React.FC<BazaarProductDetailProps> = ({ produc
                   const combos: any[] = product.variantCombinations || product.variant_combinations || [];
                   const isUnavailable = (() => {
                     if (!combos.length || product.allowBackorder) return false;
-                    const testSel = { ...selection, [group.name]: val };
+                    const testSel: Record<string, string> = { ...selection, [group.name]: val };
                     // If selection incomplete, allow; only disable when no combo can satisfy partial selection
                     const keys = Object.keys(testSel);
                     const matching = combos.filter((c: any) => {
