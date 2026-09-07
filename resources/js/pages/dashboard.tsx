@@ -1033,15 +1033,16 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                 {visibleAlerts.map((alert) => {
                   const AlertIcon = getAlertIcon(alert.icon);
                   const groupCount = alert.count || 1;
+                  const actionUrl = alert.action_url;
                   return (
                     <div
                       key={alert.id}
                       className={`group relative flex items-center gap-2 rounded-lg border bg-white px-3 py-2 pe-9 text-start transition-shadow hover:shadow-sm ${alertBorderClasses[alert.color || 'amber']}`}
                     >
-                      {alert.action_url ? (
+                      {actionUrl ? (
                         <button
                           type="button"
-                          onClick={() => router.visit(alert.action_url)}
+                          onClick={() => router.visit(actionUrl)}
                           className="flex min-w-0 flex-1 items-center gap-2 text-start"
                         >
                           <AlertIcon className={`h-4 w-4 flex-shrink-0 ${alertIconClasses[alert.color || 'amber']}`} />
