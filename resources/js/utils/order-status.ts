@@ -98,6 +98,15 @@ export function tOrderStatus(status: string): string {
   return orderStatusAr[key] ?? orderStatusAr[key.toLowerCase()] ?? key;
 }
 
+// Customer-facing order status label. Reuses the canonical Arabic order-state map
+// with a safe neutral fallback so unknown/internal states never leak raw English
+// to storefront customers (shares the '—' pattern used elsewhere in customer UI).
+export function customerOrderStatusLabel(status: string | null | undefined): string {
+  if (!status) return '—';
+  const key = String(status).trim();
+  return orderStatusAr[key] ?? orderStatusAr[key.toLowerCase()] ?? '—';
+}
+
 export function tPaymentStatus(status: string): string {
   if (!status) return '';
   const key = String(status).trim();

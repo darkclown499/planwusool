@@ -802,31 +802,48 @@ export function BazaarCard({ product, index = 0 }: { product: V2Product; index?:
       className="bazaar-card group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-100"
       dir="rtl"
     >
-      <button type="button" onClick={() => productCtx.handleProductClick(product)} className="relative block aspect-[4/5] w-full overflow-hidden bg-slate-50" aria-label={product.name}>
-        <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="bazaar-card-img bazaar-img-fade h-full w-full object-cover" width={400} height={400} />
-        {discount > 0 && !out && (
-          <span className="absolute top-2.5 right-2.5 rounded-lg bg-rose-500 px-2 py-0.5 text-[11px] font-black text-white">-{discount}%</span>
-        )}
-        {!!remaining && !out && (
-          <span className="absolute bottom-2.5 right-2.5 rounded-lg bg-amber-400/95 px-2 py-0.5 text-[10px] font-black text-amber-950 backdrop-blur">آخر {remaining}</span>
-        )}
-        {out && <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-black text-slate-500">نفذت الكمية</span>}
+      <div className="relative block w-full overflow-hidden bg-slate-50">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            productCtx.handleProductClick(product);
+          }}
+          className="relative block aspect-[4/5] w-full overflow-hidden bg-slate-50"
+          aria-label={product.name}
+        >
+          <img src={getOptimizedImageUrl(product.image || '', 'small')} alt={product.name} loading="lazy" decoding="async" sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw" onError={(e)=>{(e.currentTarget.src=getImageUrl(product.image||''))}} className="bazaar-card-img bazaar-img-fade h-full w-full object-cover" width={400} height={400} />
+          {discount > 0 && !out && (
+            <span className="absolute top-2.5 right-2.5 rounded-lg bg-rose-500 px-2 py-0.5 text-[11px] font-black text-white">-{discount}%</span>
+          )}
+          {!!remaining && !out && (
+            <span className="absolute bottom-2.5 right-2.5 rounded-lg bg-amber-400/95 px-2 py-0.5 text-[10px] font-black text-amber-950 backdrop-blur">آخر {remaining}</span>
+          )}
+          {out && <span className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-black text-slate-500">نفذت الكمية</span>}
+        </a>
         <button
           ref={wishBtnRef}
           type="button"
           onClick={handleWishlist}
           aria-label={wished ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}
           data-testid={`bazaar-wishlist-${String(product.id)}`}
-          className={`bazaar-wishlist absolute top-2.5 left-2.5 rounded-full p-2 backdrop-blur ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
+          className={`bazaar-wishlist absolute top-2.5 left-2.5 z-10 rounded-full p-2 backdrop-blur ${wished ? 'bg-rose-500 text-white' : 'bg-white/85 text-slate-400 hover:text-rose-500'}`}
         >
           <Heart className="h-3.5 w-3.5" fill={wished ? 'currentColor' : 'none'} />
         </button>
-      </button>
+      </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-3.5">
-        <button type="button" onClick={() => productCtx.handleProductClick(product)} className="bazaar-card-title line-clamp-2 min-h-10 text-start text-sm font-bold leading-snug text-slate-800">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            productCtx.handleProductClick(product);
+          }}
+          className="bazaar-card-title line-clamp-2 min-h-10 text-start text-sm font-bold leading-snug text-slate-800"
+        >
           {product.name}
-        </button>
+        </a>
         {(() => {
           const ls = getLoyaltySettingsFromPage();
           if (!ls?.is_enabled) return null;

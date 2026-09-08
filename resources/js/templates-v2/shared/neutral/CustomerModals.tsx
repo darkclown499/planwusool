@@ -4,6 +4,7 @@ import { AuthFormProvider, useAuthForm } from '@/contexts/AuthFormContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
+import { customerOrderStatusLabel } from '@/utils/order-status';
 import { usePage } from '@inertiajs/react';
 import { Calendar, Copy, CreditCard, LogOut, MapPin, Package, ShoppingBag, User, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -162,13 +163,14 @@ export const TemplateMyOrdersModal: React.FC<MyOrdersProps> = ({ orders, loading
                                         </p>
                                     </div>
                                     <span
+                                        data-testid="customer-order-status"
                                         className="rounded-full px-3 py-1 text-xs font-bold"
                                         style={{
                                             background: 'var(--twc-primary-50, #ecfdf5)',
                                             color: primary,
                                         }}
                                     >
-                                        {order.status}
+                                        {customerOrderStatusLabel(order.status)}
                                     </span>
                                 </div>
                                 <div className="mt-3 flex items-center justify-between">
@@ -249,8 +251,8 @@ export const TemplateOrderDetailsModal: React.FC<OrderDetailsProps> = ({ orderNu
                             <p className="text-sm font-bold" style={{ color: 'var(--twc-text-primary, #111827)' }}>
                                 رقم الطلب: {order.order_number}
                             </p>
-                            <p className="mt-1 text-xs font-bold" style={{ color: primary }}>
-                                الحالة: {order.status_label || order.status}
+                            <p data-testid="customer-order-detail-status" className="mt-1 text-xs font-bold" style={{ color: primary }}>
+                                الحالة: {customerOrderStatusLabel(order.status)}
                             </p>
                             {order.tracking_number && <p className="mt-1 text-xs break-all" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>رقم التتبع: <span className="font-mono font-bold" dir="ltr">{order.tracking_number}</span></p>}
                             {order.shipped_at && <p className="mt-1 text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>تاريخ الشحن: {new Date(order.shipped_at).toLocaleDateString('ar-EG')}</p>}

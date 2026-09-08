@@ -12,7 +12,9 @@ export const E2E_MERCHANT = {
 
 export const TEST_STORE_SLUG = 'e2e-test-store';
 export const TEST_STORE_HOST = `${TEST_STORE_SLUG}.localhost`;
-export const TEST_STORE_URL = `http://${TEST_STORE_HOST}:8000`;
+// Port overridable for machines where the default 8000 is occupied (Windows
+// excluded-port ranges).
+export const TEST_STORE_URL = `http://${TEST_STORE_HOST}:${process.env.E2E_STORE_PORT || '8000'}`;
 
 export async function gotoStore(page: Page, path = '/') {
   await page.goto(TEST_STORE_URL + path, { waitUntil: 'domcontentloaded', timeout: 15000 });
@@ -40,6 +42,45 @@ export async function loginAsCustomer(page: Page) {
   }
   // Verify
   await expect(page.locator('body')).not.toContainText('خطأ');
+}
+
+// Bazaar-market has no direct "تسجيل الدخول" header button on desktop; login is
+// reached through the حسابي (account) action. On mobile the account section
+// lives inside the hamburger drawer. The session triggers a full page reload.
+export async function loginOnBazaar(page: Page) {
+  await gotoStore(page, '/');
+  // Storefront render gate so the viewport branch below is race-free.
+  await expect(page.locator('.bazaar-card').first()).toBeVisible({ timeout: 20000 });
+
+  const useDesktop = (page.viewportSize()?.width ?? 0) >= 700;
+  if (useDesktop) {
+    await page.getByRole('button', { name: 'حسابي' }).first().click();
+  } else {
+    await page.getByTestId('bazaar-hamburger').click();
+    await page.getByTestId('bazaar-drawer-account-toggle').click();
+    await page.getByTestId('bazaar-account-login').click();
+  }
+
+  const emailInput = page.getByPlaceholder('you@example.com');
+  await expect(emailInput).toBeVisible({ timeout: 8000 });
+  await emailInput.fill(E2E_CUSTOMER.email);
+  await page.getByPlaceholder('••••••••').fill(E2E_CUSTOMER.password);
+  await page.getByRole('button', { name: 'تسجيل الدخول' }).click();
+
+  // Login reloads the page; wait until the storefront renders again.
+  await expect(page.locator('.bazaar-card').first()).toBeVisible({ timeout: 20000 });
+}
+
+// Open the customer "طلباتي" modal using whichever surface matches the viewport
+// (desktop header button, or the account section inside the mobile drawer).
+export async function openBazaarOrders(page: Page) {
+  if ((page.viewportSize()?.width ?? 0) >= 700) {
+    await page.getByRole('button', { name: 'طلباتي' }).first().click();
+  } else {
+    await page.getByTestId('bazaar-hamburger').click();
+    await page.getByTestId('bazaar-drawer-account-toggle').click();
+    await page.getByTestId('bazaar-account-orders').click();
+  }
 }
 
 export async function loginAsMerchant(page: Page) {

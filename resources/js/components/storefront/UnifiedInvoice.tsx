@@ -2,6 +2,7 @@ import React from 'react';
 import { Head } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
+import { customerOrderStatusLabel } from '@/utils/order-status';
 import { Printer, Download, X, Home, Package, Truck, CreditCard, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -85,7 +86,7 @@ export const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({
   const storeConfig = config || (window as any).page?.props?.config || {};
   const storeData = store || (window as any).page?.props?.store || {};
   
-  const storeName = storeConfig?.storeName || storeData?.name || '+à+¬+¼+¦+è';
+  const storeName = storeConfig?.storeName || storeData?.name || '+ï¿½+ï¿½+ï¿½+ï¿½+ï¿½';
   const storeLogo = storeConfig?.logo || storeData?.logo;
   const storePhone = storeConfig?.phoneNumber || settings?.phone || '';
   const storeEmail = storeConfig?.email || storeData?.email || '';
@@ -172,7 +173,7 @@ export const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-medium" style={{ background: statusColor.replace('bg-', 'bg-').replace('text-', 'text-').replace('border-', 'border-') }}>
                   {statusIcon}
-                  <span className="capitalize">{t(order.status) || order.status}</span>
+                  <span className="capitalize">{customerOrderStatusLabel(order.status)}</span>
                 </div>
                 <div className="text-gray-600 text-sm">
                   <span className="font-medium text-gray-700">{t('Date')}:</span> {formatDate(order.date)}

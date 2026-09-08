@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\LoyaltySetting;
+use App\Models\Order;
 use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Store;
@@ -139,6 +140,42 @@ class TestSeeder extends Seeder
             'minimum_redemption_points' => 10,
             'maximum_discount_percentage' => 50,
         ]);
+
+        // One real pending order owned by the E2E customer so the customer
+        // storefront "طلباتي" surface has deterministic data for the
+        // storefront-correctness order-status assertions.
+        $orderNow = now();
+        $orderNumber = 'E2E-' . $store->id . '-' . $orderNow->format('Ymd') . '-001';
+        Order::firstOrCreate(
+            ['order_number' => $orderNumber],
+            [
+                'store_id' => $store->id,
+                'customer_id' => $customer->id,
+                'customer_email' => $customerEmail,
+                'customer_first_name' => 'Test',
+                'customer_last_name' => 'Customer',
+                'customer_phone' => '0599000000',
+                'shipping_address' => 'Test Street 1',
+                'shipping_city' => 'Amman',
+                'shipping_state' => 'Amman',
+                'shipping_country' => 'JO',
+                'billing_address' => 'Test Street 1',
+                'billing_city' => 'Amman',
+                'billing_state' => 'Amman',
+                'billing_country' => 'JO',
+                'subtotal' => 100,
+                'tax_amount' => 0,
+                'shipping_amount' => 0,
+                'discount_amount' => 0,
+                'total_amount' => 100,
+                'currency' => 'USD',
+                'payment_method' => 'cod',
+                'payment_status' => 'pending',
+                'status' => 'pending',
+                'created_at' => $orderNow,
+                'updated_at' => $orderNow,
+            ]
+        );
 
         $this->command->info('TestSeeder completed: store e2e-test-store, merchant ' . $merchantEmail . ', customer ' . $customerEmail);
     }
