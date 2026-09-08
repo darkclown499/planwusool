@@ -56,6 +56,33 @@ class EleganceBannerHeaderUxTest extends TestCase
         $this->assertSame(3, substr_count($src, '<AnnouncementBar'), 'one bar per surface (home/category/page), no in-main duplicate');
     }
 
+    public function test_mobile_top_stack_keeps_announcement_above_header(): void
+    {
+        $src = $this->atelierRoot();
+        // Every surface wraps bar + header in ONE structural stack that is
+        // sticky on mobile (390/430) and display: contents on desktop (md+),
+        // so on desktop the wrapper box disappears, the bar may scroll away,
+        // and the header's containing block becomes the full-page container
+        // (desktop header stickiness is intentionally preserved).
+        $this->assertSame(3, substr_count($src, 'atelier-top-stack'), 'one top-stack wrapper per surface (home/category/page)');
+        $this->assertSame(3, substr_count($src, 'sticky top-0 z-40 md:contents'), 'stack is sticky on mobile only, display: contents on desktop');
+
+        // Wrapper must open before the first bar so both stay glued together
+        // as one stable stack (no gap, no overlap, no magic top offset).
+        $posWrap = strpos($src, 'atelier-top-stack');
+        $posAnn = strpos($src, '<AnnouncementBar');
+        $this->assertNotFalse($posWrap, 'top-stack wrapper must exist');
+        $this->assertNotFalse($posAnn, 'announcement must be mounted');
+        $this->assertLessThan($posAnn, $posWrap, 'stack wrapper must open BEFORE the announcement bar');
+
+        // The header itself must NOT own the mobile stickiness (a sticky header
+        // inside the stuck stack would slide up and overlap the bar): header
+        // stickiness is a desktop-only concern.
+        $header = file_get_contents(resource_path('js/templates-v2/fashion-atelier/components/AtelierHeader.tsx'));
+        $this->assertStringNotContainsString('className={`sticky top-0 z-40', $header, 'header must not be sticky-first on mobile inside the stack');
+        $this->assertStringContainsString('md:sticky md:top-0', $header, 'header stickiness moves to a desktop-only concern (md+)');
+    }
+
     public function test_banner_scrim_is_pointer_safe_and_content_only(): void
     {
         $hero = $this->atelierHero();

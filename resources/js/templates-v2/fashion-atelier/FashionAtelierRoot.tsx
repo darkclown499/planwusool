@@ -562,9 +562,14 @@ const AtelierHome: React.FC<{ storeData: any }> = ({ storeData }) => {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
-      {/* Announcement marquee — above the sticky header on all breakpoints, scrolls away with the page */}
-      <AnnouncementBar />
-      <AtelierHeader onOpenMobileMenu={openMobileMenu} />
+      {/* Top stack — announcement bar + sticky header glued as ONE structural
+          stack on mobile so the bar never scrolls away; display: contents on
+          md+ removes the wrapper box so the bar intentionally scrolls away and
+          the header sticks within the full-page container. */}
+      <div className="atelier-top-stack sticky top-0 z-40 md:contents">
+        <AnnouncementBar />
+        <AtelierHeader onOpenMobileMenu={openMobileMenu} />
+      </div>
       {normalMain}
       <AtelierWhatsAppFloating />
       <AtelierBackToTop />
@@ -594,8 +599,10 @@ const AtelierCategoryMode: React.FC<{ storeData: any; categoryData?: any | null 
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
-      <AnnouncementBar />
-      <AtelierHeader homeHref="/" />
+      <div className="atelier-top-stack sticky top-0 z-40 md:contents">
+        <AnnouncementBar />
+        <AtelierHeader homeHref="/" />
+      </div>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <nav className="mb-6 flex items-center gap-1.5 text-[13px] text-stone-500" aria-label="مسار التنقل">
@@ -688,8 +695,10 @@ function sortFor(sort: string): (a: any, b: any) => number {
 
 const AtelierPageMode: React.FC<{ storeData: any; page?: any | null }> = ({ page }) => (
   <div dir="rtl" className="min-h-screen bg-[#faf7f2] text-stone-800 antialiased">
-    <AnnouncementBar />
-    <AtelierHeader homeHref="/" />
+    <div className="atelier-top-stack sticky top-0 z-40 md:contents">
+      <AnnouncementBar />
+      <AtelierHeader homeHref="/" />
+    </div>
     <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
       {page?.title && (
         <h1 className="mb-6 border-b border-stone-200 pb-4 font-serif text-3xl font-bold text-stone-900">{page.title}</h1>
