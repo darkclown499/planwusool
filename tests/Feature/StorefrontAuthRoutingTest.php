@@ -215,19 +215,25 @@ class StorefrontAuthRoutingTest extends TestCase
         $this->postStore($store,'/no-such-endpoint',[])->assertStatus(404);
     }
 
-    // 7 — /otp/* express-checkout endpoints dispatch on the store subdomain.
+    // 7 — /otp/* express-checkout endpoints dispatch on the store subdomain
+    // (B2-03: SMS is unconfigured in tests, so each call must dispatch to the
+    // controller and answer truthfully — not a DomainResolver 404, and never a
+    // fake "success" for a code that was not actually delivered).
     public function test_storefront_phone_otp_endpoints_reachable(): void
     {
         [$user,$store]=$this->ownerWithStore();
 
         $send = $this->postStore($store,'/otp/send',['phone'=>'+970599000001']);
-        $send->assertStatus(200)->assertJson(['success'=>true]);
+        $this->assertNotEquals(404, $send->getStatusCode());
+        $send->assertJson(['success'=>false]);
 
         $verify = $this->postStore($store,'/otp/verify',['phone'=>'+970599000001','code'=>'000000']);
-        $verify->assertJsonStructure(['verified']);
+        $this->assertNotEquals(404, $verify->getStatusCode());
+        $verify->assertJson(['verified'=>false]);
 
         $resend = $this->postStore($store,'/otp/resend',['phone'=>'+970599000001']);
-        $resend->assertStatus(200)->assertJson(['success'=>true]);
+        $this->assertNotEquals(404, $resend->getStatusCode());
+        $resend->assertJson(['success'=>false]);
     }
 
     // 8 — /returns/* dispatch on the store subdomain (validation reached, not DomainResolver 404).
