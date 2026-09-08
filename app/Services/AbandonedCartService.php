@@ -108,9 +108,23 @@ class AbandonedCartService
             Log::error('Abandoned automation trigger failed: ' . $e->getMessage(), ['cart_id' => $cart->id]);
         }
     }
-    public function markRecovered(string $sessionId, int $orderId): void
+    /**
+     * Mark abandoned cart(s) as recovered for a specific store.
+     *
+     * Tenant-safe invariant: the order must belong to the SAME store as the
+     * abandoned carts being updated, and the query is explicitly store-scoped.
+     * A matching session_id alone is never sufficient to link a cart to an
+     * order across tenants — sessions are shared across stores by design.
+     */
+    public function markRecovered(int $storeId, string $sessionId, int $orderId): void
     {
-        AbandonedCart::where('session_id', $sessionId)
+        $order = \App\Models\Order::where('id', $orderId)->where('store_id', $storeId)->first();
+        if (!$order) {
+            // No order in this store — never link a cart to a foreign order.
+            return;
+        }
+        AbandonedCart::where('store_id', $storeId)
+            ->where('session_id', $sessionId)
             ->where('status', '!=', 'recovered')
             ->update([
                 'status' => 'recovered',
@@ -151,8 +165,18 @@ class AbandonedCartService
             }
             if ($hasEmail) {
                 try {
-                    \Mail::to($cart->customer_email)->send(new \App\Mail\AbandonedCartReminderMail($cart));
-                    $emailSent = true;
+                    // Store-owned mail only. An abandoned-cart reminder is merchant
+                    // correspondence, so it must go through the store's own SMTP
+                    // config — never the Wusool platform transport. When the store
+                    // has no connected mail the e-mail is truthfully skipped (no
+                    // reminder_sent, no fallback); the dashboard reports failure.
+                    $store = $cart->store ?: Store::find($cart->store_id);
+                    if ($store && StoreMailService::isConnected($store)) {
+                        StoreMailService::sendViaStore($store, new \App\Mail\AbandonedCartReminderMail($cart), $cart->customer_email);
+                        $emailSent = true;
+                    } elseif ($hasEmail && $store) {
+                        Log::info('Abandoned cart email skipped — store-owned mail not connected', ['cart_id' => $cart->id, 'store_id' => $cart->store_id]);
+                    }
                 } catch (\Throwable $e) {
                     Log::error('Abandoned cart email reminder failed: ' . $e->getMessage(), [
                         'cart_id' => $cart->id,

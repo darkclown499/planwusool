@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbandonedCart;
+use App\Models\Product;
 use App\Services\AbandonedCartService;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 
 class CartTrackingController extends Controller
@@ -125,8 +128,87 @@ class CartTrackingController extends Controller
             'success' => true,
             'tracked' => true,
             'cart_id' => $cart->id,
-            'recovery_token' => $cart->recovery_token,
-            'recover_url' => url('/checkout?recover_token=' . $cart->recovery_token),
+            // The raw recovery token is intentionally NOT returned: it is a
+            // one-way credential that only ever leaves the server inside the
+            // recovery URL shown on the store's own domain.
+            'recover_url' => $cart->getRecoverUrl(),
+        ]);
+    }
+
+    /**
+     * Restore an abandoned cart into the live cart for the authoritative store.
+     *
+     * Tenant authority is resolved server-side only (resolved host / session
+     * store context). Client-supplied store_id / session_id / customer_id are
+     * never accepted as authority. The token lookup is store-scoped. A valid
+     * token restores from the snapshot, but CURRENT product/variant/inventory/
+     * pricing always win — the snapshot is only the recovery source.
+     */
+    public function recover(Request $request)
+    {
+        $validated = $request->validate([
+            'recover_token' => ['required', 'string', 'max:255'],
+        ]);
+
+        $storeId = getAuthoritativeStoreId($request);
+        if ($storeId === null) {
+            return response()->json(['message' => 'Link is invalid or expired.'], 403);
+        }
+
+        $cart = AbandonedCart::where('store_id', $storeId)
+            ->where('recovery_token', $validated['recover_token'])
+            ->first();
+
+        if (!$cart
+            || in_array($cart->status, ['recovered', 'expired', 'unsubscribed'], true)
+            || ($cart->expires_at && $cart->expires_at->isPast())
+        ) {
+            // One generic, customer-safe shape for every invalid/terminal token state.
+            return response()->json(['message' => 'Link is invalid or expired.'], 404);
+        }
+
+        /** @var CartService $cartService */
+        $cartService = app(CartService::class);
+
+        $restored = 0;
+        $skipped = 0;
+        foreach (is_array($cart->cart_items) ? $cart->cart_items : [] as $entry) {
+            if (empty($entry['product_id'])) {
+                $skipped++;
+                continue;
+            }
+            // CURRENT product truth: only an active product of THIS store may be
+            // restored. Deleted / disabled products are truthfully skipped.
+            $product = Product::where('store_id', $storeId)
+                ->where('is_active', true)
+                ->find($entry['product_id']);
+            if (!$product) {
+                $skipped++;
+                continue;
+            }
+            $rawVariants = $entry['selectedVariants'] ?? $entry['options'] ?? $entry['variant'] ?? null;
+            $variants = is_array($rawVariants) ? $rawVariants : null;
+
+            $result = $cartService->addItem(
+                $storeId,
+                $product,
+                (int) ($entry['quantity'] ?? 1),
+                $variants,
+                true
+            );
+
+            if ($result['ok']) {
+                $restored++;
+            } else {
+                // Current stock/variant truth rejects the snapshot entry — skip it.
+                $skipped++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'restored' => $restored,
+            'skipped' => $skipped,
         ]);
     }
 }

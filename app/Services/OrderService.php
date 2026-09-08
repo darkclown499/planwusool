@@ -1204,7 +1204,7 @@ class OrderService
             try {
                 $sessionId = $order->session_id ?? session()->getId();
                 $abandonedCartService = app(AbandonedCartService::class);
-                $abandonedCartService->markRecovered($sessionId, $order->id);
+                $abandonedCartService->markRecovered((int) $order->store_id, $sessionId, $order->id);
             } catch (\Exception $e) {
                 Log::warning('Failed to mark abandoned cart as recovered', ['order_id' => $order->id, 'error' => $e->getMessage()]);
             }

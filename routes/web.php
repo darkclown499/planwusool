@@ -316,6 +316,7 @@ Route::middleware('api.throttle')->group(function () {
     Route::post('api/cart/track', [CartTrackingController::class, 'track'])->name('api.cart.track');
     Route::post('api/cart/draft', [CartTrackingController::class, 'draft'])->name('api.cart.draft');
     Route::post('api/cart/sync-abandoned', [CartTrackingController::class, 'track'])->name('api.cart.sync-abandoned');
+    Route::post('api/cart/recover', [CartTrackingController::class, 'recover'])->name('api.cart.recover');
     // Categories API with explicit storeId validation — fallback to empty list instead of 500
     Route::get('api/categories', [\App\Http\Controllers\CategoryController::class, 'apiIndex'])->name('api.categories.index');
     // Storefront product search — store-scoped, active only

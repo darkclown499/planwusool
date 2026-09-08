@@ -6,6 +6,7 @@ use App\Models\AbandonedCart;
 use App\Models\Plan;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\StoreMailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Permission;
@@ -152,6 +153,21 @@ class AbandonedCartTest extends TestCase
         $response->assertStatus(403);
     }
 
+    private function connectStoreMail(Store $store): void
+    {
+        StoreMailService::updateConfig($store, [
+            'driver' => 'smtp',
+            'host' => 'smtp.store-a.test',
+            'port' => '587',
+            'username' => 'noreply@store-a.test',
+            'password' => 'secret-test-password',
+            'encryption' => 'tls',
+            'from_address' => 'noreply@store-a.test',
+            'from_name' => $store->name,
+        ]);
+        StoreMailService::setStatus($store, 'connected');
+    }
+
     public function test_send_reminder_with_valid_contact_does_not_500(): void
     {
         Mail::fake();
@@ -159,6 +175,7 @@ class AbandonedCartTest extends TestCase
         $user = $this->companyUser();
         $store = $this->storeFor($user);
         $this->giveAbandonedCartPermissions($user);
+        $this->connectStoreMail($store);
 
         $cart = $this->makeCart($store, [
             'customer_email' => 'test@example.com',
@@ -170,6 +187,79 @@ class AbandonedCartTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertSessionHas('success');
+
+        // The reminder is delivered through THIS store's provider SMTP config,
+        // not the Wusool platform transport.
+        Mail::assertSent(\App\Mail\AbandonedCartReminderMail::class);
+        $this->assertEquals('smtp.store-a.test', config('mail.mailers.smtp.host'));
+        $this->assertEquals('noreply@store-a.test', config('mail.from.address'));
+
+        $cart->refresh();
+        $this->assertEquals('reminder_sent', $cart->status);
+        $this->assertEquals(1, $cart->reminder_count);
+    }
+
+    public function test_send_reminder_with_email_but_unconnected_store_truthfully_fails(): void
+    {
+        Mail::fake();
+        config(['mail.mailers.smtp.host' => 'smtp.platform.test']);
+
+        $user = $this->companyUser();
+        $store = $this->storeFor($user);
+        $this->giveAbandonedCartPermissions($user);
+
+        $cart = $this->makeCart($store, [
+            'customer_email' => 'test@example.com',
+            'customer_phone' => null,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('stores.abandoned-carts.send-reminder', [$store->id, $cart->id]));
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors('error');
+
+        // Truthful skip: no email, no platform fallback, cart NOT marked sent.
+        Mail::assertNothingSent();
+        $this->assertEquals('smtp.platform.test', config('mail.mailers.smtp.host'));
+        $cart->refresh();
+        $this->assertNotEquals('reminder_sent', $cart->status);
+    }
+
+    public function test_failed_store_mail_send_is_truthful_and_does_not_mark_sent(): void
+    {
+        $user = $this->companyUser();
+        $store = $this->storeFor($user);
+        $this->giveAbandonedCartPermissions($user);
+
+        // "Connected" provider whose SMTP endpoint cannot accept connections:
+        // the real send attempt throws (no Wusool transport fallback).
+        StoreMailService::updateConfig($store, [
+            'driver' => 'smtp',
+            'host' => '127.0.0.1',
+            'port' => '59999',
+            'username' => 'noreply@store-a.test',
+            'password' => 'secret-test-password',
+            'encryption' => 'none',
+            'from_address' => 'noreply@store-a.test',
+            'from_name' => $store->name,
+        ]);
+        StoreMailService::setStatus($store, 'connected');
+
+        $cart = $this->makeCart($store, [
+            'customer_email' => 'test@example.com',
+            'customer_phone' => null,
+        ]);
+
+        $service = app(\App\Services\AbandonedCartService::class);
+        $result = $service->sendReminder($cart);
+
+        $this->assertFalse($result['success']);
+        $cart->refresh();
+        $this->assertNotEquals('reminder_sent', $cart->status);
+        $this->assertNull($cart->reminder_sent_at);
+
+        $this->assertEquals('connected', StoreMailService::getStatus($store));
     }
 
     public function test_send_reminder_without_contact_returns_safe_error(): void

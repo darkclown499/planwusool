@@ -142,7 +142,7 @@
                     Total: {{ is_numeric($cartTotal) ? number_format((float) $cartTotal, 2) : e($cartTotal) }}
                 </div>
 
-                <a href="{{ url('/') }}" class="cta-button">
+                <a href="{{ $recoverUrl ?? url('/') }}" class="cta-button">
                     Complete Your Order
                 </a>
             </div>

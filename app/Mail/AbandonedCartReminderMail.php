@@ -38,6 +38,7 @@ class AbandonedCartReminderMail extends Mailable
                 'cartTotal' => $this->formatCartTotal($this->cart->cart_total),
                 'items' => is_array($this->cart->cart_items) ? $this->cart->cart_items : [],
                 'storeName' => $this->cart->store?->name ?? 'المتجر',
+                'recoverUrl' => $this->cart->getRecoverUrl(),
             ],
         );
     }

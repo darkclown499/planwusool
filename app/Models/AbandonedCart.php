@@ -103,9 +103,17 @@ class AbandonedCart extends Model
     public function getRecoverUrl(): string
     {
         $token = $this->recovery_token ?: $this->ensureRecoveryToken();
-        $store = $this->store;
-        $base = $store ? (method_exists($store, 'getStoreUrl') ? '' : '') : '';
-        return url('/checkout?recover_token=' . $token);
+
+        // Recovery link always lands on the tenant's own storefront root so the
+        // shared storefront recovery handler can consume it. APP_URL is never
+        // used: a customer link must resolve on the store's canonical domain.
+        if ($this->store) {
+            return rtrim($this->store->getStoreUrl(), '/') . '/?recover_token=' . $token;
+        }
+
+        // Orphan cart without a store is never mailed nor reachable through a
+        // storefront; keep a synthetic fallback so string consumers never crash.
+        return url('/') . '?recover_token=' . $token;
     }
 
     public function scopePendingReminder($query, int $storeId, int $hours = 24)

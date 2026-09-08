@@ -10,6 +10,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\AbandonedCartService;
 use App\Services\CartCalculationService;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -131,112 +132,26 @@ class CartController extends Controller
         }
 
         $product = Product::with('category')->findOrFail($request->product_id);
-        // Store isolation: product must belong to requested store
-        if ((int)$product->store_id !== (int)$request->store_id) {
-            return response()->json(['message' => __('Product does not belong to this store.')], 422);
-        }
-        if (!$product->is_active) {
-            return response()->json(['message' => __('This product is unavailable.')], 422);
-        }
-        // Inactive category → product not purchasable via storefront
-        if ($product->category && !$product->category->is_active) {
-            return response()->json(['message' => __('This product\'s category is unavailable.')], 422);
-        }
-        // Fix variants structure
-        $variants = $request->variants;
-        if (isset($variants['variants'])) {
-            $variants = $variants['variants'];
-        }
-        // Variant validation via canonical resolver
-        $resolvedCombo = null;
-        if (!empty($product->variants) && is_array($product->variants) && count($product->variants) > 0) {
-            $hasCombos = is_array($product->variant_combinations) && count($product->variant_combinations) > 0;
-            if ($hasCombos && $variants !== null && $variants !== '' && !(is_array($variants) && empty($variants))) {
-                $resolvedCombo = $product->resolveVariantCombination($variants);
-                if (!$resolvedCombo) {
-                    // Fallback lenient check: ensure values subset of defined values
-                    $definedValues = [];
-                    foreach ($product->variants as $vg) { foreach (($vg['values'] ?? $vg['options'] ?? []) as $v) $definedValues[] = (string)$v; }
-                    $toCheck = is_array($variants) ? array_values(array_map(fn($v)=>(string)$v, $variants)) : [(string)$variants];
-                    // For associative map, values are meaningful
-                    if (is_array($variants) && array_keys($variants) !== range(0,count($variants)-1)) $toCheck = array_values(array_map(fn($v)=>(string)$v, $variants));
-                    foreach ($toCheck as $val) {
-                        if ($val !== '' && !in_array($val, $definedValues, true)) {
-                            return response()->json(['message' => __('Invalid variant selection.')], 422);
-                        }
-                    }
-                    // If lenient passed but no combo found and combos exist, still reject unknown combination when strict combinations defined
-                    if (!empty($toCheck) && $hasCombos) {
-                        // Require exact combination when combos have prices — prevent fake combo
-                        $stillNull = $product->resolveVariantCombination($variants);
-                        if (!$stillNull) return response()->json(['message' => __('Invalid variant selection.')], 422);
-                    }
-                }
-            } elseif ($hasCombos && ($variants === null || $variants === '' || (is_array($variants) && empty($variants)))) {
-                // Variant product requires selection
-                return response()->json(['message' => __('Please select product options.')], 422);
-            }
-        }
-        // Stock validation — canonical variant-aware via InventoryService (considers existing cart qty)
-        $qty = (int)$request->quantity;
-        $existingQty = 0;
-        $variantJson = json_encode($variants);
-        $whereConditions = [
-            'store_id' => $request->store_id,
-            'product_id' => $request->product_id,
-            'variants' => $variantJson
-        ];
-        if (Auth::guard('customer')->check()) {
-            $whereConditions['customer_id'] = Auth::guard('customer')->id();
-        } else {
-            $whereConditions['session_id'] = session()->getId();
-            $whereConditions['customer_id'] = null;
-        }
-        $existingItem = CartItem::where($whereConditions)->first();
-        if ($existingItem) $existingQty = (int)$existingItem->quantity;
-        $requestedTotal = $existingQty + $qty;
+        $result = app(CartService::class)->addItem(
+            (int) $request->store_id,
+            $product,
+            (int) $request->quantity,
+            is_array($request->variants) ? $request->variants : null,
+            false
+        );
 
-        // Canonical inventory resolve for this selection
-        $inv = \App\Services\InventoryService::resolve($product, $variants);
-        if ($inv['tracking'] && !$inv['backorder']) {
-            if (!$inv['purchasable']) {
-                // Provide variant-specific message if variant-level
-                $msg = $inv['is_variant'] ? __('This variant is out of stock.') : __('Product is out of stock.');
-                return response()->json(['message' => $msg, 'available' => $inv['available_qty'] ?? 0], 422);
+        if (!$result['ok']) {
+            $payload = ['message' => $result['message'] ?? __('Unable to add item to cart.')];
+            if (array_key_exists('available', $result)) {
+                $payload['available'] = $result['available'];
             }
-            $available = $inv['available_qty'] ?? 0;
-            if ($requestedTotal > (int)$available) {
-                $msg = $inv['is_variant'] ? __('Requested quantity exceeds available stock for this variant.') : __('Requested quantity exceeds available stock.');
-                return response()->json(['message' => $msg, 'available' => (int)$available], 422);
-            }
-        }
-
-        // Canonical variant price: variant price overrides base effectivePrice
-        if (method_exists($product, 'effectivePriceForVariant')) {
-            $effectivePrice = $product->effectivePriceForVariant($variants);
-        } else {
-            $effectivePrice = method_exists($product, 'effectivePrice') ? $product->effectivePrice() : (float)($product->sale_price ?? $product->price);
-        }
-
-        if ($existingItem) {
-            $existingItem->increment('quantity', $qty);
-            $cartItem = $existingItem;
-        } else {
-            $cartItem = CartItem::create([
-                'store_id' => $request->store_id,
-                'customer_id' => Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null,
-                'session_id' => session()->getId(),
-                'product_id' => $request->product_id,
-                'quantity' => $qty,
-                'variants' => $variantJson,
-                'price' => $effectivePrice
-            ]);
+            return response()->json($payload, $result['status'] ?? 422);
         }
 
         // Sync abandoned cart — persistent record for dashboard "استعادة السلة المتروكة"
         $this->syncAbandonedCart($request->store_id);
 
-        return response()->json(['message' => 'تمت الإضافة إلى السلة', 'item' => $cartItem]);
+        return response()->json(['message' => 'تمت الإضافة إلى السلة', 'item' => $result['item']]);
     }
 
     public function update(UpdateCartRequest $request, $id)

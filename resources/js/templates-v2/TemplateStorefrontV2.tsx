@@ -7,6 +7,7 @@ import { useProduct } from '@/contexts/ProductContext';
 import { useStore } from '@/contexts/StoreContext';
 import { useUI } from '@/contexts/UIContext';
 import { trackCommerceEvent, trackPurchase } from '@/tracking';
+import { route } from 'ziggy-js';
 import type { TemplateModule } from './types';
 import React, { useEffect } from 'react';
 
@@ -140,6 +141,47 @@ export const TemplateStorefrontV2: React.FC<{ children: React.ReactNode; module:
         };
         window.addEventListener('showOrderSuccess' as any, handler);
         return () => window.removeEventListener('showOrderSuccess' as any, handler);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Abandoned-cart recovery link (?recover_token=...) shared by every template.
+    // One-time consumption on mount: POST the token to the store-scoped recover
+    // endpoint, then reload the cart and open it on success. Failures always show
+    // a generic customer-safe message and the token is cleaned from the URL either way.
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('recover_token');
+        if (!token) return;
+
+        (async () => {
+            try {
+                const res = await fetch(route('api.cart.recover'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN':
+                            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    },
+                    body: JSON.stringify({ recover_token: token }),
+                });
+                // Any non-2xx is a terminal token state (invalid/expired/recovered/foreign store) —
+                // the endpoint uses one generic failure shape, so one message is correct here.
+                if (res.ok) {
+                    await cart.loadCart();
+                    ui.setShowCart(true);
+                } else {
+                    toast.error('تعذر استعادة السلة أو انتهت صلاحية رابط الاستعادة.');
+                }
+            } catch {
+                toast.error('تعذر استعادة السلة أو انتهت صلاحية رابط الاستعادة.');
+            } finally {
+                urlParams.delete('recover_token');
+                const qs = urlParams.toString();
+                const clean = window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash;
+                window.history.replaceState({}, '', clean);
+            }
+        })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
