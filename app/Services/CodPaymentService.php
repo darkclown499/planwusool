@@ -10,8 +10,17 @@ use Illuminate\Support\Facades\Log;
 
 class CodPaymentService
 {
-    /** Order terminal states that can never be COD-collected. */
-    public const TERMINAL_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', 'returned'];
+    /**
+     * Order terminal states that can never be COD-collected.
+     *
+     * `returned` is kept here defensively (delivery-status or legacy rows) even
+     * though it is not a canonical orders.status value, so a shipped-back
+     * delivery is never accidentally settled. '' is the legacy pre-strict MySQL
+     * 'failed' coerce-write artifact and joins the terminal set.
+     *
+     * @var list<string>
+     */
+    public const TERMINAL_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', 'returned', ''];
 
     /**
      * Create a new COD payment record for an order.

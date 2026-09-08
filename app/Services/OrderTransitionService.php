@@ -25,17 +25,30 @@ class OrderTransitionService
     public const STATUS_FAILED = 'failed';
     public const STATUS_REFUNDED = 'refunded';
 
-    /** Fulfillment transitions — canonical map */
+    /** Fulfillment transitions — canonical map. `returned` is NOT an order status:
+     * goods returns live on order_returns.status / delivery / COD; it must never be
+     * written to orders.status (avoid the invalid-enum coerce artifact). */
     public const ALLOWED = [
         'pending'    => ['confirmed','processing','cancelled'],
         'confirmed'  => ['processing','cancelled'],
         'processing' => ['shipped','delivered','cancelled'],
-        'shipped'    => ['delivered','cancelled','failed','returned'],
-        'delivered'  => ['returned','refunded'],
+        'shipped'    => ['delivered','cancelled','failed'],
+        'delivered'  => ['refunded'],
         'cancelled'  => [],
         'refunded'   => [],
         'failed'     => [],
-        'returned'   => [],
+    ];
+
+    /** Canonical schema-valid order lifecycle statuses. */
+    public const CANONICAL_STATUSES = [
+        'pending',
+        'confirmed',
+        'processing',
+        'shipped',
+        'delivered',
+        'cancelled',
+        'failed',
+        'refunded',
     ];
 
     /** Offline payment methods that MAY be confirmed manually */
@@ -53,7 +66,6 @@ class OrderTransitionService
         'cancelled'  => 'ملغي',
         'failed'     => 'فشل',
         'refunded'   => 'مسترجع',
-        'returned'   => 'مرتجع',
     ];
 
     public static function label(string $status): string
@@ -150,8 +162,9 @@ class OrderTransitionService
         if (!self::isValidTransition($from, $to)) {
             throw new \Exception(self::errorMessage($from, $to));
         }
-        // Business rule: delivered orders cannot be edited (except returns)
-        if ($from === 'delivered' && !in_array($to, ['returned','refunded'], true)) {
+        // Business rule: delivered orders cannot be edited (except a refund mark —
+        // goods returns go through the return/refund domain, not orders.status).
+        if ($from === 'delivered' && !in_array($to, ['refunded'], true)) {
             throw new \Exception('لا يمكن تعديل طلب تم تسليمه إلا عبر الإرجاع');
         }
         if (in_array($from, ['cancelled','refunded','failed'], true)) {

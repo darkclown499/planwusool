@@ -281,7 +281,7 @@ final class AnalyticsService
 
         $refunded = Order::where('store_id', $storeId)
             ->where('refunded_amount', '>', 0)
-            ->whereNotIn('status', ['cancelled', 'failed'])
+            ->whereNotIn('status', $excluded)
             ->where(DB::raw('COALESCE(refunded_at, created_at)'), '>=', $from)
             ->where(DB::raw('COALESCE(refunded_at, created_at)'), '<', $to)
             ->selectRaw("COALESCE(NULLIF(currency, ''), 'ILS') AS currency, SUM(refunded_amount) AS total")
@@ -357,7 +357,12 @@ final class AnalyticsService
                 $period['to'],
                 $buckets,
                 'created_at',
-                [fn ($q) => $q->where('currency', $primaryCurrency)]
+                [
+                    fn ($q) => $q->where('currency', $primaryCurrency),
+                    // The sales trend mirrors the canonical financial validity set:
+                    // cancelled / failed / legacy-coerced '' orders never inflate it.
+                    fn ($q) => $q->whereNotIn('status', PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES),
+                ]
             );
             $collectedByDate = $this->collectedByDate($storeId, $period['from'], $period['to'], $primaryCurrency);
             $collected = $this->mapCollected($collectedByDate, $period['from'], $period['to'], $buckets);
@@ -487,6 +492,11 @@ final class AnalyticsService
             ->orderBy('status')
             ->get();
 
+        // Only canonical, meaningful order lifecycle states are surfaced.
+        // Hidden rows: '' (legacy MySQL 'failed' coerce artifact) and any other
+        // status outside the canonical set — they cannot occur as real states.
+        $rows = $rows->filter(fn ($row) => in_array((string) $row->status, OrderTransitionService::CANONICAL_STATUSES, true));
+
         $totals = [];
         foreach ($rows as $row) {
             $totals[$row->status] = ($totals[$row->status] ?? 0) + (int) $row->count;
@@ -503,7 +513,6 @@ final class AnalyticsService
             OrderTransitionService::STATUS_CANCELLED,
             OrderTransitionService::STATUS_FAILED,
             OrderTransitionService::STATUS_REFUNDED,
-            'returned',
         ];
         foreach ($rows as $row) {
             $status = (string) $row->status;
@@ -832,6 +841,7 @@ final class AnalyticsService
         CarbonInterface $prevTo
     ): array {
         $nonValid = CustomerIdentityService::NON_VALID_ORDER_STATUSES;
+        $placeholders = implode(',', array_fill(0, count($nonValid), '?'));
 
         $rows = Order::where('store_id', $storeId)
             ->selectRaw(
@@ -839,10 +849,10 @@ final class AnalyticsService
                  COALESCE(NULLIF(customer_phone, ''), '') AS phone,
                  COALESCE(NULLIF(customer_email, ''), '') AS email,
                  MIN(id) AS reference_order_id,
-                 SUM(CASE WHEN status NOT IN (?,?,?) THEN 1 ELSE 0 END) AS valid_total,
-                 SUM(CASE WHEN created_at >= ? AND created_at < ? AND status NOT IN (?,?,?) THEN 1 ELSE 0 END) AS in_period,
-                 SUM(CASE WHEN created_at >= ? AND created_at < ? AND status NOT IN (?,?,?) THEN 1 ELSE 0 END) AS in_prev,
-                 SUM(CASE WHEN created_at < ? AND status NOT IN (?,?,?) THEN 1 ELSE 0 END) AS valid_before_current",
+                 SUM(CASE WHEN status NOT IN ({$placeholders}) THEN 1 ELSE 0 END) AS valid_total,
+                 SUM(CASE WHEN created_at >= ? AND created_at < ? AND status NOT IN ({$placeholders}) THEN 1 ELSE 0 END) AS in_period,
+                 SUM(CASE WHEN created_at >= ? AND created_at < ? AND status NOT IN ({$placeholders}) THEN 1 ELSE 0 END) AS in_prev,
+                 SUM(CASE WHEN created_at < ? AND status NOT IN ({$placeholders}) THEN 1 ELSE 0 END) AS valid_before_current",
                 [
                     ...$nonValid,
                     $from, $to, ...$nonValid,

@@ -12,10 +12,12 @@ use Carbon\Carbon;
  *
  * Semantics (approved product decisions):
  *
- *   GMV        = sum(total_amount) of ALL non-terminal orders (excludes cancelled/failed/returned).
- *                GMV is date-bucketed by ORDER created_at.
+ *   GMV        = sum(total_amount) of ALL non-terminal orders (excludes cancelled/failed/'').
+ *                GMV is date-bucketed by ORDER created_at. GMV is GROSS HISTORICAL
+ *                BOOKINGS: refunded orders stay in GMV and their money is pulled out
+ *                separately via the Refunded metric (Net = Collected - Refunded).
  *   Collected  = sum(total_amount) of orders with payment_status = paid, excluding
- *                cancelled/failed/returned. Date-bucketed by paid_at (falls back to created_at).
+ *                cancelled/failed/''. Date-bucketed by paid_at (falls back to created_at).
  *   Pending    = sum(total_amount) of orders with payment_status = pending on OFFLINE/manual
  *                methods only (COD, bank, whatsapp, offline). Online in-flight transactions
  *                are NOT an expected merchant receivable. Date-bucketed by created_at.
@@ -23,12 +25,44 @@ use Carbon\Carbon;
  *                refunded_at (falls back to created_at).
  *   Net        = Collected - Refunded (per currency).
  *
+ * Order lifecycle statuses: see ORDER_STATUSES. `returned` is NOT an order status —
+ * goods-return lifecycle lives on order_returns.status, shipments on their own status,
+ * and COD on cod_payments.status. The legacy '' status is the MySQL pre-strict
+ * coerce-write artifact of 'failed' and is treated as non-valid everywhere.
+ *
  * All figures are grouped per currency — ILS/JOD/USD are never mixed.
  */
 final class PaymentFinancialMetrics
 {
-    /** Order statuses that never count towards GMV / collected / pending. */
-    public const EXCLUDED_ORDER_STATUSES = ['cancelled', 'failed', 'returned'];
+    /**
+     * Schema-valid order lifecycle statuses (canonical). `returned` is deliberately
+     * NOT here — it is not an order lifecycle state (see class docblock).
+     *
+     * @var list<string>
+     */
+    public const ORDER_STATUSES = [
+        'pending',
+        'confirmed',
+        'processing',
+        'shipped',
+        'delivered',
+        'cancelled',
+        'failed',
+        'refunded',
+    ];
+
+    /**
+     * Order statuses that never count towards GMV / collected / pending.
+     *
+     * Includes the legacy coerce-write artifact '' (the pre-strict-2 MySQL
+     * representation of a 'failed' write before the enum was widened), so every
+     * financial query guarded by this constant rejects both the canonical failure
+     * states AND the legacy malformed rows — independently of how the DB driver
+     * stores strings.
+     *
+     * @var list<string>
+     */
+    public const EXCLUDED_ORDER_STATUSES = ['cancelled', 'failed', ''];
 
     /** Offline/manual payment methods that form "expected but not yet collected" money. */
     public const OFFLINE_MANUAL_METHODS = [

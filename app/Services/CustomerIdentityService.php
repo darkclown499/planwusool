@@ -25,8 +25,17 @@ class CustomerIdentityService
     public const PREFIX_EMAIL = 'e:';
     public const PREFIX_ORDER = 'o:';
 
-    /** Statuses that MUST NOT count toward "valid" order metrics. */
-    public const NON_VALID_ORDER_STATUSES = ['cancelled', 'failed', 'refunded'];
+    /**
+     * Statuses that MUST NOT count toward "valid" order metrics.
+     *
+     * `refunded` stays non-valid here because a fully refunded sale is not valid
+     * customer spend; the legacy '' (pre-strict MySQL 'failed' coerce-write) is
+     * also non-valid. This is the customer-identity domain definition — distinct
+     * from financial GMV validity (see PaymentFinancialMetrics).
+     *
+     * @var list<string>
+     */
+    public const NON_VALID_ORDER_STATUSES = ['cancelled', 'failed', 'refunded', ''];
 
     public function isValidOrderStatus(?string $status): bool
     {
