@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useStorefrontCore } from '../../shared/hooks';
+import { resolveFreeShippingThreshold, usePriceFormatter, useStorefrontCore } from '../../shared/hooks';
 
 interface AnnouncementBarProps {
   messages?: string[];
@@ -12,12 +12,6 @@ interface AnnouncementBarProps {
   /** Visibility toggle (show_announcement). */
   visible?: boolean;
 }
-
-const DEFAULT_MESSAGES = [
-  'عروض الصيف — تخفيضات حتى 40%',
-  'شحن مجاني للطلبات فوق 250 ₪',
-  'تشكيلات جديدة كل أسبوع',
-];
 
 // Calm baseline speed — identical on phone and desktop.
 const SPEED_PX_PER_SEC = 26;
@@ -41,6 +35,7 @@ interface CellMetric { o: number; w: number }
 
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text, bgColor, textColor, visible }) => {
   const core = useStorefrontCore();
+  const formatPrice = usePriceFormatter();
   const storeAnnouncement: any = (core as any)?.content?.announcement ?? {};
 
   const effectiveText = typeof text === 'string' ? text : (storeAnnouncement.text ?? storeAnnouncement.announcement_text ?? undefined);
@@ -140,7 +135,13 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ messages, text
   } else if (messages && messages.length) {
     items = messages.filter(Boolean);
   } else {
-    items = DEFAULT_MESSAGES;
+    // Truthful fallback only: never invent a claim when the merchant has not
+    // configured an announcement. If the store has a REAL free-shipping
+    // threshold (canonical business setting honored by the shipping
+    // calculation), state it exactly with the store's currency; otherwise
+    // the bar stays hidden (no hardcoded marketing promises).
+    const threshold = resolveFreeShippingThreshold((core as any)?.content, null, (core as any)?.behavior);
+    items = threshold !== null && threshold > 0 ? [`شحن مجاني للطلبات فوق ${formatPrice(threshold)}`] : [];
   }
   if (!items.length) return null;
 
