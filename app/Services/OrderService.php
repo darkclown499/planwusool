@@ -26,11 +26,16 @@ class OrderService
     public function createOrder(array $orderData, array $cartItems): Order
     {
         $order = DB::transaction(function () use ($orderData, $cartItems) {
+            // A customer is only bound to an order when their own store equals
+            // the order's store. On any other store they stay a guest
+            // (customer_id null) — a cross-store identity is never bound.
+            $authCustomer = storefrontCurrentCustomer(null, (int) $orderData['store_id']);
+
             // Create the order
             $order = Order::forceCreate([
                 'order_number' => Order::generateOrderNumber(),
                 'store_id' => $orderData['store_id'],
-                'customer_id' => Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null,
+                'customer_id' => $authCustomer ? $authCustomer->id : null,
                 'session_id' => session()->getId(),
                 'status' => 'pending',
                 'payment_status' => 'pending',

@@ -180,7 +180,12 @@ class HandleInertiaRequests extends Middleware
         if (isset($globalSettings) && is_array($globalSettings)) {
             $globalSettings = filterSensitiveSettings($globalSettings);
         }
-        
+
+        // Resolve the storefront identity exactly once per request: it is the
+        // store-scoped view of the customer session (a customer is only
+        // authenticated on their own store subdomain, never on a foreign one).
+        $storefrontAuth = storefrontAuthPayload($request);
+
         return [
              ...parent::share($request),
             'name'  => config('app.name'),
@@ -209,12 +214,17 @@ class HandleInertiaRequests extends Middleware
                 })
                 ->values()
                 ->all(),
-            // Customer auth (for store frontend)
-            'isLoggedIn' => fn() => Auth::guard('customer')->check(),
-            'customer' => fn() => Auth::guard('customer')->check() ? Auth::guard('customer')->user() : null,
-            'customer_address' => fn() => Auth::guard('customer')->check() && Auth::guard('customer')->user()->addresses 
-                ? Auth::guard('customer')->user()->addresses 
-                : [],
+            // Customer auth (for store frontend) — store-scoped: a customer is
+            // only considered authenticated on their own store subdomain.
+            'isLoggedIn' => function () use (&$storefrontAuth) {
+                return $storefrontAuth['isLoggedIn'];
+            },
+            'customer' => function () use (&$storefrontAuth) {
+                return $storefrontAuth['isLoggedIn'] ? $storefrontAuth['customer'] : null;
+            },
+            'customer_address' => function () use (&$storefrontAuth) {
+                return $storefrontAuth['isLoggedIn'] ? $storefrontAuth['customer_address'] : [];
+            },
             'auth'  => function() use ($request) {
                 // Only a real merchant User carries the store/plan/role shape the
                 // dashboard expects. A dedicated POS terminal (pos_terminal guard)

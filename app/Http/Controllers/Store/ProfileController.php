@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -14,7 +13,10 @@ class ProfileController extends Controller
 {
     public function updateProfile(Request $request, $storeSlug)
     {
-        $customer = Auth::guard('customer')->user();
+        $customer = storefrontCurrentCustomer($request);
+        if (! $customer) {
+            abort(403, 'لا يمكن تعديل الحساب من هذا المتجر.');
+        }
         $enforcedAt = \App\Services\CustomerEmailOtpService::ENFORCED_AT;
         if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gte(\Carbon\Carbon::parse($enforcedAt))) {
             throw ValidationException::withMessages(['email'=>['يجب تأكيد البريد الإلكتروني أولاً.']]);
@@ -33,8 +35,6 @@ class ProfileController extends Controller
             'country' => 'nullable|max:100',
         ]);
 
-        $customer = Auth::guard('customer')->user();
-        
         // Check if email is already taken by another customer in the same store
         $existingCustomer = Customer::where('store_id', $customer->store_id)
             ->where('email', $request->email)
@@ -47,7 +47,6 @@ class ProfileController extends Controller
             ]);
         }
 
-        // Update customer profile
         $customer->update([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -78,7 +77,10 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request, $storeSlug)
     {
-        $customer = Auth::guard('customer')->user();
+        $customer = storefrontCurrentCustomer($request);
+        if (! $customer) {
+            abort(403, 'لا يمكن تعديل الحساب من هذا المتجر.');
+        }
         $enforcedAt = \App\Services\CustomerEmailOtpService::ENFORCED_AT;
         if ($customer && is_null($customer->email_verified_at) && $customer->created_at && $customer->created_at->gte(\Carbon\Carbon::parse($enforcedAt))) {
             throw ValidationException::withMessages(['email'=>['يجب تأكيد البريد الإلكتروني أولاً.']]);
@@ -87,8 +89,6 @@ class ProfileController extends Controller
             'current_password' => 'required',
             'password' => 'required|string|min:8|confirmed',
         ]);
-
-        $customer = Auth::guard('customer')->user();
 
         if (!Hash::check($request->current_password, $customer->password)) {
             throw ValidationException::withMessages([

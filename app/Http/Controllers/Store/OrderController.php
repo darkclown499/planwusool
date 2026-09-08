@@ -24,6 +24,10 @@ class OrderController extends Controller
     public function placeOrder(Request $request, $storeSlug)
     {
         try {
+            // Store-scoped identity: a customer is authenticated on this checkout
+            // ONLY when the request's authoritative store matches their own store.
+            // On any foreign store they are treated as a guest (session not destroyed).
+            $authCustomer = storefrontCurrentCustomer($request);
             // Preview mode for unpublished stores must not create real orders
             // (merchant inspection only — block checkout server-side).
             if ($request->store_id) {
@@ -68,7 +72,7 @@ class OrderController extends Controller
 
                 // Master-off => guest checkout always allowed (store works without accounts)
                 // When accounts on: require_login_checkout OR guest_checkout==false both imply login required
-                if ($accountsOn && $toBool($config['require_login_checkout'] ?? null, false) && !Auth::guard('customer')->check()) {
+                if ($accountsOn && $toBool($config['require_login_checkout'] ?? null, false) && !$authCustomer) {
                     if ($request->expectsJson() || $request->ajax()) {
                         return response()->json([
                             'success' => false,
@@ -80,7 +84,7 @@ class OrderController extends Controller
                 }
                 // If login is disabled, guest checkout must remain allowed even if guest_checkout is off
                 $guestAllowed = $toBool($config['guest_checkout'] ?? null, true);
-                if ($effectiveLoginOn && !$guestAllowed && !Auth::guard('customer')->check()) {
+                if ($effectiveLoginOn && !$guestAllowed && !$authCustomer) {
                     if ($request->expectsJson() || $request->ajax()) {
                         return response()->json([
                             'success' => false,
@@ -91,7 +95,7 @@ class OrderController extends Controller
                     return redirect()->back()->withErrors(['login' => 'الدفع كزائر غير متاح — يرجى تسجيل الدخول للمتابعة.']);
                 }
                 // When login is disabled but guest is also disabled (contradictory config), allow guest to prevent deadlock
-                if (!$effectiveLoginOn && !$guestAllowed && !Auth::guard('customer')->check()) {
+                if (!$effectiveLoginOn && !$guestAllowed && !$authCustomer) {
                     // Allow — do not block checkout
                 }
             }
@@ -406,10 +410,10 @@ class OrderController extends Controller
             // Apply loyalty points redemption (if requested) before order creation – cap discount to max allowed
             $loyaltyPointsRequested = (int) ($request->input('loyalty_points') ?? $request->input('loyalty_points_used') ?? 0);
             $loyaltyDiscount = 0;
-            if ($loyaltyPointsRequested > 0 && Auth::guard('customer')->check()) {
+            if ($loyaltyPointsRequested > 0 && $authCustomer) {
                 try {
                     $tmpLoyalty = app(\App\Models\LoyaltySetting::class)::forStore($request->store_id);
-                    $tmpBalance = \App\Models\LoyaltyTransaction::balanceFor($request->store_id, Auth::guard('customer')->id());
+                    $tmpBalance = \App\Models\LoyaltyTransaction::balanceFor($request->store_id, $authCustomer->id);
                     $canUse = $tmpBalance >= (float) $tmpLoyalty->minimum_redemption_points && $tmpLoyalty->is_enabled;
                     if ($canUse) {
                         $balanceCash = $tmpLoyalty->calculateRedemptionValue($tmpBalance);
@@ -533,14 +537,14 @@ class OrderController extends Controller
             // Clear cart ONLY after successful payment/order — scoped correctly for guest vs logged-in
             if ($paymentResult['success']) {
                 $cartQuery = \App\Models\CartItem::where('store_id', $request->store_id);
-                if (Auth::guard('customer')->check()) {
-                    $cartQuery->where('customer_id', Auth::guard('customer')->id());
+                if ($authCustomer) {
+                    $cartQuery->where('customer_id', $authCustomer->id);
                 } else {
                     $cartQuery->where('session_id', session()->getId())->whereNull('customer_id');
                 }
                 $cartQuery->delete();
                 // Also clear any remaining guest session items for this store (defensive for post-login sync)
-                if (Auth::guard('customer')->check()) {
+                if ($authCustomer) {
                     \App\Models\CartItem::where('store_id', $request->store_id)
                         ->where('session_id', session()->getId())
                         ->whereNull('customer_id')

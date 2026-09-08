@@ -29,9 +29,12 @@ class CartCalculationService
         $query = CartItem::where('store_id', $storeId)
             ->with(['product', 'product.tax']);
             
-        // Check if customer is authenticated
-        if (auth()->guard('customer')->check()) {
-            $query->where('customer_id', auth()->guard('customer')->id());
+        // A customer's cart is only theirs on their OWN store. The shared
+        // session cookie must never let a customer read (or checkout with) a
+        // customer-bound cart on a foreign store — there they are a guest.
+        $effectiveCustomer = storefrontCurrentCustomer(null, (int) $storeId);
+        if ($effectiveCustomer) {
+            $query->where('customer_id', $effectiveCustomer->id);
         } else {
             $query->where('session_id', $sessionId)
                   ->whereNull('customer_id');

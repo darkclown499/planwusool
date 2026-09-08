@@ -1115,6 +1115,91 @@ if (! function_exists('getAuthoritativeStoreId')) {
 
         return null;
     }
+
+    /**
+     * The customer that is effectively authenticated on a given store.
+     *
+     * The customer session cookie is shared across all {slug}.{domain}
+     * subdomains, but a customer belongs to exactly ONE store. A customer is
+     * considered authenticated ONLY when their own store matches the
+     * authoritative store for the current request (see getAuthoritativeStoreId).
+     * Any other store treats them as a guest — the session itself is never
+     * destroyed, so returning to their own store keeps them logged in.
+     *
+     * @param  \Illuminate\Http\Request|null $request
+     * @param  int|null                      $storeId Explicit authoritative store (wins over request resolution).
+     * @return \App\Models\Customer|null
+     */
+    function storefrontCurrentCustomer(?\Illuminate\Http\Request $request = null, ?int $storeId = null)
+    {
+        $customer = Auth::guard('customer')->user();
+        if (! $customer) {
+            return null;
+        }
+
+        $authoritativeStoreId = $storeId !== null ? $storeId : getAuthoritativeStoreId($request);
+        if ($authoritativeStoreId === null) {
+            return null;
+        }
+
+        if ((int) $customer->store_id !== (int) $authoritativeStoreId) {
+            return null;
+        }
+
+        return $customer;
+    }
+
+    /**
+     * Minimal, store-scoped storefront identity payload.
+     *
+     * Returns the same shape as the legacy storefront common-data/auth props:
+     * isLoggedIn / customer / customer_address. The customer is projected to a
+     * strictly minimal set of fields so internal PII columns (store_id,
+     * date_of_birth, gender, notes, ...) can never reach a cross-store page.
+     *
+     * @return array{isLoggedIn: bool, customer: array|null, customer_address: array}
+     */
+    function storefrontAuthPayload(?\Illuminate\Http\Request $request = null)
+    {
+        $customer = storefrontCurrentCustomer($request);
+
+        if (! $customer) {
+            return [
+                'isLoggedIn' => false,
+                'customer' => null,
+                'customer_address' => [],
+            ];
+        }
+
+        $projectedCustomer = [
+            'id' => (int) $customer->id,
+            'first_name' => $customer->first_name,
+            'last_name' => $customer->last_name,
+            'email' => $customer->email,
+            'phone' => $customer->phone,
+            'email_verified_at' => $customer->email_verified_at,
+        ];
+
+        $customerAddresses = \App\Models\CustomerAddress::where('customer_id', $customer->id)->get()
+            ->map(function ($address) {
+                return [
+                    'id' => $address->id,
+                    'type' => $address->type,
+                    'address' => $address->address,
+                    'city' => $address->city,
+                    'state' => $address->state,
+                    'country' => $address->country,
+                    'postal_code' => $address->postal_code,
+                    'is_default' => (bool) $address->is_default,
+                ];
+            })->values()->toArray();
+
+        return [
+            'isLoggedIn' => true,
+            'customer' => $projectedCustomer,
+            'customer_address' => $customerAddresses,
+        ];
+    }
 }
 
 if (! function_exists('calculatePlanPricing')) {

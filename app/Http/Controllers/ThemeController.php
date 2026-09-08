@@ -227,33 +227,7 @@ class ThemeController extends Controller
      */
     protected function getCommonData()
     {
-        $customer = Auth::guard('customer')->user();
-        
-        $customerAddresses = [];
-        if ($customer) {
-            $addresses = \App\Models\CustomerAddress::where('customer_id', $customer->id)->get();
-            
-            $customerAddresses = $addresses->map(function ($address) {
-                return [
-                    'id' => $address->id,
-                    'type' => $address->type,
-                    'address' => $address->address,
-                    'city' => $address->city,
-                    'state' => $address->state,
-                    'country' => $address->country,
-                    'postal_code' => $address->postal_code,
-                    'is_default' => (bool) $address->is_default,
-                ];
-            })->toArray();
-        }
-        
-        $commonData = [
-            'isLoggedIn' => Auth::guard('customer')->check(),
-            'customer' => $customer,
-            'customer_address' => $customerAddresses,
-        ];
-        
-        return $commonData;
+        return storefrontAuthPayload();
     }
 
     /**
