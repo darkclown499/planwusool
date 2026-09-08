@@ -377,6 +377,51 @@ class DomainResolver
             $gw = $segments[0];
             $orderNumber = $segments[2] ?? null;
             return app(\App\Http\Controllers\Store\GatewayReturnController::class)->{$gw . 'Callback'}($request, $store->slug, $orderNumber);
+        } elseif ($segments[0] === 'verify-email') {
+            // Customer email verification (POST) + resend (POST /verify-email/resend).
+            // GET on any of these routes is a page request — render the homepage.
+            if (isset($segments[1]) && $segments[1] === 'resend') {
+                if ($request->isMethod('get')) {
+                    $request->merge(['action' => 'verify-email']);
+                    return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+                }
+                return app(\App\Http\Controllers\Store\AuthController::class)->resendVerification($request, $store->slug);
+            }
+            if ($request->isMethod('get')) {
+                $request->merge(['action' => 'verify-email']);
+                return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+            }
+            return app(\App\Http\Controllers\Store\AuthController::class)->verifyEmail($request, $store->slug);
+        } elseif ($segments[0] === 'otp') {
+            // Storefront phone OTP endpoints (express-checkout verification).
+            if (!isset($segments[1])) {
+                abort(404);
+            }
+            if ($request->isMethod('get')) {
+                $request->merge(['action' => 'otp']);
+                return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+            }
+            $otpController = app(\App\Http\Controllers\StorefrontOtpController::class);
+            if ($segments[1] === 'send') {
+                return $otpController->send($request);
+            } elseif ($segments[1] === 'verify') {
+                return $otpController->verify($request);
+            } elseif ($segments[1] === 'resend') {
+                return $otpController->resend($request);
+            }
+            abort(404);
+        } elseif ($segments[0] === 'returns') {
+            // Customer merchandise-return requests + history.
+            if (isset($segments[1]) && $segments[1] === 'request') {
+                if ($request->isMethod('get')) {
+                    $request->merge(['action' => 'returns']);
+                    return app(\App\Http\Controllers\ThemeController::class)->home($store->slug, $request);
+                }
+                return app(\App\Http\Controllers\Store\ReturnController::class)->request($request, $store->slug);
+            } elseif (isset($segments[1]) && $segments[1] === 'history') {
+                return app(\App\Http\Controllers\Store\ReturnController::class)->history($request, $store->slug);
+            }
+            abort(404);
         } else {
             // Only serve homepage for root path, return 404 for unknown paths
             if ($request->path() === '/' || $request->path() === $store->slug) {
