@@ -21,11 +21,7 @@ class CourierWebhookController extends Controller
             return response()->json(['error'=>'Webhooks not supported'],422);
         }
 
-        // Signature verification
-        $signature = $request->header('X-Courier-Signature') ?? $request->header('X-Signature') ?? $request->input('signature');
-        $payload = $request->getContent();
-        // For mock, verify signature = hash_hmac('sha256', payload, secret)
-        // Try to find integration by tracking number or external_id in payload
+        // Resolve the target shipment and its integration from payload, never from an untrusted store_id.
         $data = $request->all();
         $tracking = $data['tracking_number'] ?? $data['trackingNumber'] ?? $data['external_id'] ?? null;
         $status = $data['status'] ?? $data['event'] ?? null;
@@ -40,17 +36,35 @@ class CourierWebhookController extends Controller
         }
 
         $integration = StoreCourierIntegration::find($shipment->courier_integration_id);
-        if (!$integration) return response()->json(['error'=>'Integration not found'],404);
+        if (!$integration || $integration->provider !== $provider) {
+            return response()->json(['error'=>'Integration not found'],404);
+        }
 
-        // Verify HMAC if integration has webhook_secret
-        $secret = $integration->settings['webhook_secret'] ?? null;
-        if ($secret && $signature) {
-            $expected = hash_hmac('sha256', $payload, $secret);
-            if (!hash_equals($expected, $signature)) {
-                return response()->json(['error'=>'Invalid signature'],401);
-            }
-        } elseif ($secret && !$signature) {
-            return response()->json(['error'=>'Missing signature'],401);
+        // Fail closed: a webhook callback is only accepted when the integration is active and
+        // authenticated. Missing/empty auth configuration, missing/invalid signatures must deny.
+        $payload = $request->getContent();
+        $signature = trim((string)($request->header('X-Courier-Signature') ?? $request->header('X-Signature') ?? $request->input('signature') ?? ''));
+        $secret = trim((string)($integration->settings['webhook_secret'] ?? ''));
+
+        if (!$integration->is_active || $integration->status !== 'connected') {
+            Log::warning('Courier webhook rejected: integration not active', ['provider'=>$provider,'integration_id'=>$integration->id]);
+            return response()->json(['error'=>'Unauthorized'],401);
+        }
+
+        if ($secret === '') {
+            Log::warning('Courier webhook rejected: no webhook secret configured', ['provider'=>$provider,'integration_id'=>$integration->id]);
+            return response()->json(['error'=>'Unauthorized'],401);
+        }
+
+        if ($signature === '') {
+            Log::warning('Courier webhook rejected: missing signature', ['provider'=>$provider,'integration_id'=>$integration->id]);
+            return response()->json(['error'=>'Unauthorized'],401);
+        }
+
+        $expected = hash_hmac('sha256', $payload, $secret);
+        if (!hash_equals($expected, $signature)) {
+            Log::warning('Courier webhook rejected: invalid signature', ['provider'=>$provider,'integration_id'=>$integration->id]);
+            return response()->json(['error'=>'Unauthorized'],401);
         }
 
         // Map status
@@ -59,7 +73,7 @@ class CourierWebhookController extends Controller
         $shipment->update([
             'status'=>$canonical,
             'provider_status'=>$status,
-            'delivered_at'=> $canonical === 'delivered' ? now() : $shipment->delivered_at,
+            'delivered_at'=> ($canonical === 'delivered' && !$shipment->delivered_at) ? now() : $shipment->delivered_at,
         ]);
 
         // Dispatch merchant email for shipment status changes (afterCommit, store isolated)
