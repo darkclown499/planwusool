@@ -6,6 +6,7 @@ import { handleOrderPlacement as handleRazorpayOrder } from '@/utils/razorpay-pa
 import { handleCashfreePayment } from '@/utils/cashfree-payment';
 import { handleFlutterwavePayment } from '@/utils/flutterwave-payment';
 import { generateStoreUrl } from '@/utils/store-url-helper';
+import { resolveDefaultShippingMethod } from '@/utils/cart-math';
 import { useCart as useCartSafe } from '@/contexts/CartContext';
 
 // Country dropdown component
@@ -670,7 +671,19 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        setShippingMethods(data.shipping_methods || []);
+        const methods = data.shipping_methods || [];
+
+        // P4A-02 SHIPPING TRUTH: keep a valid explicit selection, otherwise
+        // resolve the canonical default (mirrors ShippingSelectionService) so a
+        // paid eligible method is never left unselected and displayed as free.
+        const subtotalNow = Array.isArray(cartFromContext?.cartItems)
+          ? (cartFromContext.cartItems as any[]).reduce((sum: number, it: any) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 0), 0)
+          : 0;
+        setShippingMethods(methods);
+        setSelectedShipping((prev: string) => {
+          if (prev && methods.some((m: any) => m.id.toString() === prev)) return prev;
+          return resolveDefaultShippingMethod(methods, subtotalNow);
+        });
       }
     } catch (error) {
       console.error('Failed to load shipping methods:', error);

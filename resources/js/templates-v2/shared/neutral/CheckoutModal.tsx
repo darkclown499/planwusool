@@ -1,5 +1,6 @@
 import { useCheckoutContext } from '@/contexts/CheckoutContext';
 import { formatCurrency } from '@/utils/currency-formatter';
+import { computeShippingFee } from '@/utils/cart-math';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePage } from '@inertiajs/react';
 import { Check, CheckCircle2, CreditCard, Gift, MapPin, Package, Truck, User, Wallet, X } from 'lucide-react';
@@ -101,13 +102,7 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
     }, 0);
     const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount) || 0 : 0;
     const selectedShippingMethod = shippingMethods.find((method: any) => method.id.toString() === selectedShipping);
-    const shippingCost = selectedShippingMethod
-        ? selectedShippingMethod.type === 'percentage_based'
-            ? (subtotal * parseFloat(selectedShippingMethod.cost || 0)) / 100
-            : selectedShippingMethod.type === 'free'
-              ? 0
-              : parseFloat(selectedShippingMethod.cost || 0)
-        : 0;
+    const shippingCost = computeShippingFee(selectedShippingMethod, subtotal);
     const totalBeforeLoyalty = subtotal + totalTax - couponDiscount + shippingCost;
     const maxLoyalty = Math.max(0, totalBeforeLoyalty);
     const effectiveLoyalty = Math.min(loyaltyDiscount || 0, maxLoyalty);
@@ -466,12 +461,7 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                     ) : (
                                         <div className="space-y-2">
                                             {shippingMethods.map((method: any) => {
-                                                const cost =
-                                                    method.type === 'percentage_based'
-                                                        ? (subtotal * parseFloat(method.cost || 0)) / 100
-                                                        : method.type === 'free'
-                                                          ? 0
-                                                          : parseFloat(method.cost || 0);
+                                                const cost = computeShippingFee(method, subtotal);
                                                 const active = selectedShipping === method.id.toString();
                                                 return (
                                                     <label

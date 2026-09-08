@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\CreateCourierShipment;
 use App\Services\OrderService;
 use App\Services\CartCalculationService;
+use App\Services\ShippingSelectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -260,6 +261,39 @@ class OrderController extends Controller
                 $request->delivery_zone_id
             );
 
+            // P4A-02 SHIPPING TRUTH: the storefront must never silently get free
+            // shipping when an eligible, active paid method exists. When the client
+            // omits shipping_method_id and no local delivery zone is selected, the
+            // server resolves the canonical default method (single eligible -> it;
+            // multiple -> genuinely free -> first by sort_order/name) and re-runs
+            // the authoritative totals with it, so the order records the merchant's
+            // real fee. Explicit invalid selections still fail 422, and the plan
+            // entitlement gate below keeps this out of non-shipping plans.
+            $effectiveShippingMethodId = $request->shipping_method_id;
+            if (
+                !$request->filled('shipping_method_id') &&
+                !$request->filled('delivery_zone_id') &&
+                $calculation['items']->isNotEmpty()
+            ) {
+                $entitlementStore = \App\Models\Store::find($request->store_id);
+                if ($entitlementStore && $entitlementStore->canUsePlanFeature('shipping_method')) {
+                    $defaultMethod = ShippingSelectionService::defaultForCheckout(
+                        (int) $request->store_id,
+                        (float) $calculation['subtotal']
+                    );
+                    if ($defaultMethod) {
+                        $effectiveShippingMethodId = $defaultMethod->id;
+                        $calculation = CartCalculationService::calculateCartTotals(
+                            $request->store_id,
+                            session()->getId(),
+                            $request->coupon_code,
+                            $effectiveShippingMethodId,
+                            $request->delivery_zone_id
+                        );
+                    }
+                }
+            }
+
             // A selected delivery zone must be eligible (meets min order, active, store-scoped).
             if (!empty($request->delivery_zone_id) && empty($calculation['delivery_zone_eligible'])) {
                 return response()->json([
@@ -374,7 +408,7 @@ class OrderController extends Controller
                 'discount_amount' => $calculation['discount'],
                 'total_amount' => $calculation['total'],
                 'payment_method' => $request->payment_method,
-                'shipping_method_id' => $request->shipping_method_id,
+                'shipping_method_id' => $effectiveShippingMethodId,
                 'delivery_zone_id' => $request->delivery_zone_id,
                 'delivery_zone_name' => $calculation['delivery_zone']['name'] ?? null,
                 'delivery_fee' => $calculation['delivery_zone']['fee'] ?? 0,
