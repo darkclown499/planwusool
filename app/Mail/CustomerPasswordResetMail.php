@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\Store;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,12 +12,12 @@ class CustomerPasswordResetMail extends Mailable
     use Queueable, SerializesModels;
 
     public $token;
-    public $storeSlug;
+    public $store;
 
-    public function __construct($token, $storeSlug)
+    public function __construct($token, Store $store)
     {
         $this->token = $token;
-        $this->storeSlug = $storeSlug;
+        $this->store = $store;
     }
 
     public function build()
@@ -24,8 +25,8 @@ class CustomerPasswordResetMail extends Mailable
         return $this->subject('Reset Your Password')
                     ->view('emails.customer-password-reset')
                     ->with([
-                        'resetUrl' => route('store.reset-password', ['storeSlug' => $this->storeSlug, 'token' => $this->token]),
-                        'storeSlug' => $this->storeSlug
+                        'resetUrl' => $this->store->route('reset-password/'.$this->token),
+                        'storeSlug' => $this->store->slug,
                     ]);
     }
 }

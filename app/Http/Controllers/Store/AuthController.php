@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
@@ -371,7 +370,10 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request, $storeSlug)
     {
-        $store = Store::where('slug', $storeSlug)->firstOrFail();
+        $store = $this->getStore($request, $storeSlug);
+        if (!$store) {
+            abort(404, 'المتجر غير موجود');
+        }
         
         $request->validate([
             'email' => 'required|email'
@@ -412,26 +414,18 @@ class AuthController extends Controller
             ]
         );
 
-        // Configure mail settings
-        $mailConfigured = \App\Services\MailConfigService::setStoreMailConfig($store->user_id,$store->id);
-        
-        if (!$mailConfigured) {
-            throw ValidationException::withMessages([
-                'email' => [__('Email service not configured. Please contact support.')],
-            ]);
-        }
-        
+        // Send through THIS STORE's own mail config - no Wusool/platform fallback.
+        // Missing/incomplete/disabled store mail fails closed while the user still
+        // gets the same generic response (anti-enumeration). The token is kept per
+        // the safe reset contract; nothing is marked "sent" when delivery is blocked.
         try {
-            // Send email with reset link
-            Mail::to($customer->email)->send(new \App\Mail\CustomerPasswordResetMail($token, $storeSlug));
-            
-            return back()->with('success', __('Password reset link sent to your email.'));
-        } catch (\Exception $e) {
-            \Log::error('Store password reset email failed: ' . $e->getMessage());
-            throw ValidationException::withMessages([
-                'email' => [__('Unable to send password reset email. Please contact support.')],
-            ]);
+            \App\Services\StoreMailService::sendViaStore($store, new \App\Mail\CustomerPasswordResetMail($token, $store), $customer->email);
+        } catch (\Throwable $e) {
+            $reason = str_starts_with((string) $e->getMessage(), 'store_mail_not_') ? 'store_mail_not_ready' : 'send_failed';
+            \Log::warning('Store password reset email blocked', ['store_id' => $store->id, 'reason' => $reason]);
         }
+
+        return back()->with('success', __('Password reset link sent to your email.'));
     }
 
     public function resetPassword(Request $request, $storeSlug)
