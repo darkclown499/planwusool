@@ -55,3 +55,11 @@ export const atelierMotion = {
   fadeIn: 'animate-[atelierFadeIn_220ms_cubic-bezier(0.22,0.9,0.3,1)]',
   reduceMotion: '@media (prefers-reduced-motion: reduce) { animation: none !important; transition: none !important; }',
 } as const;
+
+// Canonical banner CTA — ONE identity for every Elegance banner surface.
+// Full-size hero CTA.
+export const ATELIER_BANNER_CTA =
+  'group mt-8 inline-flex items-center gap-3 border border-white/70 px-8 py-3 text-sm font-semibold tracking-wide text-white transition-all hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900';
+// Compact variant for Cover Flow cards (same identity tokens, card-proportional sizing).
+export const ATELIER_BANNER_CTA_CARD =
+  'group mt-3 inline-flex items-center gap-2 border border-white/70 bg-white/0 px-5 py-2 text-xs font-semibold tracking-wide text-white backdrop-blur-sm transition hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900 sm:mt-4 sm:px-6 sm:py-2.5 sm:text-sm';

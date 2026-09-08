@@ -22,6 +22,10 @@ interface CoverFlowProps {
   media: CoverMedia[];
   heights: { desktop: string; mobile: string };
   overlayOpacity: number;
+  /** Editorial legibility enhancement for templates that opt in (subtle bottom shade under text). */
+  legibilityScrim?: boolean;
+  /** Canonical CTA class token for templates that centralize their banner identity (defaults to component's own). */
+  ctaClassName?: string;
 }
 
 function circularOffset(idx: number, active: number, len: number): number {
@@ -32,7 +36,7 @@ function circularOffset(idx: number, active: number, len: number): number {
   return d;
 }
 
-export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpacity }) => {
+export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpacity, legibilityScrim, ctaClassName }) => {
   const [index, setIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -439,8 +443,8 @@ export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpa
                 )}
                 {/* brightness guard: only merchant overlay, plus faint vignette for text legibility on active */}
                 <div className="absolute inset-0 bg-black" style={{ opacity: overlayOpacity * (isActive ? 1 : 0.52) }} />
-                {isActive && m.showContent !== false && overlayOpacity < 0.08 && (m.title || m.subtitle) && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/22 via-transparent to-transparent pointer-events-none" />
+                {isActive && m.showContent !== false && (legibilityScrim ? (m.title || m.subtitle || m.ctaLabel) : (overlayOpacity < 0.08 && (m.title || m.subtitle))) && (
+                  <div className={`absolute inset-0 pointer-events-none ${legibilityScrim ? 'bg-gradient-to-t from-black/30 via-black/5 to-transparent' : 'bg-gradient-to-t from-black/22 via-transparent to-transparent'}`} />
                 )}
                 {/* Content overlay — active shows full CTA, neighbors show title peek only — respects explicit NO TEXT */}
                 {m.showContent !== false && (m.title || m.subtitle || m.ctaLabel) && (
@@ -452,9 +456,9 @@ export const CoverFlow: React.FC<CoverFlowProps> = ({ media, heights, overlayOpa
                         <a
                           href={m.ctaLink || '#atelier-new'}
                           onClick={(e) => e.stopPropagation()}
-                          className="mt-3 inline-flex items-center gap-2 border border-white/70 bg-white/0 px-5 py-2 text-xs font-semibold tracking-wide text-white backdrop-blur-sm transition hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900 sm:mt-4 sm:px-6 sm:py-2.5 sm:text-sm"
+                          className={ctaClassName || 'mt-3 inline-flex items-center gap-2 border border-white/70 bg-white/0 px-5 py-2 text-xs font-semibold tracking-wide text-white backdrop-blur-sm transition hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900 sm:mt-4 sm:px-6 sm:py-2.5 sm:text-sm'}
                         >
-                          {m.ctaLabel} <span>←</span>
+                          {m.ctaLabel}<span className="transition-transform group-hover:-translate-x-1">←</span>
                         </a>
                       )}
                     </div>

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getImageUrl } from '@/utils/image-helper';
 import { useResolvedHero, HERO_HEIGHTS, HERO_BREAKPOINT_CSS, HERO_BREAKPOINT, heroContentForMedia } from '../../shared/heroMedia';
 import { CoverFlow as AtelierCoverFlow } from '../../shared/CoverFlow';
+import { ATELIER_BANNER_CTA, ATELIER_BANNER_CTA_CARD } from '../design-system';
 // hero breakpoint 767px / 768px — kept as literal for certification contract
 // @media (max-width: 767px)
 
@@ -143,7 +144,7 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
         ctaLink: hero.ctaLink || singleHeroCtaLink || undefined,
       };
     });
-    return <AtelierCoverFlow media={cfMedia} heights={{ desktop: desktopH, mobile: mobileH }} overlayOpacity={overlayStyleOpacity} />;
+    return <AtelierCoverFlow media={cfMedia} heights={{ desktop: desktopH, mobile: mobileH }} overlayOpacity={overlayStyleOpacity} legibilityScrim ctaClassName={ATELIER_BANNER_CTA_CARD} />;
   }
 
   // Contained editorial: outer wrapper gives balanced side margins; inner hero is the clamped slot.
@@ -205,21 +206,27 @@ export const AtelierHero: React.FC<AtelierHeroProps> = ({ slides }) => {
       )}
       {shouldShowOverlayText && (
         <div className="absolute inset-0 z-10 flex items-center">
-          <div className="mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
+          {/* Editorial legibility scrim — soft directional shade behind the text column only (pointer-safe, decorative). */}
+          <div
+            aria-hidden
+            className="atelier-banner-scrim pointer-events-none absolute inset-y-0 right-0 w-3/5 max-w-[40rem]"
+            style={{ background: 'linear-gradient(to left, rgba(23,15,10,0.34), rgba(23,15,10,0.16) 42%, rgba(23,15,10,0) 70%)' }}
+          />
+          <div className="relative mx-auto w-full max-w-7xl px-6 sm:px-10 lg:px-16">
             <div className="max-w-xl">
               <span className="mb-4 block h-px w-14 bg-[#d8b48a]" />
               {isSingleMedia ? (
                 <div className="transition-all duration-700">
                   {singleHeroSubtitle && <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{singleHeroSubtitle}</p>}
                   {singleHeroTitle && <h1 className="font-serif text-2xl font-bold leading-[1.25] text-white sm:text-4xl md:text-6xl">{singleHeroTitle}</h1>}
-                  {singleHeroCtaLabel && <a href={singleHeroCtaLink||'#atelier-new'} className="group mt-8 inline-flex items-center gap-3 border border-white/70 px-8 py-3 text-sm font-semibold tracking-wide text-white transition-all hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900">{singleHeroCtaLabel}<span className="transition-transform group-hover:-translate-x-1">←</span></a>}
+                  {singleHeroCtaLabel && <a href={singleHeroCtaLink||'#atelier-new'} className={ATELIER_BANNER_CTA}>{singleHeroCtaLabel}<span className="transition-transform group-hover:-translate-x-1">←</span></a>}
                 </div>
               ) : (
                 list.map((slide,i)=>(
                   <div key={i} className="transition-all duration-700" style={{ opacity: i===index?1:0, transform: i===index?'translateY(0)':'translateY(18px)', position: i===index?'relative':'absolute', inset: i===index?undefined:0, pointerEvents: i===index?'auto':'none' }}>
                     {slide.subtitle && <p className="mb-3 text-sm font-medium tracking-[0.2em] text-[#e8cfa8]">{slide.subtitle}</p>}
                     {slide.title && <h1 className="font-serif text-2xl font-bold leading-[1.25] text-white sm:text-4xl md:text-6xl">{slide.title}</h1>}
-                    {slide.button_text && <a href={slide.button_link||'#atelier-new'} className="group mt-8 inline-flex items-center gap-3 border border-white/70 px-8 py-3 text-sm font-semibold tracking-wide text-white transition-all hover:border-[#d8b48a] hover:bg-[#d8b48a] hover:text-stone-900">{slide.button_text}<span className="transition-transform group-hover:-translate-x-1">←</span></a>}
+                    {slide.button_text && <a href={slide.button_link||'#atelier-new'} className={ATELIER_BANNER_CTA}>{slide.button_text}<span className="transition-transform group-hover:-translate-x-1">←</span></a>}
                   </div>
                 ))
               )}
