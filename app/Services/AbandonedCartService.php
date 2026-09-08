@@ -197,7 +197,12 @@ class AbandonedCartService
                 $cart->update([
                     'reminder_sent_at' => $cart->reminder_sent_at ?? now(),
                 ]);
-                if (empty($cart->whatsapp_status)) {
+                // The WhatsApp job may already have run synchronously and written a
+                // terminal status (e.g. 'sent'). Never downgrade that fresh status
+                // back to 'queued' using the stale in-memory model — read the real
+                // DB value so a delivered reminder is never reported as queued.
+                $freshStatus = $cart->fresh()->whatsapp_status;
+                if (in_array($freshStatus, [null, ''], true)) {
                     $cart->update(['whatsapp_status' => 'queued']);
                 }
             }
