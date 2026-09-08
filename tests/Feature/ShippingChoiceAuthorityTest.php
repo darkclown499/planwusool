@@ -276,9 +276,9 @@ class ShippingChoiceAuthorityTest extends TestCase
         $this->assertEquals(10, (float) $order->shipping_amount); // 10% of 100
     }
 
-    // ─── Canonical default policy (free priority / ordering) ───────────────
+    // ─── Canonical default policy (merchant sort_order priority) ───────────
 
-    public function test_free_shipping_type_is_preferred_over_paid_method(): void
+    public function test_merchant_sort_order_priority_wins_over_free_method(): void
     {
         [$owner, $store] = $this->ownerWithStore();
         $paid = $this->makeShipping($store, ['name' => 'Paid', 'cost' => 10, 'sort_order' => 1, 'type' => 'flat_rate']);
@@ -289,12 +289,15 @@ class ShippingChoiceAuthorityTest extends TestCase
         $response->assertStatus(200);
 
         $order = $this->latestOrder($store);
-        $this->assertEquals($free->id, $order->shipping_method_id);
-        $this->assertEquals(0, (float) $order->shipping_amount);
-        $this->assertEquals(100, (float) $order->total_amount);
+        // sort_order is the merchant's canonical delivery priority — a free
+        // method ranked lower must not outrank it (that would silently discount
+        // the merchant's chosen paid default).
+        $this->assertEquals($paid->id, $order->shipping_method_id);
+        $this->assertEquals(10, (float) $order->shipping_amount);
+        $this->assertEquals(110, (float) $order->total_amount);
     }
 
-    public function test_zero_cost_flat_is_treated_as_free_and_preferred_over_paid(): void
+    public function test_zero_cost_flat_does_not_outrank_merchant_sort_order_priority(): void
     {
         [$owner, $store] = $this->ownerWithStore();
         $paid = $this->makeShipping($store, ['name' => 'Paid', 'cost' => 10, 'sort_order' => 1, 'type' => 'flat_rate']);
@@ -305,8 +308,8 @@ class ShippingChoiceAuthorityTest extends TestCase
         $response->assertStatus(200);
 
         $order = $this->latestOrder($store);
-        $this->assertEquals($zero->id, $order->shipping_method_id);
-        $this->assertEquals(0, (float) $order->shipping_amount);
+        $this->assertEquals($paid->id, $order->shipping_method_id);
+        $this->assertEquals(10, (float) $order->shipping_amount);
     }
 
     public function test_first_method_by_sort_order_when_no_free_method_exists(): void

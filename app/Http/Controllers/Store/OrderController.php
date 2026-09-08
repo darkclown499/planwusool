@@ -264,11 +264,12 @@ class OrderController extends Controller
             // P4A-02 SHIPPING TRUTH: the storefront must never silently get free
             // shipping when an eligible, active paid method exists. When the client
             // omits shipping_method_id and no local delivery zone is selected, the
-            // server resolves the canonical default method (single eligible -> it;
-            // multiple -> genuinely free -> first by sort_order/name) and re-runs
-            // the authoritative totals with it, so the order records the merchant's
-            // real fee. Explicit invalid selections still fail 422, and the plan
-            // entitlement gate below keeps this out of non-shipping plans.
+            // server resolves the canonical default method (the merchant's first
+            // priority by sort_order/name — authoritative even if another method is
+            // free) and re-runs the authoritative totals with it, so the order
+            // records the merchant's real fee. Explicit invalid selections still
+            // fail 422, and the plan entitlement gate below keeps this out of
+            // non-shipping plans.
             $effectiveShippingMethodId = $request->shipping_method_id;
             if (
                 !$request->filled('shipping_method_id') &&

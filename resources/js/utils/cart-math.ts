@@ -104,12 +104,11 @@ export function isShippingMethodFree(method: ShippingMethodLike | undefined | nu
 
 /**
  * P4A-02 canonical default selection (mirrors ShippingSelectionService):
- * empty => ''; exactly one => it; multiple => first genuinely-free method,
- * otherwise the first method in the provided (server-ordered) list.
+ * empty => ''; otherwise the first eligible method in the provided
+ * (merchant-ordered) list. The merchant's sort_order/name priority stays
+ * authoritative even when a later method in the list happens to be free.
  */
 export function resolveDefaultShippingMethod(methods: ShippingMethodLike[], subtotal: number): string {
   if (!methods || methods.length === 0) return '';
-  if (methods.length === 1) return String(methods[0].id);
-  const free = methods.find((m) => isShippingMethodFree(m, subtotal));
-  return String((free ?? methods[0]).id);
+  return String(methods[0].id);
 }

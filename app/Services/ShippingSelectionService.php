@@ -7,13 +7,19 @@ use App\Models\Shipping;
 /**
  * P4A-02 — canonical, server-authoritative shipping decision for storefront checkout.
  *
- * A customer must never silently get free shipping when an eligible, active paid
- * method exists. When the client omits shipping_method_id (and no local delivery
- * zone applies), the server resolves exactly ONE eligible method so the order is
- * charged the merchant's real fee instead of an accidental 0.
+ *  A customer must never silently get free shipping when an eligible, active paid
+ *  method exists. When the client omits shipping_method_id (and no local delivery
+ *  zone applies), the server resolves exactly ONE eligible method so the order is
+ *  charged the merchant's real fee instead of an accidental 0.
  *
- * Explicit client selections are validated (store-scope + active) by the order
- * controller and are never overridden here.
+ *  The canonical default is the merchant's own delivery priority: the first
+ *  eligible method ordered by sort_order/name — the exact ordering the merchant
+ *  dashboard and the storefront api.shipping.methods endpoint expose. That
+ *  priority stays authoritative even when a later method in the order happens to
+ *  be free, because the merchant's ranking encodes their real intent.
+ *
+ *  Explicit client selections are validated (store-scope + active) by the order
+ *  controller and are never overridden here.
  */
 class ShippingSelectionService
 {
@@ -47,9 +53,11 @@ class ShippingSelectionService
      *
      * Policy (deterministic, matches the storefront API ordering):
      *  - exactly one eligible method  => it;
-     *  - multiple                     => the first genuinely-free method,
-     *    otherwise the first by sort_order/name (same ordering the checkout UI
-     *    exposes via api.shipping.methods).
+     *  - multiple                     => the first eligible method by
+     *    sort_order/name — the merchant's canonical delivery priority. A later
+     *    method being free does NOT outrank merchant priority (that is the
+     *    merchant's deliberate ranking, e.g. free pickup ranked below paid
+     *    delivery).
      *
      * Returns null when the store has no eligible methods — a true no-shipping
      * store keeps shipping 0 and is never masqueraded as a free paid method.
@@ -62,22 +70,6 @@ class ShippingSelectionService
             ->orderBy('name')
             ->get();
 
-        if ($methods->isEmpty()) {
-            return null;
-        }
-
-        $first = $methods->first();
-
-        if ($methods->count() === 1) {
-            return $first;
-        }
-
-        foreach ($methods as $method) {
-            if (self::isFree($method, $subtotal)) {
-                return $method;
-            }
-        }
-
-        return $first;
+        return $methods->first();
     }
 }
