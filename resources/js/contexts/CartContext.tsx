@@ -64,6 +64,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, storeId })
             name: item.name || item.product?.name || 'Product',
             quantity: item.quantity || 1,
             price: Number(item.price ?? item.product?.price ?? 0),
+            product_id: Number(item.product_id ?? item.id ?? 0) || undefined,
           })),
         });
       } catch (e) {

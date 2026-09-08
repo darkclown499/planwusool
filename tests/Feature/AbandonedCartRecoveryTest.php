@@ -465,6 +465,44 @@ class AbandonedCartRecoveryTest extends TestCase
         $this->assertStringContainsString('recover_token=', $json['recover_url']);
     }
 
+    public function test_draft_capture_preserves_product_ids_and_recovery_restores(): void
+    {
+        $user = $this->companyUser();
+        $store = $this->storeFor($user);
+        $p1 = $this->product($store, ['price' => 100]);
+        $p2 = $this->product($store, ['price' => 50]);
+
+        $host = $this->storeHost($store);
+        $this->withServerVariables(['HTTP_HOST' => $host])
+            ->postJson('http://' . $host . '/api/cart/draft', [
+                'store_id' => $store->id,
+                'customer_email' => 'draft-' . uniqid() . '@example.com',
+                'customer_phone' => '+97059999999',
+                'items' => [
+                    ['name' => $p1->name, 'product_id' => $p1->id, 'quantity' => 2, 'price' => 150],
+                    ['name' => $p2->name, 'product_id' => $p2->id, 'quantity' => 1, 'price' => 45],
+                ],
+            ])
+            ->assertOk()
+            ->assertJson(['success' => true, 'tracked' => true]);
+
+        $cart = AbandonedCart::where('store_id', $store->id)->first();
+        $this->assertNotNull($cart);
+        // The draft must preserve product_id — recovery restores CURRENT product
+        // truth keyed by product_id, and entries without it are truthfully skipped.
+        $this->assertSame(2, count($cart->cart_items));
+        $this->assertTrue(collect($cart->cart_items)->every(fn ($i) => !empty($i['product_id'])), 'draft items must keep product_id');
+
+        $res = $this->recoverOn($store, $cart->recovery_token);
+        $res->assertOk();
+        $this->assertSame(2, $res->json('restored'));
+        $this->assertSame(0, $res->json('skipped'));
+
+        $rows = CartItem::where('store_id', $store->id)->get();
+        $this->assertSame(2, $rows->count());
+        $this->assertSame(2, (int) $rows->firstWhere('product_id', $p1->id)->quantity);
+    }
+
     private function variantProduct(Store $store): Product
     {
         return $this->product($store, [

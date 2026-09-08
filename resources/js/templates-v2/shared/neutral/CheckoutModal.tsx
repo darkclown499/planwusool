@@ -1,6 +1,6 @@
 import { useCheckoutContext } from '@/contexts/CheckoutContext';
 import { formatCurrency } from '@/utils/currency-formatter';
-import { computeShippingFee } from '@/utils/cart-math';
+import { computeEffectiveShippingFee } from '@/utils/cart-math';
 import { getImageUrl } from '@/utils/image-helper';
 import { usePage } from '@inertiajs/react';
 import { Check, CheckCircle2, CreditCard, Gift, MapPin, Package, Truck, User, Wallet, X } from 'lucide-react';
@@ -102,7 +102,14 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
     }, 0);
     const couponDiscount = appliedCoupon ? Number(appliedCoupon.discount) || 0 : 0;
     const selectedShippingMethod = shippingMethods.find((method: any) => method.id.toString() === selectedShipping);
-    const shippingCost = computeShippingFee(selectedShippingMethod, subtotal);
+    // Free-shipping threshold display (mirrors server CartCalculationService so the
+    // quoted total matches the charge: subtotal after discount >= threshold => 0).
+    const freeShippingConfig = {
+        free_shipping_enabled: (page as any)?.behavior?.free_shipping_enabled ?? (storeSettings as any)?.free_shipping_enabled,
+        free_shipping_threshold: (page as any)?.behavior?.free_shipping_threshold ?? (storeSettings as any)?.free_shipping_threshold,
+    };
+    const discountBase = couponDiscount + (loyaltyDiscount || 0);
+    const shippingCost = computeEffectiveShippingFee(selectedShippingMethod, subtotal, discountBase, freeShippingConfig);
     const totalBeforeLoyalty = subtotal + totalTax - couponDiscount + shippingCost;
     const maxLoyalty = Math.max(0, totalBeforeLoyalty);
     const effectiveLoyalty = Math.min(loyaltyDiscount || 0, maxLoyalty);
@@ -461,7 +468,7 @@ const CheckoutContent: React.FC<TemplateCheckoutProps> = ({ onClose, onOrderComp
                                     ) : (
                                         <div className="space-y-2">
                                             {shippingMethods.map((method: any) => {
-                                                const cost = computeShippingFee(method, subtotal);
+                                                const cost = computeEffectiveShippingFee(method, subtotal, discountBase, freeShippingConfig);
                                                 const active = selectedShipping === method.id.toString();
                                                 return (
                                                     <label

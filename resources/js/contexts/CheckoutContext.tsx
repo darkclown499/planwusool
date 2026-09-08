@@ -771,6 +771,7 @@ export const CheckoutProvider: React.FC<CheckoutProviderProps> = ({
             name: it.name || it.title || 'Product',
             quantity: Number(it.quantity) || 1,
             price: Number(it.price) || 0,
+            product_id: Number(it.product_id ?? it.id ?? 0) || undefined,
             // include selected options/variants for draft recovery fidelity
             options: it.selectedVariants || it.options || it.variant || it.customFields || undefined,
             variant: it.variant || undefined,

@@ -44,6 +44,7 @@ class CartTrackingController extends Controller
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric',
+            'items.*.product_id' => 'nullable|integer',
             'items.*.options' => 'nullable',
             'customer_email' => 'nullable|email',
             'customer_phone' => 'nullable|string|max:20',
@@ -62,6 +63,7 @@ class CartTrackingController extends Controller
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
             ];
+            if (isset($item['product_id'])) $entry['product_id'] = $item['product_id'];
             if (isset($item['options'])) $entry['options'] = $item['options'];
             if (isset($item['variant'])) $entry['variant'] = $item['variant'];
             if (isset($item['selectedVariants'])) $entry['selectedVariants'] = $item['selectedVariants'];

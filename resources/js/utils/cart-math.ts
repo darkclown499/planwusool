@@ -102,6 +102,43 @@ export function isShippingMethodFree(method: ShippingMethodLike | undefined | nu
   return computeShippingFee(method, subtotal) === 0;
 }
 
+export interface FreeShippingSettings {
+  free_shipping_enabled?: boolean | string | number | null;
+  free_shipping_threshold?: number | string | null;
+}
+
+/**
+ * Effective shipping fee for display — mirrors server CartCalculationService:
+ * when the merchant enables the canonical free_shipping threshold and the
+ * subtotal after discount meets it, the charge is 0 regardless of the
+ * selected method type (flat, percentage, etc.).
+ */
+export function computeEffectiveShippingFee(
+  method: ShippingMethodLike | undefined | null,
+  subtotal: number,
+  discount = 0,
+  freeShipping?: FreeShippingSettings | null
+): number {
+  const s = freeShipping || {};
+  const rawEnabled = s.free_shipping_enabled;
+  const enabled =
+    rawEnabled === true ||
+    rawEnabled === 1 ||
+    rawEnabled === '1' ||
+    (typeof rawEnabled === 'string' && rawEnabled.trim().toLowerCase() === 'true');
+  const rawThreshold = s.free_shipping_threshold;
+  const threshold =
+    typeof rawThreshold === 'number'
+      ? rawThreshold
+      : typeof rawThreshold === 'string' && rawThreshold.trim() !== ''
+        ? Number(rawThreshold)
+        : NaN;
+  if (enabled && Number.isFinite(threshold) && threshold > 0 && Math.max(0, subtotal - discount) >= threshold) {
+    return 0;
+  }
+  return computeShippingFee(method, subtotal);
+}
+
 /**
  * P4A-02 canonical default selection (mirrors ShippingSelectionService):
  * empty => ''; otherwise the first eligible method in the provided
