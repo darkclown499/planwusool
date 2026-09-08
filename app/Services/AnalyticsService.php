@@ -69,11 +69,17 @@ final class AnalyticsService
         $aov = $this->aov($current, $primaryCurrency);
         $aovPrev = $this->aov($previous, $primaryCurrency);
 
+        // Net = Collected - Refunded, kept per currency so currencies never collapse.
+        $currentNet = $this->netByCurrency($current['collected'], $current['refunded']);
+        $previousNet = $this->netByCurrency($previous['collected'], $previous['refunded']);
+
         return [
             'period' => $this->periodPayload($period),
             'metrics' => [
                 'gmv' => $this->moneyMetric($current['gmv'], $previous['gmv'], $primaryCurrency),
                 'collected' => $this->moneyMetric($current['collected'], $previous['collected'], $primaryCurrency),
+                'refunded' => $this->moneyMetric($current['refunded'], $previous['refunded'], $primaryCurrency),
+                'net_collected' => $this->moneyMetric($currentNet, $previousNet, $primaryCurrency),
                 'pending_collection' => $this->moneyMetric($current['pending'], $previous['pending'], $primaryCurrency),
                 'valid_orders' => $this->countMetric($current['valid_orders'], $previous['valid_orders']),
                 'cancelled_orders' => $this->countMetric($current['cancelled_orders'], $previous['cancelled_orders']),
@@ -914,6 +920,26 @@ final class AnalyticsService
             'from_label' => $period['from']->setTimezone($period['timezone'])->format('Y-m-d'),
             'to_label' => $period['to']->copy()->subSecond()->setTimezone($period['timezone'])->format('Y-m-d'),
         ];
+    }
+
+    /**
+     * Net per currency: Collected - Refunded. Negative net is possible only
+     * when a refund exceeds what was collected in this period (e.g. a refund
+     * on a booking created outside the window).
+     *
+     * @param  array<string,float>  $collected
+     * @param  array<string,float>  $refunded
+     * @return array<string,float>
+     */
+    private function netByCurrency(array $collected, array $refunded): array
+    {
+        $codes = array_unique(array_merge(array_map('strtoupper', array_keys($collected)), array_map('strtoupper', array_keys($refunded))));
+        $net = [];
+        foreach ($codes as $code) {
+            $net[$code] = round((float) ($collected[$code] ?? 0) - (float) ($refunded[$code] ?? 0), 2);
+        }
+
+        return $net;
     }
 
     /**

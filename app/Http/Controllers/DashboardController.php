@@ -15,8 +15,10 @@ use App\Models\PlanOrder;
 use App\Models\PlanRequest;
 use App\Models\Coupon;
 use App\Services\MerchantNotificationService;
+use App\Services\PaymentFinancialMetrics;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -459,21 +461,37 @@ class DashboardController extends Controller
         $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
         $lastMonthEnd = Carbon::now()->startOfMonth();
 
+        // The dashboard reports the store's primary currency only. Money rows
+        // keep the canonical collected semantics (paid + non-terminal statuses)
+        // and are bucketed by when the money was collected, never the booking date.
+        $primaryCurrency = strtoupper((string) (settings(auth()->id(), $storeId)['defaultCurrency'] ?? 'ILS'));
+        $excluded = PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES;
+        $bucketedDate = DB::raw('COALESCE(paid_at, created_at)');
+        $currencyExpr = DB::raw("COALESCE(NULLIF(currency, ''), 'ILS')");
+
         $totalOrders = Order::where('store_id', $storeId)->count();
         $totalProducts = Product::where('store_id', $storeId)->count();
         $totalCustomers = Customer::where('store_id', $storeId)->count();
 
-        // Revenue only counts paid orders, consistent with Analytics & Store pages.
+        // Revenue is canonical Collected: paid orders in a non-terminal status,
+        // scoped to the primary currency.
         $totalRevenue = Order::where('store_id', $storeId)
             ->where('payment_status', 'paid')
+            ->where($currencyExpr, $primaryCurrency)
+            ->whereNotIn('status', $excluded)
             ->sum('total_amount');
         $currentMonthRevenue = Order::where('store_id', $storeId)
             ->where('payment_status', 'paid')
-            ->where('created_at', '>=', $currentMonth)
+            ->where($currencyExpr, $primaryCurrency)
+            ->whereNotIn('status', $excluded)
+            ->where($bucketedDate, '>=', $currentMonth)
             ->sum('total_amount');
         $lastMonthRevenue = Order::where('store_id', $storeId)
             ->where('payment_status', 'paid')
-            ->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])
+            ->where($currencyExpr, $primaryCurrency)
+            ->whereNotIn('status', $excluded)
+            ->where($bucketedDate, '>=', $lastMonthStart)
+            ->where($bucketedDate, '<', $lastMonthEnd)
             ->sum('total_amount');
 
         // Month-over-month counts for real growth deltas.
@@ -503,8 +521,9 @@ class DashboardController extends Controller
             
         $topProducts = OrderItem::select('product_id', 'product_name')
             ->selectRaw('SUM(quantity) as total_sold')
-            ->whereHas('order', function($query) use ($storeId) {
-                $query->where('store_id', $storeId);
+            ->whereHas('order', function($query) use ($storeId, $excluded) {
+                $query->where('store_id', $storeId)
+                    ->whereNotIn('status', $excluded);
             })
             ->groupBy('product_id', 'product_name')
             ->orderBy('total_sold', 'desc')
@@ -542,15 +561,20 @@ class DashboardController extends Controller
     }
 
     /**
-     * Daily paid revenue for the last 30 days, matching the Analytics chart.
+     * Daily canonical Collected (paid + non-terminal, bucketed by paid_at) for
+     * the last 30 days in the store's primary currency, matching Analytics.
      */
     private function getStoreRevenueChartData($storeId)
     {
+        $primaryCurrency = strtoupper((string) (settings(auth()->id(), $storeId)['defaultCurrency'] ?? 'ILS'));
+
         return Order::query()
             ->where('store_id', $storeId)
             ->where('payment_status', 'paid')
-            ->selectRaw('DATE(created_at) as date, SUM(total_amount) as revenue')
-            ->where('created_at', '>=', Carbon::now()->subDays(30))
+            ->whereNotIn('status', PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES)
+            ->whereRaw("COALESCE(NULLIF(currency, ''), 'ILS') = ?", [$primaryCurrency])
+            ->selectRaw('DATE(COALESCE(paid_at, created_at)) as date, SUM(total_amount) as revenue')
+            ->where(DB::raw('COALESCE(paid_at, created_at)'), '>=', Carbon::now()->subDays(30))
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -561,12 +585,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * Daily order count for the last 30 days, matching the Analytics chart.
+     * Daily order count for the last 30 days from valid (non-terminal)
+     * orders, matching the Analytics sales trend.
      */
     private function getStoreSalesChartData($storeId)
     {
         return Order::query()
             ->where('store_id', $storeId)
+            ->whereNotIn('status', PaymentFinancialMetrics::EXCLUDED_ORDER_STATUSES)
             ->selectRaw('DATE(created_at) as date, COUNT(*) as orders')
             ->where('created_at', '>=', Carbon::now()->subDays(30))
             ->groupBy('date')

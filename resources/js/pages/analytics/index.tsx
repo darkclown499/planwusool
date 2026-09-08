@@ -15,6 +15,7 @@ import {
   Wallet,
   XCircle,
   Receipt,
+  RotateCcw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -82,6 +83,8 @@ interface AnalyticsPayload {
   metrics?: {
     gmv: MoneyMetric;
     collected: MoneyMetric;
+    refunded: MoneyMetric;
+    net_collected: MoneyMetric;
     pending_collection: MoneyMetric;
     aov: MoneyMetric;
     valid_orders: CountMetric;
@@ -482,6 +485,23 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
                 change={metrics.pending_collection.change?.change}
                 isNew={metrics.pending_collection.change?.is_new}
                 extra={<MoneySubtext groups={metrics.pending_collection.groups} />}
+              />
+              <MetricCard
+                title={t('Refunded')}
+                icon={<RotateCcw className="h-4 w-4 text-muted-foreground" />}
+                value={formatCurrency(metrics.refunded.primary)}
+                change={metrics.refunded.change?.change}
+                isNew={metrics.refunded.change?.is_new}
+                extra={<MoneySubtext groups={metrics.refunded.groups} />}
+              />
+              <MetricCard
+                title={t('Net Collected')}
+                icon={<Receipt className="h-4 w-4 text-muted-foreground" />}
+                value={formatCurrency(metrics.net_collected.primary)}
+                change={metrics.net_collected.change?.change}
+                isNew={metrics.net_collected.change?.is_new}
+                extra={<MoneySubtext groups={metrics.net_collected.groups} />}
+                subtitle={t('Net Collected subtitle')}
               />
               <MetricCard
                 title={t('Cancelled Orders')}

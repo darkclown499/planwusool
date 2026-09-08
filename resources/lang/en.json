@@ -721,6 +721,8 @@
     "Collected Revenue": "Collected Revenue",
     "Collected At": "Collected At",
     "Collected By": "Collected By",
+    "Net Collected": "Net Collected",
+    "Net Collected subtitle": "Collected minus refunded amounts.",
     "Collection History": "Collection History",
     "Collection Rate": "Collection Rate",
     "Collection amount exceeds the remaining balance.": "Collection amount exceeds the remaining balance.",

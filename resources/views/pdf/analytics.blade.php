@@ -62,6 +62,20 @@
                 @endforeach
             </td>
             <td>
+                <div class="metric-label">المبالغ المستردة</div>
+                @foreach ($refunded as $code => $amount)
+                    <div class="metric-value">{{ $currency($amount) }}</div>
+                @endforeach
+            </td>
+            <td>
+                <div class="metric-label">صافي المحصّل (المحصّل - المسترد)</div>
+                @foreach ($netCollected as $code => $amount)
+                    <div class="metric-value">{{ $currency($amount) }}</div>
+                @endforeach
+            </td>
+        </tr>
+        <tr>
+            <td>
                 <div class="metric-label">التحصيلات المعلقة</div>
                 @foreach ($pending as $code => $amount)
                     <div class="metric-value">{{ $currency($amount) }}</div>
@@ -73,6 +87,7 @@
                     <div class="metric-value">{{ $currency($amount) }}</div>
                 @endforeach
             </td>
+            <td colspan="2"></td>
         </tr>
     </table>
 

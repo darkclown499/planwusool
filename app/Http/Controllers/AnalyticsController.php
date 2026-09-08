@@ -131,6 +131,8 @@ class AnalyticsController extends Controller
         $moneyLabels = [
             'gmv' => 'valid_sales_gmv',
             'collected' => 'collected',
+            'refunded' => 'refunded',
+            'net_collected' => 'net_collected',
             'pending_collection' => 'pending_collection',
             'aov' => 'average_order_value',
         ];
@@ -244,6 +246,8 @@ class AnalyticsController extends Controller
             'periodLabel' => $period['from']->format('Y-m-d') . ' - ' . $period['to']->copy()->subSecond()->format('Y-m-d'),
             'gmv' => collect($metrics['gmv']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
             'collected' => collect($metrics['collected']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
+            'refunded' => collect($metrics['refunded']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
+            'netCollected' => collect($metrics['net_collected']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
             'pending' => collect($metrics['pending_collection']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
             'aov' => collect($metrics['aov']['groups'])->mapWithKeys(fn ($g) => [$g['code'] => $g['amount']])->all(),
             'validOrders' => $metrics['valid_orders']['current'],

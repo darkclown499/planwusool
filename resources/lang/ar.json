@@ -794,6 +794,8 @@
     "Collected Revenue": "إيرادات التحصيل",
     "Collected At": "وقت التحصيل",
     "Collected By": "تم التحصيل بواسطة",
+    "Net Collected": "الصافي المحصّل",
+    "Net Collected subtitle": "المبالغ المحصلة بعد خصم الاستردادات.",
     "Collection History": "سجل التحصيل",
     "Collection Rate": "معدل التحصيل",
     "Collection amount exceeds the remaining balance.": "مبلغ التحصيل يتجاوز الرصيد المتبقي.",

@@ -961,7 +961,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           {userHasPermission('manage-analytics') && (
             <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick('analytics.index', 'manage-analytics')}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{t('Total Revenue')}</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t('Collected')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between gap-3">
@@ -1131,7 +1131,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                     onClick={() => setChartMode('revenue')}
                     className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${chartMode === 'revenue' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
-                    {t('Revenue')}
+                    {t('Collected')}
                   </button>
                 </div>
               </CardHeader>
@@ -1158,7 +1158,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                         <XAxis dataKey="date" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                         <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                         <Tooltip formatter={(value: any) => formatCurrency(Number(value) || 0)} />
-                        <Area type="monotone" dataKey="revenue" name={t('Revenue')} stroke={getThemeColorValue()} strokeWidth={2} fill="url(#revenueGradient)" />
+                        <Area type="monotone" dataKey="revenue" name={t('Collected')} stroke={getThemeColorValue()} strokeWidth={2} fill="url(#revenueGradient)" />
                       </AreaChart>
                     )}
                   </ResponsiveContainer>
