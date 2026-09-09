@@ -6,6 +6,7 @@ use App\Events\OrderCreated;
 use App\Events\OrderStatusChanged;
 use App\Jobs\SendStoreCustomerEmail;
 use App\Models\Order;
+use App\Models\OrderShipment;
 
 class DispatchStoreCustomerEmails
 {
@@ -29,10 +30,18 @@ class DispatchStoreCustomerEmails
             'cancelled' => 'order_cancelled',
             'canceled' => 'order_cancelled',
             'shipped' => 'shipment_created',
+            'delivered' => 'shipment_delivered',
+            'failed' => 'shipment_failed',
+            'refunded' => 'order_refunded',
         ];
         $type = $map[$new] ?? null;
         if (!$type) return;
-        dispatch(new SendStoreCustomerEmail($order->store_id, $type, $email, $order->id, null, $order->customer_id))->afterCommit();
+        // For delivery-related terminals, align idempotency with the courier
+        // webhook dispatches by reusing the order's latest shipment id (if any).
+        $shipmentId = in_array($new, ['delivered', 'failed'], true)
+            ? OrderShipment::where('order_id', $order->id)->latest('id')->value('id')
+            : null;
+        dispatch(new SendStoreCustomerEmail($order->store_id, $type, $email, $order->id, $shipmentId, $order->customer_id))->afterCommit();
     }
 
     public function handlePaymentStatusChanged(Order $order, string $newPaymentStatus): void

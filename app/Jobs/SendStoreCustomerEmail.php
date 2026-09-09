@@ -103,6 +103,8 @@ class SendStoreCustomerEmail implements ShouldQueue
                 return $this->orderCreatedContent($store,$order);
             case 'order_cancelled':
                 return [$store->name.' — تم إلغاء طلبك #'.($order ? $order->order_number : ''), '<p style="color:#334155;">تم إلغاء طلبك. إذا كان لديك استفسار تواصل مع المتجر.</p>'];
+            case 'order_refunded':
+                return [$store->name.' — تم استرداد المبلغ لطلبك #'.($order ? $order->order_number : ''), '<p style="color:#334155;">تم استرداد المبلغ الخاص بطلبك. إذا كان لديك استفسار تواصل مع المتجر.</p>'];
             case 'payment_received':
                 return [$store->name.' — تم تأكيد الدفع #'.($order ? $order->order_number : ''), '<p style="color:#334155;">تم تأكيد استلام الدفع لطلبك. شكراً لك.</p>'];
             case 'shipment_created':
@@ -114,7 +116,7 @@ class SendStoreCustomerEmail implements ShouldQueue
             case 'shipment_delivered':
                 return [$store->name.' — تم التسليم', '<p style="color:#334155;">تم تسليم طلبك بنجاح. شكراً لاختيارك '.$store->name.'.</p>'];
             case 'shipment_failed':
-                return [$store->name.' — فشل التوصيل', '<p style="color:#334155;">تعذر توصيل طلبك. سنتواصل معك قريباً.</p>'];
+                return [$store->name.' — تعذر توصيل طلبك', '<p style="color:#334155;">تعذر توصيل طلبك. سنتواصل معك قريباً.</p>'];
             case 'shipment_returned':
                 return [$store->name.' — تم الإرجاع', '<p style="color:#334155;">تم إرجاع شحنتك.</p>'];
             case 'welcome_customer':

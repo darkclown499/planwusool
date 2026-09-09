@@ -53,6 +53,8 @@ class StoreEmailNotificationController extends Controller
     private function previewSubject(Store $store, string $type): string {
         return [
             'order_created'=>'تم استلام طلبك #ORD-123456 — معاينة فقط',
+            'order_cancelled'=>'تم إلغاء طلبك — معاينة فقط',
+            'order_refunded'=>'تم استرداد المبلغ — معاينة فقط',
             'shipment_created'=>'تم شحن طلبك — معاينة فقط',
             'shipment_delivered'=>'تم التسليم — معاينة فقط',
         ][$type] ?? $store->name.' — معاينة';

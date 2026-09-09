@@ -11,6 +11,7 @@ class StoreEmailNotificationService
     public const TYPES = [
         'order_created' => ['group'=>'orders','label'=>'تأكيد الطلب','desc'=>'يرسل للعميل عند استلام الطلب في المتجر.','default'=>true],
         'order_cancelled' => ['group'=>'orders','label'=>'إلغاء الطلب','desc'=>'عند إلغاء الطلب.','default'=>true],
+        'order_refunded' => ['group'=>'orders','label'=>'استرداد المبلغ','desc'=>'عند استرداد المبلغ للعميل.','default'=>true],
         'payment_received' => ['group'=>'payment','label'=>'تأكيد الدفع','desc'=>'عند تأكيد استلام الدفع.','default'=>true],
         'shipment_created' => ['group'=>'shipping','label'=>'تم شحن الطلب','desc'=>'عند إنشاء الشحنة ورقم التتبع.','default'=>true],
         'shipment_in_transit' => ['group'=>'shipping','label'=>'الطلب في الطريق','desc'=>'عند تحديث الحالة إلى قيد النقل.','default'=>false],

@@ -142,7 +142,7 @@ class WelcomeCustomerEmailTest extends TestCase
     {
         $types=array_keys(\App\Services\StoreEmailNotificationService::TYPES);
         // Ensure each visible pref has a mapping in provider: we check that our dispatcher handles them
-        $expected=['order_created','order_cancelled','payment_received','shipment_created','shipment_in_transit','shipment_out_for_delivery','shipment_delivered','shipment_failed','shipment_returned','welcome_customer'];
+        $expected=['order_created','order_cancelled','order_refunded','payment_received','shipment_created','shipment_in_transit','shipment_out_for_delivery','shipment_delivered','shipment_failed','shipment_returned','welcome_customer'];
         foreach($expected as $t) $this->assertContains($t,$types);
     }
 
