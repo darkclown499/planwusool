@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { PageTemplate } from '@/components/page-template';
-import { ShoppingCart, Eye, Edit, Trash2, Package, Download, Search, X, ChevronLeft, ChevronRight, MessageCircle, MoreVertical } from 'lucide-react';
+import { ShoppingCart, Eye, Edit, Trash2, Package, Download, Search, X, ChevronLeft, ChevronRight, MessageCircle, MoreVertical, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,8 @@ import { router, usePage, Link } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import { tOrderStatus, tPaymentMethod, tPaymentStatus } from '@/utils/order-status';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 interface OrderItem {
   id: number;
@@ -81,10 +83,45 @@ const STATUS_GROUPS = [
   { key: 'issues', label: 'مشاكل/أخرى' },
 ];
 
+interface BulkEntry {
+  order_id: number;
+  order_number: string | null;
+  status?: string;
+  reason?: string;
+}
+
+interface BulkResult {
+  action: string;
+  success: BulkEntry[];
+  failed: BulkEntry[];
+  summary: { total: number; succeeded: number; failed: number };
+}
+
+// Mirrors OrderController::BULK_ACTIONS — only safe, meaningful fulfillment
+// transitions are exposed in bulk. `from` mirrors the canonical ALLOWED map
+// (shipping statuses are lowercase raw order statuses).
+const BULK_ACTIONS = [
+  { action: 'confirm', target: 'confirmed', label: 'تأكيد الطلبات', from: ['pending'] },
+  { action: 'mark_shipped', target: 'shipped', label: 'جاهزة للتوصيل', from: ['processing'] },
+  { action: 'mark_delivered', target: 'delivered', label: 'تم التسليم', from: ['processing', 'shipped'] },
+];
+
+const BULK_TARGET_LABELS: Record<string, string> = {
+  confirmed: 'مؤكد',
+  shipped: 'تم الشحن',
+  delivered: 'تم التسليم',
+};
+
+const BULK_SELECTABLE_STATUSES = new Set(['pending', 'confirmed', 'processing', 'shipped']);
+
 export default function Orders({ orders = [], pagination, filters: initialFilters, stats, groupCounts }: OrdersProps) {
   const { t } = useTranslation();
   const { auth } = usePage().props as any;
   const [orderToDelete, setOrderToDelete] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkAction, setBulkAction] = useState<string | null>(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
   const [search, setSearch] = useState(initialFilters?.search || '');
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FiltersData>({
@@ -102,6 +139,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
   const effectiveGroup = groupKeys.includes(activeFilters.group) ? activeFilters.group : '';
 
   const applyFilters = useCallback((newFilters: Partial<FiltersData>) => {
+    setSelectedIds([]);
     const merged = { ...activeFilters, ...newFilters };
     if (newFilters.group !== undefined && newFilters.status === undefined) merged.status = '';
     setActiveFilters(merged);
@@ -112,6 +150,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
   }, [activeFilters]);
 
   const clearFilters = useCallback(() => {
+    setSelectedIds([]);
     setSearch('');
     setActiveFilters({ search: '', group: '', status: '', payment_status: '', payment_method: '', source: '', date_from: '', date_to: '' });
     router.get(route('orders.index'), {}, { preserveState: true, replace: true });
@@ -123,6 +162,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
   };
 
   const goToPage = (page: number) => {
+    setSelectedIds([]);
     const params: Record<string, string> = { page: String(page) };
     Object.entries(activeFilters).forEach(([k, v]) => { if (v) params[k] = v; });
     router.get(route('orders.index'), params, { preserveState: true, replace: true });
@@ -142,6 +182,74 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
     if (orderToDelete && checkPermission('delete-orders', auth)) {
       router.delete(route('orders.destroy', orderToDelete));
       setOrderToDelete(null);
+    }
+  };
+
+  // ── Bulk selection helpers ──
+  const canBulk = hasPermission('edit-orders');
+  const orderStatusById = useMemo(() => {
+    const m: Record<number, string> = {};
+    orders.forEach((o) => { m[o.id] = String(o.status).toLowerCase(); });
+    return m;
+  }, [orders]);
+  const pageSelectableIds = useMemo(
+    () => orders.filter((o) => BULK_SELECTABLE_STATUSES.has(String(o.status).toLowerCase())).map((o) => o.id),
+    [orders]
+  );
+  const allPageSelected = pageSelectableIds.length > 0 && pageSelectableIds.every((id) => selectedIds.includes(id));
+  const somePageSelected = pageSelectableIds.some((id) => selectedIds.includes(id));
+  const availableBulkActions = BULK_ACTIONS.filter((a) => selectedIds.some((id) => a.from.includes(orderStatusById[id] || '')));
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const toggleSelectAllPage = () => {
+    setSelectedIds((prev) => {
+      const onPage = new Set(pageSelectableIds);
+      if (onPage.size === 0) return prev;
+      const allSelected = [...onPage].every((id) => prev.includes(id));
+      if (allSelected) return prev.filter((id) => !onPage.has(id));
+      return Array.from(new Set([...prev, ...onPage]));
+    });
+  };
+
+  const clearSelection = () => setSelectedIds([]);
+
+  const activeBulkAction = BULK_ACTIONS.find((a) => a.action === bulkAction) || null;
+
+  const submitBulk = async () => {
+    if (!bulkAction || selectedIds.length === 0 || bulkLoading) return;
+    setBulkLoading(true);
+    try {
+      const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+      const url = (typeof route !== 'undefined' && route('orders.bulk-status')) || '/orders/bulk-status';
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ order_ids: selectedIds, action: bulkAction }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = j.errors?.order_ids?.[0] || j.errors?.action?.[0] || j.message || j.error || 'تعذر تنفيذ الإجراء';
+        toast.error(msg);
+        setBulkAction(null);
+        return;
+      }
+      const result = j as BulkResult;
+      setBulkResult(result);
+      setBulkAction(null);
+      setSelectedIds([]);
+      if (result.summary) {
+        if (result.summary.failed > 0) toast.error(`تم تحديث ${result.summary.succeeded} طلب، وتعذّر تحديث ${result.summary.failed} طلب`);
+        else toast.success(`تم تحديث ${result.summary.succeeded} طلب بنجاح`);
+      }
+      router.reload();
+    } catch {
+      toast.error('تعذر الاتصال بالخادم — تحقق من الاتصال وحاول مرة أخرى');
+      setBulkAction(null);
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -386,6 +494,56 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
           )}
         </div>
 
+        {/* Bulk selection toolbar — only when the merchant can edit orders */}
+        {canBulk && selectedIds.length > 0 && (
+          <>
+            {/* Desktop toolbar */}
+            <Card className="hidden lg:block">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold ltr-num">تم تحديد {selectedIds.length} طلب</span>
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={clearSelection}>
+                      إلغاء التحديد
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {BULK_ACTIONS.map((a) => {
+                      const available = availableBulkActions.some((x) => x.action === a.action);
+                      return (
+                        <Button key={a.action} size="sm" disabled={!available || bulkLoading} onClick={() => setBulkAction(a.action)}>
+                          {a.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Mobile sticky bottom toolbar */}
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 backdrop-blur p-3 lg:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+              <div className="mx-auto max-w-lg">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-sm font-semibold ltr-num">تم تحديد {selectedIds.length} طلب</span>
+                  <button type="button" className="text-xs font-medium text-muted-foreground hover:text-foreground" onClick={clearSelection}>
+                    إلغاء التحديد
+                  </button>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {BULK_ACTIONS.map((a) => {
+                    const available = availableBulkActions.some((x) => x.action === a.action);
+                    return (
+                      <Button key={a.action} size="sm" className="shrink-0 text-xs" disabled={!available || bulkLoading} onClick={() => setBulkAction(a.action)}>
+                        {a.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Desktop orders table (>= lg) */}
         {orders.length > 0 && (
           <div className="hidden lg:block">
@@ -394,6 +552,17 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      {canBulk && (
+                        <TableHead className="w-10">
+                          <Checkbox
+                            aria-label={t('Select all orders on this page')}
+                            disabled={pageSelectableIds.length === 0}
+                            checked={allPageSelected || (somePageSelected ? 'indeterminate' : false)}
+                            onCheckedChange={toggleSelectAllPage}
+                            className="ms-1"
+                          />
+                        </TableHead>
+                      )}
                       <TableHead>{t('Order')}</TableHead>
                       <TableHead>{t('Customer')}</TableHead>
                       <TableHead className="text-end">{t('Total')}</TableHead>
@@ -406,6 +575,17 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
                   <TableBody>
                     {orders.map((order) => (
                       <TableRow key={order.id}>
+                        {canBulk && (
+                          <TableCell className="w-10">
+                            <Checkbox
+                              aria-label={`تحديد الطلب ${order.orderNumber}`}
+                              checked={selectedIds.includes(order.id)}
+                              disabled={!BULK_SELECTABLE_STATUSES.has(String(order.status).toLowerCase())}
+                              onCheckedChange={() => toggleSelect(order.id)}
+                              className="h-5 w-5"
+                            />
+                          </TableCell>
+                        )}
                         <TableCell>
                           <Link href={route('orders.show', order.id)} className="font-semibold hover:underline">
                             {order.orderNumber}
@@ -470,6 +650,15 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
                 className="border rounded-xl p-3 bg-card hover:bg-slate-50/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
+                  {canBulk && (
+                    <Checkbox
+                      aria-label={`تحديد الطلب ${order.orderNumber}`}
+                      checked={selectedIds.includes(order.id)}
+                      disabled={!BULK_SELECTABLE_STATUSES.has(String(order.status).toLowerCase())}
+                      onCheckedChange={() => toggleSelect(order.id)}
+                      className="mt-1 h-5 w-5 shrink-0"
+                    />
+                  )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link href={route('orders.show', order.id)} className="font-semibold text-sm hover:underline">
@@ -631,6 +820,57 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
               </Button>
               <Button variant="destructive" onClick={handleDelete}>
                 {t('Delete')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk action confirmation dialog */}
+      {bulkAction && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4" role="dialog" aria-modal="true" aria-label={activeBulkAction?.label}>
+            <h3 className="text-lg font-semibold mb-2">{activeBulkAction?.label}</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              سيتم نقل {selectedIds.length} طلب إلى حالة «{activeBulkAction ? (BULK_TARGET_LABELS[activeBulkAction.target] ?? activeBulkAction.target) : ''}». الطلبات غير المؤهلة لهذا الإجراء سيتم تخطيها تلقائياً مع عرض السبب.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setBulkAction(null)} disabled={bulkLoading}>
+                {t('Cancel')}
+              </Button>
+              <Button variant="default" onClick={submitBulk} disabled={bulkLoading}>
+                {bulkLoading && <Loader2 className="h-4 w-4 animate-spin me-1" />}
+                تأكيد التحديث
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk results dialog — surfaces per-order partial failures */}
+      {bulkResult && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto" role="dialog" aria-modal="true" aria-label={t('Bulk update results')}>
+            <h3 className="text-lg font-semibold mb-2">نتيجة التحديث الجماعي</h3>
+            <p className="text-sm text-gray-600 mb-4 ltr-num">
+              تم تحديث {bulkResult.summary.succeeded} من أصل {bulkResult.summary.total} طلب
+            </p>
+            {bulkResult.failed.length > 0 ? (
+              <ul className="space-y-2 mb-4">
+                {bulkResult.failed.map((f) => (
+                  <li key={f.order_id} className="rounded-lg bg-red-50 p-2 text-xs text-red-700">
+                    <span className="font-semibold">{f.order_number || `#${f.order_id}`}</span>
+                    {' — '}
+                    {f.reason}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-emerald-600 mb-4">تم تحديث جميع الطلبات المحددة بنجاح.</p>
+            )}
+            <div className="flex justify-end">
+              <Button variant="default" onClick={() => setBulkResult(null)}>
+                {t('Close')}
               </Button>
             </div>
           </div>

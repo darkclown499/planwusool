@@ -999,6 +999,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('orders/{id}/edit', [\App\Http\Controllers\OrderController::class, 'edit'])->middleware('permission:edit-orders')->name('orders.edit');
             Route::put('orders/{id}', [\App\Http\Controllers\OrderController::class, 'update'])->middleware('permission:edit-orders')->name('orders.update');
             Route::post('orders/{id}/transition', [\App\Http\Controllers\OrderController::class, 'transition'])->middleware('permission:edit-orders')->name('orders.transition');
+            Route::post('orders/bulk-status', [\App\Http\Controllers\OrderController::class, 'bulkStatus'])->middleware('permission:edit-orders')->name('orders.bulk-status');
             Route::post('orders/{id}/collect-cod', [\App\Http\Controllers\OrderController::class, 'collectCod'])->middleware('permission:edit-orders')->name('orders.collect-cod');
             Route::post('orders/{id}/confirm-bank', [\App\Http\Controllers\OrderController::class, 'confirmBank'])->middleware('permission:edit-orders')->name('orders.confirm-bank');
             Route::post('orders/{id}/reject-bank', [\App\Http\Controllers\OrderController::class, 'rejectBank'])->middleware('permission:edit-orders')->name('orders.reject-bank');

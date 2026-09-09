@@ -833,6 +833,85 @@ class OrderController extends Controller
         }
     }
 
+    public const BULK_ACTIONS = [
+        'confirm' => 'confirmed',
+        'mark_shipped' => 'shipped',
+        'mark_delivered' => 'delivered',
+    ];
+
+    public const BULK_MAX_ORDER_IDS = 50;
+
+    /**
+     * Bulk transition multiple orders through the canonical per-order state
+     * machine. Every order goes through the exact same
+     * OrderTransitionService::transition() as the single-order endpoint, so
+     * row locks, stale/idempotency handling, timestamps and OrderStatusChanged
+     * side effects (customer emails, webhooks, merchant notifications,
+     * loyalty) behave identically per order. One order failing never blocks
+     * the rest: results are returned per order with an Arabic reason so the UI
+     * can surface partial failures instead of pretending a batch succeeded.
+     *
+     * Only safe, meaningful fulfillment actions are exposed in bulk. Refund /
+     * cancel keep their single-order flows — refunds are a dedicated financial
+     * domain and cancel carries extra delivery-assignment side effects.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function bulkStatus(Request $request)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+
+        $data = $request->validate([
+            'order_ids' => ['required', 'array', 'max:'.self::BULK_MAX_ORDER_IDS],
+            'order_ids.*' => ['integer'],
+            'action' => ['required', 'string', 'in:'.implode(',', array_keys(self::BULK_ACTIONS))],
+        ], [], [
+            'order_ids' => 'معرفات الطلبات',
+            'action' => 'الإجراء',
+        ]);
+
+        $action = $data['action'];
+        $target = self::BULK_ACTIONS[$action];
+        $orderIds = array_values(array_unique(array_map('intval', $data['order_ids'])));
+
+        // Trusted server context only — never a client-supplied store_id.
+        $orders = Order::whereIn('id', $orderIds)
+            ->where('store_id', $storeId)
+            ->get()
+            ->keyBy('id');
+
+        $success = [];
+        $failed = [];
+
+        foreach ($orderIds as $orderId) {
+            $order = $orders->get($orderId);
+            if (!$order) {
+                // Generic message for missing/cross-store ids — no tenant existence leak.
+                $failed[] = ['order_id' => $orderId, 'order_number' => null, 'reason' => 'الطلب غير موجود'];
+                continue;
+            }
+            try {
+                $fresh = \App\Services\OrderTransitionService::transition($order, $target);
+                $success[] = ['order_id' => $order->id, 'order_number' => $order->order_number, 'status' => $fresh->status];
+            } catch (\Throwable $e) {
+                $reason = trim((string) ($e->getMessage())) ?: 'تعذر تحديث الطلب';
+                $failed[] = ['order_id' => $order->id, 'order_number' => $order->order_number, 'reason' => $reason];
+            }
+        }
+
+        return response()->json([
+            'action' => $action,
+            'success' => $success,
+            'failed' => $failed,
+            'summary' => [
+                'total' => count($orderIds),
+                'succeeded' => count($success),
+                'failed' => count($failed),
+            ],
+        ]);
+    }
+
     /**
      * Semantic COD collect.
      */
