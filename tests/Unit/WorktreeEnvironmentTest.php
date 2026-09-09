@@ -118,6 +118,48 @@ class WorktreeEnvironmentTest extends TestCase
         $this->assertTrue(is_writable(base_path('bootstrap/cache')));
     }
 
+    public function test_test_queue_session_cache_drivers_are_safe_and_need_no_redis(): void
+    {
+        // PHPUnit contract (phpunit.xml): synchronous queue, in-memory cache and
+        // in-memory sessions. No Redis daemon may be required to run the suite.
+        $this->assertSame('sync', config('queue.default'));
+        $this->assertSame('array', config('cache.default'));
+        $this->assertSame('array', config('session.driver'));
+        $this->assertSame('array', config('cache.stores.array.driver'));
+    }
+
+    public function test_test_database_is_the_in_memory_sqlite_not_the_tracked_file(): void
+    {
+        // The canonical PHPUnit target is the in-memory sqlite connection, NOT
+        // storage/testing.sqlite (which is tracked and reserved for browser e2e
+        // via `php artisan serve --env=testing`). No PHPUnit run may mutate the
+        // tracked file, so assert the live connection reports the in-memory DB.
+        $this->assertSame('sqlite', config('database.default'));
+        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+        $this->assertSame(':memory:', \Illuminate\Support\Facades\DB::connection()->getDatabaseName());
+    }
+
+    public function test_env_example_is_dotenv_parseable(): void
+    {
+        // Guards phpdotenv ergonomics: unquoted values with embedded whitespace
+        // (e.g. the space-separated OAuth scopes) raise InvalidFileException and
+        // crash the whole boot with "The environment file is invalid!". The
+        // example template must always parse so fresh worktrees never die on
+        // `.env` creation from the canonical template.
+        //
+        // Resolve the repo root from THIS test file (not base_path(), which can
+        // follow a cross-checkout vendor junction) so the guard always checks
+        // the current worktree's committed template.
+        $root = $this->currentRoot();
+
+        $this->assertFileExists($root.DIRECTORY_SEPARATOR.'.env.example');
+
+        $repo = \Dotenv\Repository\RepositoryBuilder::createWithDefaultAdapters()->immutable()->make();
+        \Dotenv\Dotenv::create($repo, $root, '.env.example')->safeLoad();
+
+        $this->assertSame('openid profile email', $repo->get('PLANKTON_SCOPE'));
+    }
+
     private function currentRoot(): string
     {
         return $this->canonical(dirname(__DIR__, 2));
