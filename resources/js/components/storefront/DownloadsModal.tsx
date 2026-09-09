@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
+import { useStorefrontLocale } from '@/contexts/StorefrontLocaleContext';
+import { formatCustomerDate } from '@/utils/date-helper';
 import { getImageUrl } from '@/utils/image-helper';
 
 interface DownloadItem {
@@ -24,6 +26,7 @@ interface DownloadsModalProps {
 export const DownloadsModal: React.FC<DownloadsModalProps> = ({ onClose }) => {
   const { isLoggedIn, setShowLoginModal } = useAuth();
   const { store } = useStore();
+  const { locale } = useStorefrontLocale();
   const [downloads, setDownloads] = useState<DownloadItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -132,7 +135,7 @@ export const DownloadsModal: React.FC<DownloadsModalProps> = ({ onClose }) => {
                       <p className="text-gray-400 text-xs mt-0.5">
                         {download.download_count} / {download.max_downloads} تنزيل
                         {download.expires_at && (
-                          <span> · تنتهي {new Date(download.expires_at).toLocaleDateString()}</span>
+                          <span> · تنتهي {formatCustomerDate(download.expires_at, { locale })}</span>
                         )}
                       </p>
                     </div>

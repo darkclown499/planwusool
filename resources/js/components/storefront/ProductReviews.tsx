@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
+import { useStorefrontLocale } from '@/contexts/StorefrontLocaleContext';
+import { formatCustomerDate } from '@/utils/date-helper';
 import { toast } from '@/components/custom-toast';
 import { getImageUrl } from '@/utils/image-helper';
 
@@ -54,6 +56,7 @@ function Star({ filled, onClick, onHover }: { filled: boolean; onClick?: () => v
 export const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => {
   const { isLoggedIn, setShowLoginModal } = useAuth();
   const { store } = useStore();
+  const { locale } = useStorefrontLocale();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -253,7 +256,7 @@ export const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => 
                     </div>
                   </div>
                 </div>
-                <span className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString()}</span>
+                <span className="text-xs text-gray-400">{formatCustomerDate(review.created_at, { locale })}</span>
               </div>
 
               {review.title && <p className="text-sm font-semibold text-gray-900 mb-1">{review.title}</p>}

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStore } from '@/contexts/StoreContext';
+import { useStorefrontLocale } from '@/contexts/StorefrontLocaleContext';
+import { formatCustomerDate } from '@/utils/date-helper';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { cashEquivalent, normalizeLoyaltySettings, type LoyaltySettings } from '@/utils/loyalty';
 import { usePage } from '@inertiajs/react';
@@ -17,6 +19,7 @@ interface HistoryItem {
 export const LoyaltyOverview: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { isLoggedIn, setShowLoginModal } = useAuth();
   const { store } = useStore();
+  const { locale } = useStorefrontLocale();
   const page = usePage().props as any;
   const storeSettings = page?.storeSettings || {};
   const currencies = page?.currencies || [];
@@ -131,7 +134,7 @@ export const LoyaltyOverview: React.FC<{ compact?: boolean }> = ({ compact = fal
                 <div key={String(item.id)} className="flex items-center justify-between rounded-xl border border-slate-100 p-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-slate-800">{item.description || item.type}</p>
-                    {item.created_at && <p className="text-xs text-slate-400">{new Date(item.created_at).toLocaleDateString('ar-EG')}</p>}
+                    {item.created_at && <p className="text-xs text-slate-400">{formatCustomerDate(item.created_at, { locale })}</p>}
                   </div>
                   <span className={`shrink-0 text-sm font-black ${Number(item.points) > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                     {Number(item.points) > 0 ? '+' : ''}{item.points}
