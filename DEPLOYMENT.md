@@ -141,12 +141,24 @@ After=network.target
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/wusool
-ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3
+# The --queue= list is the canonical worker contract. It MUST consume every
+# app queue: default, accounting, notifications AND loyalty. If a future domain
+# queue is introduced, append it here first, then restart the unit, otherwise
+# jobs are created but never processed (production finding 2026-09-04).
+ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --queue=default,accounting,notifications,loyalty
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+> **Operations (controlled, no code change):** after this branch is merged and
+> deployed, update the live worker command on production (aaPanel/`queue-worker`)
+> to `--queue=default,accounting,notifications,loyalty` and restart it. The
+> deploy script restarts `queue-worker` automatically; if the server's unit file
+> still omits `loyalty`, defer to ops to fix the queue list before any loyalty
+> job can flow. Any jobs stranded earlier are safe to reconcile later — the earn
+> guard is idempotent per store+order.
 
 ```bash
 sudo systemctl enable --now queue-worker

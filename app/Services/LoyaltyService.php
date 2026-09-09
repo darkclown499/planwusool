@@ -15,69 +15,81 @@ class LoyaltyService
      */
     public function earnPointsForOrder(Order $order): void
     {
-        $store = $order->store;
-        $customer = $order->customer;
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order) {
+            // Serialization point: lock the canonical order row so concurrent
+            // replays of the same delivered event (worker redelivery, duplicate
+            // jobs, manual replay) serialize on a single grant. The locked row
+            // is also the authority for store/customer and current status, so a
+            // stale serialized order can never award against fresh tenant data.
+            $locked = Order::whereKey($order->getKey())->lockForUpdate()->first();
+            if (!$locked) {
+                return;
+            }
 
-        if (!$store || !$customer) {
-            return;
-        }
+            $store = $locked->store;
+            $customer = $locked->customer;
 
-        // Loyalty points are only earned once an order is actually delivered.
-        // Orders still pending/confirmed/processing/shipped — or cancelled/failed/
-        // refunded/returned — do not accrue points.
-        if ($order->status !== 'delivered') {
-            return;
-        }
+            if (!$store || !$customer) {
+                return;
+            }
 
-        $settings = LoyaltySetting::forStore($store->id);
+            // Loyalty points are only earned once an order is actually delivered.
+            // Orders still pending/confirmed/processing/shipped — or cancelled/failed/
+            // refunded/returned — do not accrue points.
+            if ($locked->status !== 'delivered') {
+                return;
+            }
 
-        if (!$settings->is_enabled) {
-            return;
-        }
+            $settings = LoyaltySetting::forStore($store->id);
 
-        // Idempotency: do not grant twice for same store/order
-        $alreadyEarned = LoyaltyTransaction::where('store_id', $store->id)
-            ->where('customer_id', $customer->id)
-            ->where('order_id', $order->id)
-            ->where('type', 'earn')
-            ->exists();
-        if ($alreadyEarned) {
-            return;
-        }
+            if (!$settings->is_enabled) {
+                return;
+            }
 
-        // Calculate points based on order subtotal (excluding shipping, tax, discounts)
-        $earnableAmount = $order->subtotal - $order->discount_amount;
-        if ($earnableAmount <= 0) {
-            return;
-        }
+            // Idempotency: do not grant twice for same store/order
+            $alreadyEarned = LoyaltyTransaction::where('store_id', $store->id)
+                ->where('customer_id', $customer->id)
+                ->where('order_id', $locked->id)
+                ->where('type', 'earn')
+                ->exists();
+            if ($alreadyEarned) {
+                return;
+            }
 
-        $points = $settings->calculateEarnPoints($earnableAmount);
-        if ($points <= 0) {
-            return;
-        }
+            // Calculate points based on order subtotal (excluding shipping, tax, discounts)
+            $earnableAmount = $locked->subtotal - $locked->discount_amount;
+            if ($earnableAmount <= 0) {
+                return;
+            }
 
-        $currentBalance = LoyaltyTransaction::balanceFor($store->id, $customer->id);
+            $points = $settings->calculateEarnPoints($earnableAmount);
+            if ($points <= 0) {
+                return;
+            }
 
-        $expiresAt = null;
-        if ($settings->points_expire && $settings->expiry_days > 0) {
-            $expiresAt = now()->addDays($settings->expiry_days);
-        }
+            $currentBalance = LoyaltyTransaction::balanceFor($store->id, $customer->id);
 
-        LoyaltyTransaction::create([
-            'store_id' => $store->id,
-            'customer_id' => $customer->id,
-            'order_id' => $order->id,
-            'type' => 'earn',
-            'points' => $points,
-            'balance_after' => $currentBalance + $points,
-            'description' => "Points earned from order #{$order->order_number}",
-            'metadata' => [
-                'order_number' => $order->order_number,
-                'order_total' => $order->total_amount,
-                'earnable_amount' => $earnableAmount,
-            ],
-            'expires_at' => $expiresAt,
-        ]);
+            $expiresAt = null;
+            if ($settings->points_expire && $settings->expiry_days > 0) {
+                $expiresAt = now()->addDays($settings->expiry_days);
+            }
+
+            LoyaltyTransaction::create([
+                'store_id' => $store->id,
+                'customer_id' => $customer->id,
+                'order_id' => $locked->id,
+                'type' => 'earn',
+                'points' => $points,
+                'balance_after' => $currentBalance + $points,
+                'description' => "Points earned from order #{$locked->order_number}",
+                'metadata' => [
+                    'order_number' => $locked->order_number,
+                    'order_total' => $locked->total_amount,
+                    'earnable_amount' => $earnableAmount,
+                ],
+                'expires_at' => $expiresAt,
+            ]);
+        });
     }
 
     /**
