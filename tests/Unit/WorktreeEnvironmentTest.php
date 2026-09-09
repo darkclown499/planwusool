@@ -154,10 +154,27 @@ class WorktreeEnvironmentTest extends TestCase
 
         $this->assertFileExists($root.DIRECTORY_SEPARATOR.'.env.example');
 
-        $repo = \Dotenv\Repository\RepositoryBuilder::createWithDefaultAdapters()->immutable()->make();
-        \Dotenv\Dotenv::create($repo, $root, '.env.example')->safeLoad();
+        // Parse the template without loading it into the environment. Loaders
+        // built with the default adapters WRITE every not-yet-defined value
+        // (e.g. APP_DOMAIN, APP_URL) into the real $_ENV/$_SERVER of the
+        // shared PHPUnit process, which then poisons every later test in the
+        // run (fresh app boots re-read the immutable env). Pure parsing keeps
+        // the same InvalidFileException guard with zero side effects.
+        $content = \Dotenv\Store\StoreBuilder::createWithNoNames()
+            ->addPath($root)
+            ->addName('.env.example')
+            ->make()
+            ->read();
+        $entries = (new \Dotenv\Parser\Parser())->parse($content);
 
-        $this->assertSame('openid profile email', $repo->get('PLANKTON_SCOPE'));
+        $planktonScope = null;
+        foreach ($entries as $entry) {
+            if ($entry->getName() === 'PLANKTON_SCOPE') {
+                $planktonScope = $entry->getValue()->get()->getChars();
+            }
+        }
+
+        $this->assertSame('openid profile email', $planktonScope);
     }
 
     private function currentRoot(): string
