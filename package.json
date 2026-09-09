@@ -119,6 +119,7 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "overrides": {
-        "qs": "^6.16.0"
+        "qs": "^6.16.0",
+        "js-yaml": "^4.3.2"
     }
 }
