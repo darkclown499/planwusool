@@ -108,11 +108,15 @@ export default function PromotionsAnalytics() {
               )}
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">{t('Recorded Usage')}</p>
+              <p className="text-xs text-muted-foreground">{t('Recorded Usage')} ({t('All time')})</p>
               <p className="mt-1 text-xl font-bold tabular-nums">{promotion?.used_count ?? 0}</p>
             </div>
           </CardContent>
         </Card>
+
+        <div className="flex items-center justify-end">
+          <Badge variant="secondary">{t('All time')}</Badge>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           {statCards.map((card, i) => (

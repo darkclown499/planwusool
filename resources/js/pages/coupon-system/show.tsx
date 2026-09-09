@@ -114,8 +114,9 @@ export default function ShowCoupon() {
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle>{t('Usage Statistics')}</CardTitle>
+              <Badge variant="secondary">{t('All time')}</Badge>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center p-4 border rounded-lg">

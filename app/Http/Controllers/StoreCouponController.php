@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\StoreCoupon;
+use App\Support\AnalyticsPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -148,7 +149,13 @@ class StoreCouponController extends Controller
         
         $totalUsage = $orders->count();
         $uniqueUsers = $orders->pluck('customer_id')->unique()->count();
-        $recentUsage = $orders->where('created_at', '>=', now()->subDays(30))->count();
+
+        // "Usage (Last 30 Days)" is a period metric. Resolve its boundary in the
+        // STORE's timezone (same canonical source as AnalyticsController) so the
+        // window does not drift with the app/server timezone.
+        $timezone = (string) (settings($user->id, $currentStoreId)['defaultTimezone'] ?? 'Asia/Hebron');
+        $period = (new AnalyticsPeriod($timezone, now()))->resolve('last_30_days');
+        $recentUsage = $orders->where('created_at', '>=', $period['from'])->count();
         
         // Calculate total savings from actual recorded discounts on orders
         $totalSavings = 0;

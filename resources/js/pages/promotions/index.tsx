@@ -278,10 +278,10 @@ export default function PromotionsIndex() {
                           </div>
                           <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
                             {typeof analytics.uses === 'number' && (
-                              <span>{t('Uses')}: {analytics.uses}</span>
+                              <span>{t('Uses')} ({t('All time')}): {analytics.uses}</span>
                             )}
                             {typeof analytics.total_discount_granted === 'number' && (
-                              <span>{t('Discounted')}: {formatCurrency(analytics.total_discount_granted)}</span>
+                              <span>{t('Discounted')} ({t('All time')}): {formatCurrency(analytics.total_discount_granted)}</span>
                             )}
                             {promotion.minimum_order_amount > 0 && (
                               <span>{t('Min order')}: {formatCurrency(promotion.minimum_order_amount)}</span>
