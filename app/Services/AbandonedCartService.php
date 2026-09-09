@@ -231,17 +231,36 @@ class AbandonedCartService
             return false;
         }
     }
-    public function getStats(int $storeId): array
+    /**
+     * Store-scoped KPI snapshot for the abandoned-cart report.
+     *
+     * Status counts/amounts preserve the canonical abandoned/recovered
+     * definitions (a cart is what its status says it is). When a reporting
+     * period is supplied the population is additionally scoped to carts whose
+     * LAST ACTIVITY (the canonical occurrence field) falls inside the window
+     * — [from, to) — exactly like the list and the export. A null period keeps
+     * the historical all-time view for non-report callers.
+     *
+     * @param  int  $storeId
+     * @param  array<string,mixed>|null  $period  AnalyticsPeriod payload (from/to Carbon instants)
+     */
+    public function getStats(int $storeId, ?array $period = null): array
     {
-        $total = AbandonedCart::where('store_id', $storeId)->count();
-        $new = AbandonedCart::where('store_id', $storeId)->where('status', 'new')->count();
-        $draft = AbandonedCart::where('store_id', $storeId)->where('status', 'draft')->count();
-        $abandoned = AbandonedCart::where('store_id', $storeId)->where('status', 'abandoned')->count();
-        $reminderSent = AbandonedCart::where('store_id', $storeId)->where('status', 'reminder_sent')->count();
-        $recovered = AbandonedCart::where('store_id', $storeId)->where('status', 'recovered')->count();
-        $expired = AbandonedCart::where('store_id', $storeId)->where('status', 'expired')->count();
-        $recoveredAmount = AbandonedCart::where('store_id', $storeId)->where('status', 'recovered')->sum('cart_total');
-        $totalAbandonedAmount = AbandonedCart::where('store_id', $storeId)->whereIn('status', ['new', 'draft', 'abandoned', 'reminder_sent'])->sum('cart_total');
+        $base = AbandonedCart::where('store_id', $storeId);
+        if ($period !== null) {
+            $base->where('last_activity_at', '>=', $period['from'])
+                ->where('last_activity_at', '<', $period['to']);
+        }
+
+        $total = (clone $base)->count();
+        $new = (clone $base)->where('status', 'new')->count();
+        $draft = (clone $base)->where('status', 'draft')->count();
+        $abandoned = (clone $base)->where('status', 'abandoned')->count();
+        $reminderSent = (clone $base)->where('status', 'reminder_sent')->count();
+        $recovered = (clone $base)->where('status', 'recovered')->count();
+        $expired = (clone $base)->where('status', 'expired')->count();
+        $recoveredAmount = (clone $base)->where('status', 'recovered')->sum('cart_total');
+        $totalAbandonedAmount = (clone $base)->whereIn('status', ['new', 'draft', 'abandoned', 'reminder_sent'])->sum('cart_total');
         $pendingCount = $new + $draft + $abandoned + $reminderSent;
         $recoveryRate = $total > 0 ? round(($recovered / $total) * 100, 1) : 0;
         return ['total'=>$total,'new'=>$new,'draft'=>$draft,'abandoned'=>$abandoned,'reminder_sent'=>$reminderSent,'recovered'=>$recovered,'expired'=>$expired,'pending'=>$pendingCount,'recovered_amount'=>$recoveredAmount,'total_abandoned_amount'=>$totalAbandonedAmount,'recovery_rate'=>$recoveryRate];

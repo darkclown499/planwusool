@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\AbandonedCart;
 use App\Models\Store;
 use App\Services\AbandonedCartService;
+use App\Support\AnalyticsPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Throwable;
 
 class AbandonedCartController extends Controller
 {
@@ -133,12 +135,14 @@ class AbandonedCartController extends Controller
                         ->orWhere('customer_phone', 'like', "%{$search}%");
                 });
             }
-            if ($request->has('date_from') && $request->date_from) {
-                $query->whereDate('last_activity_at', '>=', $request->date_from);
-            }
-            if ($request->has('date_to') && $request->date_to) {
-                $query->whereDate('last_activity_at', '<=', $request->date_to);
-            }
+            [$period, $preset, $from, $to] = $this->resolvePeriod($request, $currentStoreId);
+
+            // The report window follows the canonical AnalyticsPeriod contract.
+            // last_activity_at is the abandoned-cart occurrence timestamp (the
+            // field business logic keys on for staleness/reminders) and the
+            // boundaries are store-local: from inclusive, to exclusive.
+            $query->where('last_activity_at', '>=', $period['from'])
+                ->where('last_activity_at', '<', $period['to']);
 
             $perPage = $request->get('per_page', 15);
             $carts = $query->latest('last_activity_at')->paginate($perPage);
@@ -153,7 +157,7 @@ class AbandonedCartController extends Controller
                 return $cart;
             });
 
-            $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId) : [];
+            $stats = $currentStoreId ? $this->abandonedCartService->getStats($currentStoreId, $period) : [];
 
             $currencySymbol = '₪';
             if ($currentStoreId) {
@@ -169,8 +173,11 @@ class AbandonedCartController extends Controller
 
             return Inertia::render('abandoned-carts/index', [
                 'carts' => $carts,
-                'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'per_page']),
+                'filters' => $request->only(['search', 'status', 'per_page']) + ['preset' => $preset, 'from' => $from, 'to' => $to],
                 'stats' => $stats,
+                'preset' => $preset,
+                'from' => $from,
+                'to' => $to,
                 'currency_symbol' => $currencySymbol,
                 'activeStoreId' => $currentStoreId,
             ]);
@@ -293,6 +300,8 @@ class AbandonedCartController extends Controller
         }
 
         try {
+            [$period] = $this->resolvePeriod($request, $currentStoreId);
+
             $statusLabels = [
                 'new' => 'جديدة',
                 'draft' => 'مسودة',
@@ -304,6 +313,8 @@ class AbandonedCartController extends Controller
             ];
 
             $carts = AbandonedCart::where('store_id', $currentStoreId)
+                ->where('last_activity_at', '>=', $period['from'])
+                ->where('last_activity_at', '<', $period['to'])
                 ->orderBy('last_activity_at', 'desc')
                 ->get();
 
@@ -373,5 +384,43 @@ class AbandonedCartController extends Controller
         }
         // Non-numeric scalar (e.g. "abc", "₪100") — preserve raw evidence
         return trim((string) $value) !== '' ? trim((string) $value) : '0.00';
+    }
+
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Resolve an AnalyticsPeriod from validated request input — the SAME
+     * canonical contract the analytics/report surface uses (validated presets,
+     * capped custom window, fallback to last_30_days).
+     *
+     * @return array{0:array<string,mixed>,1:string,2:?string,3:?string}
+     */
+    private function resolvePeriod(Request $request, ?int $storeId): array
+    {
+        $preset = (string) ($request->input('preset') ?? 'last_30_days');
+        if (! in_array($preset, AnalyticsPeriod::PRESETS, true)) {
+            $preset = 'last_30_days';
+        }
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+        if ($preset !== 'custom') {
+            $from = null;
+            $to = null;
+        }
+
+        try {
+            $period = (new AnalyticsPeriod($this->storeTimezone($request, $storeId), now()))->resolve($preset, $from ? (string) $from : null, $to ? (string) $to : null);
+        } catch (Throwable) {
+            $preset = 'last_30_days';
+            $period = (new AnalyticsPeriod($this->storeTimezone($request, $storeId), now()))->resolve($preset);
+        }
+
+        return [$period, $preset, $preset === 'custom' ? $from : null, $preset === 'custom' ? $to : null];
+    }
+
+    private function storeTimezone(Request $request, ?int $storeId): string
+    {
+        return (string) (settings(Auth::id(), $storeId)['defaultTimezone'] ?? 'Asia/Hebron');
     }
 }
