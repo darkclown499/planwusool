@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { customerOrderStatusLabel } from '@/utils/order-status';
+import { formatCustomerDate } from '@/utils/date-helper';
 import { Printer, Download, X, Home, Package, Truck, CreditCard, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
@@ -104,17 +105,8 @@ export const UnifiedInvoice: React.FC<UnifiedInvoiceProps> = ({
     window.location.href = route('store.order.pdf', { storeSlug, orderNumber });
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleDateString('ar-SA', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr: string) =>
+    formatCustomerDate(dateStr, { locale: storeConfig?.locale as string | undefined });
 
   return (
     <>

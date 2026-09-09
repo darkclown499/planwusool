@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/utils/currency-formatter';
 import { getImageUrl } from '@/utils/image-helper';
 import { customerOrderStatusLabel } from '@/utils/order-status';
+import { useStorefrontLocale } from '@/contexts/StorefrontLocaleContext';
+import { formatCustomerDate } from '@/utils/date-helper';
 import { usePage } from '@inertiajs/react';
 import { Calendar, Copy, CreditCard, LogOut, MapPin, Package, ShoppingBag, User, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -121,6 +123,7 @@ export const TemplateMyOrdersModal: React.FC<MyOrdersProps> = ({ orders, loading
     const page = usePage().props as any;
     const storeSettings = page?.storeSettings || {};
     const currencies = page?.currencies || [];
+    const { locale } = useStorefrontLocale();
 
     return (
         <ModalShell onClose={onClose} title="طلباتي" icon={<Package className="h-5 w-5" />}>
@@ -156,7 +159,7 @@ export const TemplateMyOrdersModal: React.FC<MyOrdersProps> = ({ orders, loading
                                             style={{ color: 'var(--twc-text-primary, #111827)' }}
                                         >
                                             <Calendar className="h-4 w-4" />
-                                            {order.created_at || order.date}
+                                            {formatCustomerDate(order.created_at || order.date, { locale, withTime: true })}
                                         </p>
                                         <p className="mt-1 text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>
                                             رقم الطلب: {order.order_number}
@@ -209,6 +212,7 @@ export const TemplateOrderDetailsModal: React.FC<OrderDetailsProps> = ({ orderNu
     const page = usePage().props as any;
     const storeSettings = page?.storeSettings || {};
     const currencies = page?.currencies || [];
+    const { locale } = useStorefrontLocale();
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -255,7 +259,7 @@ export const TemplateOrderDetailsModal: React.FC<OrderDetailsProps> = ({ orderNu
                                 الحالة: {customerOrderStatusLabel(order.status)}
                             </p>
                             {order.tracking_number && <p className="mt-1 text-xs break-all" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>رقم التتبع: <span className="font-mono font-bold" dir="ltr">{order.tracking_number}</span></p>}
-                            {order.shipped_at && <p className="mt-1 text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>تاريخ الشحن: {new Date(order.shipped_at).toLocaleDateString('ar-EG')}</p>}
+                            {order.shipped_at && <p className="mt-1 text-xs" style={{ color: 'var(--twc-text-muted, #6b7280)' }}>تاريخ الشحن: {formatCustomerDate(order.shipped_at, { locale })}</p>}
                         </div>
                         {Array.isArray(order.timeline) && order.timeline.length > 0 && (
                           <div className="rounded-2xl border p-3 space-y-2" style={{borderColor:'var(--twc-border,#e5e7eb)'}}>
@@ -266,7 +270,7 @@ export const TemplateOrderDetailsModal: React.FC<OrderDetailsProps> = ({ orderNu
                                 <div key={idx} className="relative flex items-center gap-3 py-1.5">
                                   <span className="relative z-10 h-3 w-3 rounded-full border-2 bg-white" style={{borderColor: primary, background: primary}}/>
                                   <span className="text-xs font-semibold" style={{color:'var(--twc-text-primary,#111827)'}}>{t.label}</span>
-                                  <span className="ms-auto text-[11px]" style={{color:'var(--twc-text-muted,#6b7280)'}}>{t.at ? new Date(t.at).toLocaleDateString('ar-EG') : ''}</span>
+                                  <span className="ms-auto text-[11px]" style={{color:'var(--twc-text-muted,#6b7280)'}}>{t.at ? formatCustomerDate(t.at, { locale }) : ''}</span>
                                 </div>
                               ))}
                             </div>
