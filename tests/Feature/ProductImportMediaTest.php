@@ -113,6 +113,27 @@ class ProductImportMediaTest extends TestCase
         return $body;
     }
 
+    /** Consume the REAL ProductController::export() stream, BOM-stripped. */
+    private function exportCsv(): string
+    {
+        $res = $this->get(route('products.export'));
+        $this->assertEquals(200, $res->getStatusCode());
+
+        return preg_replace('/^\xEF\xBB\xBF/', '', $res->streamedContent());
+    }
+
+    /** Re-import an exported CSV through the real preview/confirm endpoints. */
+    private function importExportedCsv(string $csvContent, string $strategy = 'update_by_sku'): array
+    {
+        $headers = str_getcsv((string) head(explode("\n", trim($csvContent))));
+        $mapping = [];
+        foreach ($headers as $h) {
+            $mapping[$h] = $h;
+        }
+
+        return $this->importAndConfirm($this->csvFile($csvContent), $mapping, ['strategy' => $strategy]);
+    }
+
     private function storeFiles(int $storeId): array
     {
         return Storage::disk('public')->files('products/' . $storeId);
@@ -593,10 +614,22 @@ class ProductImportMediaTest extends TestCase
         Storage::disk('public')->put($g2, $this->pngBody());
         Http::fake();
 
-        $file = $this->csvFile("name,sku,price,image_url,gallery_images\nقميص,LC-8,20,{$cover},{$g1}|{$g2}\n");
-        $result = $this->importAndConfirm($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url', 'gallery_images' => 'gallery_images']);
+        // Seed the product with store-owned local media, then let the REAL
+        // ProductController::export() produce the CSV under test.
+        $this->productInStore('LC-8', [
+            'cover_image' => $cover,
+            'images' => $cover . ',' . $g1 . ',' . $g2,
+        ]);
 
+        $csv = $this->exportCsv();
+        $this->assertStringContainsString('gallery_images', $csv);
+        $this->assertStringContainsString($g1, $csv);
+        $this->assertStringContainsString($g2, $csv);
+
+        $result = $this->importExportedCsv($csv, 'update_by_sku');
+        $this->assertSame('completed', $result['status']);
         $this->assertEquals(0, $result['media_warnings']);
+
         $product = $this->firstProduct('LC-8');
         $parts = explode(',', $product->images);
         $this->assertSame([$cover, $g1, $g2], $parts);
@@ -610,19 +643,25 @@ class ProductImportMediaTest extends TestCase
         Storage::disk('public')->put($img, $this->pngBody());
         Http::fake();
 
-        $file = $this->csvFile(
-            "sku,name,price,option1_name,option1_value,variant_sku,variant_price,variant_stock,variant_image\n" .
-            "LV-1,قميص,100,اللون,أحمر,LV-1-RED,110,5,{$img}\n"
-        );
-        $result = $this->importAndConfirm($file, [
-            'sku' => 'sku', 'name' => 'name', 'price' => 'price',
-            'option1_name' => 'option1_name', 'option1_value' => 'option1_value',
-            'variant_sku' => 'variant_sku', 'variant_price' => 'variant_price',
-            'variant_stock' => 'variant_stock', 'variant_image' => 'variant_image',
+        // Seed a variant product whose combo carries a store-owned image, then
+        // let the REAL export emit the variant_image column.
+        $this->productInStore('LV-1', [
+            'inventory_mode' => 'variant',
+            'variants' => [['name' => 'اللون', 'values' => ['أحمر']]],
+            'variant_combinations' => [
+                ['uuid' => 'lv1-red', 'values' => ['أحمر'], 'sku' => 'LV-1-RED', 'price' => '110', 'stock' => '5', 'image' => $img],
+            ],
+            'stock' => 5,
         ]);
 
-        $this->assertEquals(1, $result['created']);
+        $csv = $this->exportCsv();
+        $this->assertStringContainsString('variant_image', $csv);
+        $this->assertStringContainsString($img, $csv);
+
+        $result = $this->importExportedCsv($csv, 'update_by_sku');
+        $this->assertSame('completed', $result['status']);
         $this->assertEquals(0, $result['media_warnings']);
+
         $product = $this->firstProduct('LV-1');
         $this->assertCount(1, $product->variant_combinations);
         $this->assertSame($img, $product->variant_combinations[0]['image'] ?? null);
