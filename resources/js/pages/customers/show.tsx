@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from 'react-i18next';
 import { router, usePage } from '@inertiajs/react';
 import { formatCurrency } from '@/utils/currency-helper';
+import { formatCustomerDate } from '@/utils/date-helper';
 import { hasPermission, checkPermission } from '@/utils/permissions';
 import { createWhatsAppUrl } from '@/utils/whatsapp-helper';
 import {
@@ -28,6 +29,22 @@ interface OrderRow {
   id: number; order_number: string; total: number; currency: string;
   status: string; payment_status: string; payment_method: string; items_count: number; date: string; url: string;
 }
+
+interface LoyaltyTxn {
+  id: number; type: string; points: number; balance_after: number;
+  description?: string | null; order_id?: number | null; expires_at?: string | null; created_at?: string | null;
+}
+interface LoyaltySection { enabled: boolean; has_account: boolean; balance: number; transactions: LoyaltyTxn[]; }
+interface CartRow {
+  id: number; status: string; value: number; last_activity_at?: string | null; reminder_sent_at?: string | null;
+  whatsapp_status?: string | null; recovered_order_id?: number | null; recovered_order_number?: string | null;
+}
+interface AbandonedCartsSection { count: number; recent: CartRow[]; }
+interface ReturnRow {
+  id: number; return_number: string; status: string; refund_status: string; refund_amount: number;
+  requested_at?: string | null; order_id?: number | null; order_number?: string | null; order_url?: string | null; url: string;
+}
+interface ReturnsSection { count: number; recent: ReturnRow[]; }
 
 interface Profile {
   identity: {
@@ -53,6 +70,9 @@ interface Profile {
   addresses: AddressRow[];
   notes: Note[];
   tags: Tag[];
+  loyalty?: LoyaltySection;
+  abandoned_carts?: AbandonedCartsSection;
+  returns?: ReturnsSection;
 }
 
 const orderStatusLabel = (s: string) => {
@@ -73,6 +93,35 @@ function fmtDate(iso?: string | null) {
   const d = new Date(iso);
   return d.toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' });
 }
+
+const cartStatusLabel = (s: string) => {
+  const map: Record<string, string> = {
+    new: 'جديد', draft: 'مسودة', abandoned: 'متروكة', reminder_sent: 'أُرسل التذكير',
+    recovered: 'تم الاسترداد', expired: 'منتهية', unsubscribed: 'إلغاء اشتراك',
+  };
+  return map[s] || s;
+};
+
+const returnStatusLabel = (s: string) => {
+  const map: Record<string, string> = {
+    requested: 'مطلوب', approved: 'موافق عليه', rejected: 'مرفوض', in_transit: 'قيد التوصيل',
+    received: 'مستلم', completed: 'مكتمل', cancelled: 'ملغي',
+  };
+  return map[s] || s;
+};
+
+const refundStatusLabel = (s: string) => {
+  const map: Record<string, string> = { none: '—', pending: 'قيد الاسترداد', partial: 'جزئي', refunded: 'مسترجع' };
+  return map[s] || s;
+};
+
+const loyaltyTypeLabel = (s: string) => {
+  const map: Record<string, string> = {
+    earn: 'نقاط مكتسبة', redeem: 'استبدال نقاط', signup_bonus: 'مكافأة تسجيل', review_bonus: 'مكافأة تقييم',
+    adjustment: 'تعديل', expired: 'انتهت صلاحيتها', refund: 'استرداد',
+  };
+  return map[s] || s;
+};
 
 export default function ShowCustomer() {
   const { t } = useTranslation();
@@ -342,6 +391,132 @@ export default function ShowCustomer() {
                       <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </a>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Customer 360: loyalty + abandoned carts */}
+        <div className="grid gap-4 lg:grid-cols-2 items-start">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">نقاط الولاء</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="rounded-lg border p-3 text-center min-w-28">
+                  <div className="text-2xl font-bold text-start ltr-num" dir="rtl">
+                    {Number(profile.loyalty?.balance ?? 0).toLocaleString('ar')}
+                  </div>
+                  <div className="text-xs text-muted-foreground">نقطة</div>
+                </div>
+                {profile.loyalty?.enabled === false && (
+                  <p className="text-xs text-muted-foreground">برنامج الولاء غير مفعل حالياً في هذا المتجر.</p>
+                )}
+              </div>
+              {(profile.loyalty?.transactions || []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {profile.loyalty?.has_account ? 'لا توجد حركات نقاط بعد.' : 'لا يوجد حساب ولاء لهذا الزبون.'}
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {(profile.loyalty?.transactions || []).map((txn) => (
+                    <div key={txn.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                          {loyaltyTypeLabel(txn.type)}
+                          {txn.order_id && <span className="text-xs text-muted-foreground" dir="ltr">طلب #{txn.order_id}</span>}
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {formatCustomerDate(txn.created_at)}
+                          {txn.description ? ` · ${txn.description}` : ''}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-start ltr-num" dir="rtl">
+                        <span className={'text-sm font-semibold ' + (txn.points >= 0 ? 'text-emerald-600' : 'text-destructive')}>
+                          {txn.points >= 0 ? '+' : ''}{txn.points.toLocaleString('ar')}
+                        </span>
+                        <span className="ms-2 text-xs text-muted-foreground">رصيد {txn.balance_after.toLocaleString('ar')}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                السلال المتروكة
+                <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-normal">{Number(profile.abandoned_carts?.count ?? 0).toLocaleString('ar')}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(profile.abandoned_carts?.recent || []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">لا توجد سلال متروكة لهذا الزبون.</p>
+              ) : (
+                <div className="space-y-2 max-h-72 overflow-y-auto">
+                  {(profile.abandoned_carts?.recent || []).map((cart) => (
+                    <div key={cart.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border p-3">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={cart.status === 'recovered' ? 'default' : cart.status === 'unsubscribed' || cart.status === 'expired' ? 'destructive' : 'secondary'}>
+                            {cartStatusLabel(cart.status)}
+                          </Badge>
+                          {cart.recovered_order_number && (
+                            <a href={route('orders.show', cart.recovered_order_id!)} className="text-xs text-primary hover:underline" dir="ltr">
+                              {cart.recovered_order_number}
+                            </a>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          آخر نشاط: {formatCustomerDate(cart.last_activity_at)}
+                          {cart.whatsapp_status ? ` · تذكير: ${cart.whatsapp_status}` : ''}
+                        </p>
+                      </div>
+                      <div className="font-semibold shrink-0 text-start ltr-num" dir="rtl">{formatCurrency(cart.value)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Customer 360: returns */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              المرتجعات
+              <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-normal">{Number(profile.returns?.count ?? 0).toLocaleString('ar')}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(profile.returns?.recent || []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">لا توجد مرتجعات لهذا الزبون.</p>
+            ) : (
+              <div className="space-y-2">
+                {(profile.returns?.recent || []).map((item) => (
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border p-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <a href={item.url} className="font-medium hover:underline" dir="ltr">{item.return_number}</a>
+                        <Badge variant={item.status === 'rejected' || item.status === 'cancelled' ? 'destructive' : item.status === 'completed' ? 'default' : 'secondary'}>
+                          {returnStatusLabel(item.status)}
+                        </Badge>
+                        <Badge variant="outline">{refundStatusLabel(item.refund_status)}</Badge>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {formatCustomerDate(item.requested_at)}
+                        {item.order_number && (
+                          <a href={item.order_url ?? '#'} className="text-primary hover:underline" dir="ltr"> · {item.order_number}</a>
+                        )}
+                      </p>
+                    </div>
+                    <div className="font-semibold shrink-0 text-start ltr-num" dir="rtl">{formatCurrency(item.refund_amount)}</div>
+                  </div>
                 ))}
               </div>
             )}

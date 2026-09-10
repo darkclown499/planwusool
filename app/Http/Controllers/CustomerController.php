@@ -473,24 +473,59 @@ class CustomerController extends Controller
             }
         }
 
-        $exists = \App\Models\Order::where('store_id', $storeId)
-            ->whereNull('customer_id')
-            ->limit(1)
-            ->get(['customer_id','customer_phone','customer_email','id'])
-            ->contains(function ($order) use ($identity, $ref) {
-                return $identity->refForOrder([
-                    'customer_id' => null,
-                    'customer_phone' => $order->customer_phone,
-                    'customer_email' => $order->customer_email,
-                    'id' => $order->id,
-                ]) === $ref;
-            });
+        $prefix = substr($ref, 0, 2);
+        $value = substr($ref, 2);
+
+        $exists = match ($prefix) {
+            CustomerIdentityService::PREFIX_ORDER => (bool) \App\Models\Order::where('store_id', $storeId)
+                ->whereNull('customer_id')
+                ->where('id', (int) $value)
+                ->exists(),
+            CustomerIdentityService::PREFIX_EMAIL => (bool) \App\Models\Order::where('store_id', $storeId)
+                ->whereNull('customer_id')
+                ->where('customer_email', $value)
+                ->exists(),
+            CustomerIdentityService::PREFIX_PHONE => $this->guestPhoneRefExistsInStore($storeId, $identity, $value),
+            default => false,
+        };
 
         if ($exists) {
             return;
         }
 
         abort(404);
+    }
+
+    /**
+     * True only when SOME guest order in this store stores a raw phone that
+     * normalizes to the requested E.164. Checks every stored variant (never
+     * broadens identity matching — keep it to phones that normalize to the
+     * exact E.164 the ref token already carries).
+     */
+    private function guestPhoneRefExistsInStore(int $storeId, CustomerIdentityService $identity, string $e164): bool
+    {
+        $raw = \App\Models\Order::where('store_id', $storeId)
+            ->whereNull('customer_id')
+            ->whereNotNull('customer_phone')
+            ->where('customer_phone', '<>', '')
+            ->distinct()
+            ->pluck('customer_phone');
+
+        $phones = [];
+        foreach ($raw as $candidate) {
+            if ($identity->normalizePhone($candidate) === $e164) {
+                $phones[] = (string) $candidate;
+            }
+        }
+
+        if ($phones === []) {
+            return false;
+        }
+
+        return \App\Models\Order::where('store_id', $storeId)
+            ->whereNull('customer_id')
+            ->whereIn('customer_phone', $phones)
+            ->exists();
     }
 
     /**

@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Models\AbandonedCart;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\CustomerNote;
 use App\Models\CustomerTag;
+use App\Models\LoyaltySetting;
+use App\Models\LoyaltyTransaction;
 use App\Models\Order;
+use App\Models\OrderReturn;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -14,7 +18,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  * Customer 360 profile read-model (Phase 1).
  *
  * Resolves the identity ref (canonical or guest) into a tenant-scoped profile:
- * overview metrics, order history, addresses, internal notes and merchant tags.
+ * overview metrics, order history, addresses, internal notes, merchant tags,
+ * loyalty ledger, abandoned carts and order-linked returns.
  *
  * Order history is limited and links to the canonical merchant order detail
  * page — this service never re-implements the order management screen.
@@ -23,6 +28,9 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 class CustomerProfileService
 {
     public const HISTORY_LIMIT = 20;
+    public const LOYALTY_LIMIT = 10;
+    public const CART_LIMIT = 5;
+    public const RETURNS_LIMIT = 5;
 
     public function __construct(protected CustomerIdentityService $identity)
     {
@@ -74,6 +82,8 @@ class CustomerProfileService
         $tags = CustomerTag::where('store_id', $storeId)->where('customer_ref', $ref)
             ->orderBy('name')->get();
 
+        $customerOrderIds = Order::where('store_id', $storeId)->where('customer_id', $customerId)->pluck('id')->all();
+
         return $this->assemble(
             $storeId,
             $ref,
@@ -93,6 +103,11 @@ class CustomerProfileService
             $addresses,
             $notes,
             $tags,
+            [
+                'loyalty' => $this->buildLoyaltySection($storeId, (int) $customer->id),
+                'abandoned_carts' => $this->buildCartsSection($storeId, (int) $customer->id, null),
+                'returns' => $this->buildReturnsSection($storeId, $customerOrderIds),
+            ],
         );
     }
 
@@ -102,6 +117,13 @@ class CustomerProfileService
     private function profileForGuest(int $storeId, string $ref): array
     {
         $match = $this->resolveGuestMatch($storeId, $ref);
+        if (empty($match['order_ids']) && empty($match['phones']) && empty($match['emails'])) {
+            // Fail closed: an identity ref that matches nothing (no phones, no
+            // emails, no order ids) is NOT this store's customer. Never fall
+            // back to whatever newest guest order exists — that would leak one
+            // customer's data under another customer's token.
+            throw (new ModelNotFoundException)->setModel(Order::class);
+        }
         $query = Order::where('store_id', $storeId)->whereNull('customer_id');
         if (! empty($match['order_ids'])) {
             $query->whereIn('id', $match['order_ids']);
@@ -129,6 +151,8 @@ class CustomerProfileService
         $tags = CustomerTag::where('store_id', $storeId)->where('customer_ref', $ref)
             ->orderBy('name')->get();
 
+        $guestOrderIds = (clone $query)->pluck('id')->all();
+
         return $this->assemble(
             $storeId,
             $ref,
@@ -148,6 +172,11 @@ class CustomerProfileService
             $this->addressesFromOrders($orders),
             $notes,
             $tags,
+            [
+                'loyalty' => $this->buildLoyaltySection($storeId, null),
+                'abandoned_carts' => $this->buildCartsSection($storeId, null, $ref),
+                'returns' => $this->buildReturnsSection($storeId, $guestOrderIds),
+            ],
         );
     }
 
@@ -214,9 +243,10 @@ class CustomerProfileService
      * @param  list<array<string,mixed>>  $addresses
      * @param  \Illuminate\Database\Eloquent\Collection<int,CustomerNote>  $notes
      * @param  \Illuminate\Database\Eloquent\Collection<int,CustomerTag>  $tags
+     * @param  array<string,array<string,mixed>>  $sections
      * @return array<string,mixed>
      */
-    private function assemble(int $storeId, string $ref, array $identity, $metricsRows, $orders, array $addresses, $notes, $tags): array
+    private function assemble(int $storeId, string $ref, array $identity, $metricsRows, $orders, array $addresses, $notes, $tags, array $sections): array
     {
         $refToken = $this->identity->tokenForRef($ref);
 
@@ -292,7 +322,183 @@ class CustomerProfileService
                 ];
             })->values()->all(),
             'tags' => $tags->map(fn (CustomerTag $tag) => ['id' => $tag->id, 'name' => $tag->name])->values()->all(),
+            'loyalty' => $sections['loyalty'],
+            'abandoned_carts' => $sections['abandoned_carts'],
+            'returns' => $sections['returns'],
         ];
+    }
+
+    /**
+     * Loyalty ledger section. Canonical customers get a balance + bounded recent
+     * transactions via the canonical loyalty tables. Guest profiles truthfully
+     * show "no loyalty account" — a guest has no ledger rows to read.
+     *
+     * @return array{enabled:bool,has_account:bool,balance:float,transactions:list<array<string,mixed>>}
+     */
+    private function buildLoyaltySection(int $storeId, ?int $customerId): array
+    {
+        $enabled = (bool) LoyaltySetting::forStore($storeId)->is_enabled;
+
+        if ($customerId === null) {
+            return ['enabled' => $enabled, 'has_account' => false, 'balance' => 0.0, 'transactions' => []];
+        }
+
+        $hasAccount = LoyaltyTransaction::where('store_id', $storeId)->where('customer_id', $customerId)->exists();
+        $transactions = LoyaltyTransaction::where('store_id', $storeId)
+            ->where('customer_id', $customerId)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->limit(self::LOYALTY_LIMIT)
+            ->get();
+
+        return [
+            'enabled' => $enabled,
+            'has_account' => $hasAccount,
+            'balance' => round(LoyaltyTransaction::balanceFor($storeId, $customerId), 2),
+            'transactions' => $transactions->map(function (LoyaltyTransaction $tx): array {
+                return [
+                    'id' => $tx->id,
+                    'type' => $tx->type,
+                    'points' => (float) $tx->points,
+                    'balance_after' => (float) $tx->balance_after,
+                    'description' => $tx->description,
+                    'order_id' => $tx->order_id,
+                    'expires_at' => $tx->expires_at?->toISOString(),
+                    'created_at' => $tx->created_at?->toISOString(),
+                ];
+            })->values()->all(),
+        ];
+    }
+
+    /**
+     * Abandoned carts section. Registered customers resolve through the cart's
+     * own canonical customer_id FK; guest identities resolve through the same
+     * store-scoped contact fields the cart recovery pipeline already uses
+     * (normalized phone, email, or the recovered-order link). The recovery
+     * token is never exposed.
+     *
+     * @return array{count:int,recent:list<array<string,mixed>>}
+     */
+    private function buildCartsSection(int $storeId, ?int $customerId, ?string $ref): array
+    {
+        $query = AbandonedCart::where('store_id', $storeId);
+
+        if ($customerId !== null) {
+            $query->where('customer_id', $customerId);
+        } elseif ($ref !== null) {
+            $prefix = substr($ref, 0, 2);
+            $value = substr($ref, 2);
+            switch ($prefix) {
+                case CustomerIdentityService::PREFIX_ORDER:
+                    $query->where('recovered_order_id', (int) $value);
+                    break;
+                case CustomerIdentityService::PREFIX_EMAIL:
+                    $query->where('customer_email', $value);
+                    break;
+                case CustomerIdentityService::PREFIX_PHONE:
+                    $query->whereIn('customer_phone', $this->matchingGuestCartPhones($storeId, $value));
+                    break;
+                default:
+                    $query->whereRaw('1 = 0');
+            }
+        } else {
+            return ['count' => 0, 'recent' => []];
+        }
+
+        $count = (clone $query)->count();
+        $recent = $query
+            ->orderByRaw('COALESCE(last_activity_at, created_at) DESC, id DESC')
+            ->limit(self::CART_LIMIT)
+            ->get();
+
+        $recoveredIds = $recent->pluck('recovered_order_id')->filter()->values()->all();
+        $orderNumbers = $recoveredIds === []
+            ? []
+            : Order::whereIn('id', $recoveredIds)->get(['id', 'order_number'])->pluck('order_number', 'id');
+
+        $items = $recent->map(function (AbandonedCart $cart) use ($orderNumbers): array {
+            return [
+                'id' => $cart->id,
+                'status' => $cart->status,
+                'value' => round((float) $cart->cart_total, 2),
+                'last_activity_at' => $cart->last_activity_at?->toISOString(),
+                'reminder_sent_at' => $cart->reminder_sent_at?->toISOString(),
+                'whatsapp_status' => $cart->whatsapp_status,
+                'recovered_order_id' => $cart->recovered_order_id,
+                'recovered_order_number' => $cart->recovered_order_id ? ($orderNumbers->get($cart->recovered_order_id) ?? null) : null,
+            ];
+        })->values()->all();
+
+        return ['count' => $count, 'recent' => $items];
+    }
+
+    /**
+     * Every raw phone stored on this store's abandoned carts that normalizes to
+     * the exact E.164 — same matching rule the order identity uses.
+     *
+     * @return list<string>
+     */
+    private function matchingGuestCartPhones(int $storeId, string $e164): array
+    {
+        $raw = AbandonedCart::where('store_id', $storeId)
+            ->whereNotNull('customer_phone')
+            ->where('customer_phone', '<>', '')
+            ->distinct()
+            ->pluck('customer_phone');
+
+        $phones = [];
+        foreach ($raw as $candidate) {
+            if ($this->identity->normalizePhone($candidate) === $e164) {
+                $phones[] = (string) $candidate;
+            }
+        }
+
+        return $phones;
+    }
+
+    /**
+     * Returns section. Returns are linked THROUGH the store-scoped orders of
+     * the resolved identity (never by weak email/phone field matching), so a
+     * GDPR-erased person's request-time PII can never be re-surfaced here.
+     *
+     * @param  list<int>  $orderIds
+     * @return array{count:int,recent:list<array<string,mixed>>}
+     */
+    private function buildReturnsSection(int $storeId, array $orderIds): array
+    {
+        if ($orderIds === []) {
+            return ['count' => 0, 'recent' => []];
+        }
+
+        $query = OrderReturn::where('store_id', $storeId)->whereIn('order_id', $orderIds);
+        $count = (clone $query)->count();
+        $recent = $query
+            ->orderBy('requested_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->limit(self::RETURNS_LIMIT)
+            ->get();
+
+        $linkedOrderIds = $recent->pluck('order_id')->filter()->values()->all();
+        $orderNumbers = $linkedOrderIds === []
+            ? []
+            : Order::whereIn('id', $linkedOrderIds)->get(['id', 'order_number'])->pluck('order_number', 'id');
+
+        $items = $recent->map(function (OrderReturn $return) use ($orderNumbers): array {
+            return [
+                'id' => $return->id,
+                'return_number' => $return->return_number,
+                'status' => $return->status,
+                'refund_status' => $return->refund_status,
+                'refund_amount' => round((float) $return->refund_amount, 2),
+                'requested_at' => $return->requested_at?->toISOString(),
+                'order_id' => $return->order_id,
+                'order_number' => $orderNumbers->get($return->order_id) ?? null,
+                'order_url' => $return->order_id ? route('orders.show', $return->order_id, false) : null,
+                'url' => route('returns.show', $return->id, false),
+            ];
+        })->values()->all();
+
+        return ['count' => $count, 'recent' => $items];
     }
 
     /**

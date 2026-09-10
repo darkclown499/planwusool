@@ -403,7 +403,8 @@ class CustomerDirectoryService
                 'single' => (int) $row['valid_count'] === 1,
                 'dormant' => $row['last_order_at'] !== null && strtotime((string) $row['last_order_at']) < $dormantBefore->timestamp,
                 'cancelled' => (int) $row['cancelled_count'] > 0,
-                'vip' => in_array('vip', array_map(fn ($t) => mb_strtolower((string) $t), $row['tags']), true),
+                'vip' => mb_strtolower((string) ($row['customer_group'] ?? '')) === 'vip'
+                    || in_array('vip', array_map(fn ($t) => mb_strtolower((string) $t), $row['tags']), true),
                 default => true,
             };
         }));
