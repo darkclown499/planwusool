@@ -8,6 +8,7 @@ use App\Models\ProductImportBatch;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 
 /**
@@ -39,6 +40,7 @@ class ProductImportService
     public const FIELDS = [
         'name', 'sku', 'barcode', 'description', 'price', 'compare_at_price',
         'stock', 'category', 'status', 'image_url',
+        'gallery_images', 'variant_image',
         'option1_name', 'option1_value', 'option2_name', 'option2_value',
         'variant_sku', 'variant_price', 'variant_stock',
     ];
@@ -55,6 +57,8 @@ class ProductImportService
         'category' => ['category', 'cat', 'group', 'التصنيف', 'الفئة', 'المجموعة', 'القسم', 'التصنيف الفرعي'],
         'status' => ['status', 'الحالة', 'الحاله', 'الوضع'],
         'image_url' => ['image', 'image url', 'imageurl', 'images', 'photo', 'link', 'الصورة', 'الصور', 'رابط الصورة', 'رابط صورة', 'صورة'],
+        'gallery_images' => ['gallery', 'gallery images', 'galleryimages', 'additional images', 'other images', 'extra images', 'معرض الصور', 'صور إضافية', 'الصور الإضافية', 'روابط الصور', 'صور متعددة'],
+        'variant_image' => ['variant image', 'variantimage', 'variant img', 'variantphoto', 'صورة المتغير', 'صورة المتغيرات', 'رابط صورة المتغير'],
         'option1_name' => ['option1 name', 'option1name', 'option 1 name', 'color name', 'خيار 1', 'الخيار 1', 'اسم الخيار الأول', 'اللون'],
         'option1_value' => ['option1 value', 'option1value', 'option 1 value', 'color value', 'قيمة الخيار 1', 'قيمةالخيار1'],
         'option2_name' => ['option2 name', 'option2name', 'option 2 name', 'size name', 'خيار 2', 'الخيار 2', 'اسم الخيار الثاني', 'المقاس'],
@@ -629,6 +633,45 @@ class ProductImportService
                 $r['image_url'] = '';
             }
 
+            // gallery_images — pipe-delimited list of additional image URLs.
+            $gallery = trim((string) ($r['gallery_images'] ?? ''));
+            if ($gallery !== '') {
+                $galleries = $this->splitImageList($gallery);
+                if (count($galleries) > 10) {
+                    $errs[] = ['field' => 'gallery_images', 'reason' => __('عدد الصور في المعرض يتجاوز الحد الأقصى (10 صور)')];
+                } else {
+                    $galleryErrors = 0;
+                    foreach ($galleries as $g) {
+                        $gs = strtolower((string) parse_url($g, PHP_URL_SCHEME));
+                        if (!in_array($gs, ['http', 'https'], true) || str_contains($g, '..') || str_contains($g, '<script') || str_contains($g, 'javascript:')) {
+                            $galleryErrors++;
+                        }
+                    }
+                    if ($galleryErrors > 0) {
+                        $errs[] = ['field' => 'gallery_images', 'reason' => __('أحد روابط صور المعرض غير صالح (يجب أن تكون http/https)')];
+                    } else {
+                        $r['gallery_images'] = implode('|', $galleries);
+                    }
+                }
+            } else {
+                $r['gallery_images'] = '';
+            }
+
+            // variant_image — single image URL attached to the variant combination.
+            $vImage = trim((string) ($r['variant_image'] ?? ''));
+            if ($vImage !== '') {
+                $s = strtolower((string) parse_url($vImage, PHP_URL_SCHEME));
+                if (!in_array($s, ['http', 'https'], true)) {
+                    $errs[] = ['field' => 'variant_image', 'reason' => __('رابط صورة المتغير غير صالح (يجب أن يكون http/https)')];
+                } elseif (str_contains($vImage, '..') || str_contains($vImage, '<script') || str_contains($vImage, 'javascript:')) {
+                    $errs[] = ['field' => 'variant_image', 'reason' => __('رابط صورة المتغير غير آمن')];
+                } else {
+                    $r['variant_image'] = $vImage;
+                }
+            } else {
+                $r['variant_image'] = '';
+            }
+
             // Variant fields consistency
             $o1Name = trim((string) ($r['option1_name'] ?? ''));
             $o1Value = trim((string) ($r['option1_value'] ?? ''));
@@ -925,9 +968,23 @@ class ProductImportService
                 $product->store_id = $storeId;
                 $product->save();
 
+                $mediaWarnings = $this->ingestProductMedia(
+                    $product,
+                    $storeId,
+                    [
+                        'cover' => $payload['images'] ?? '',
+                        'gallery' => $payload['_gallery_urls'] ?? [],
+                        'variant_images' => $payload['_variant_images'] ?? [],
+                    ],
+                    $rowNumbers,
+                    true
+                );
+                $product->save();
+
                 $created++;
                 foreach ($rowNumbers as $rn) {
-                    $results[] = ['row' => $rn, 'status' => 'created', 'field' => '', 'reason' => '', 'product_id' => $product->id];
+                    $w = array_values(array_filter($mediaWarnings, fn ($m) => $m['row'] === $rn));
+                    $results[] = ['row' => $rn, 'status' => 'created', 'field' => '', 'reason' => '', 'product_id' => $product->id, 'warnings' => $w];
                 }
                 continue;
             }
@@ -945,9 +1002,23 @@ class ProductImportService
             $this->hydrateProductUpdate($product, $payload);
             $product->save();
 
+            $mediaWarnings = $this->ingestProductMedia(
+                $product,
+                $storeId,
+                [
+                    'cover' => $payload['images'] ?? '',
+                    'gallery' => $payload['_gallery_urls'] ?? [],
+                    'variant_images' => $payload['_variant_images'] ?? [],
+                ],
+                $rowNumbers,
+                false
+            );
+            $product->save();
+
             $updated++;
             foreach ($rowNumbers as $rn) {
-                $results[] = ['row' => $rn, 'status' => 'updated', 'field' => '', 'reason' => '', 'product_id' => $product->id];
+                $w = array_values(array_filter($mediaWarnings, fn ($m) => $m['row'] === $rn));
+                $results[] = ['row' => $rn, 'status' => 'updated', 'field' => '', 'reason' => '', 'product_id' => $product->id, 'warnings' => $w];
             }
         }
 
@@ -1028,7 +1099,8 @@ class ProductImportService
 
         $out['is_active'] = $this->normalizeStatus($first['status'] ?? '') ?? true;
 
-        // Image: single reference URL (never fetched server-side).
+        // Image: single reference URL. The confirmed import downloads it to the
+        // store's disk; until then (preview) it stays a reference string.
         $image = trim((string) ($first['image_url'] ?? ''));
         if ($image === '') {
             // Fall back to scraping any image listed in other rows of the group.
@@ -1039,8 +1111,22 @@ class ProductImportService
                 }
             }
         }
+        // Gallery: extra images (order-preserving, from first row that lists them).
+        $gallery = [];
+        foreach ($group as $r) {
+            if (trim((string) ($r['gallery_images'] ?? '')) !== '') {
+                $gallery = $this->splitImageList((string) $r['gallery_images']);
+                break;
+            }
+        }
+        // Deduplicate gallery against the cover so the final image list is unique.
+        if ($image !== '') {
+            $gallery = array_values(array_filter($gallery, fn ($g) => $g !== $image));
+        }
+
         $out['images'] = $image;
         $out['cover_image'] = $image;
+        $out['_gallery_urls'] = $gallery;
 
         // Category (optional)
         $category = trim((string) ($first['category'] ?? ''));
@@ -1124,6 +1210,7 @@ class ProductImportService
                 'price' => is_numeric($vp) ? (string) (float) $vp : '',
                 'sku' => trim((string) ($r['variant_sku'] ?? '')),
                 'stock' => $vs === '' ? '0' : (string) (int) $vs,
+                'image_url' => trim((string) ($r['variant_image'] ?? '')),
             ];
         }
 
@@ -1158,15 +1245,29 @@ class ProductImportService
             foreach ($combos as $c) {
                 $finalCombos[] = $c;
             }
+            // Assign stable UUIDs first (preserves any already present), then
+            // collect per-combo image URLs keyed by UUID. The source URL is
+            // replaced by a local path at ingest time and never persisted.
             $finalCombos = Product::ensureVariantUuids($finalCombos);
+            $variantImages = [];
+            foreach ($finalCombos as $fc) {
+                if (!empty($fc['image_url'])) {
+                    $variantImages[$fc['uuid'] ?? ''] = (string) $fc['image_url'];
+                }
+            }
+            foreach ($finalCombos as $i => $fc) {
+                unset($finalCombos[$i]['image_url']);
+            }
 
             $out['variants'] = $variants;
             $out['variant_combinations'] = $finalCombos;
+            $out['_variant_images'] = $variantImages;
             $out['inventory_mode'] = 'variant';
             $out['stock'] = array_sum(array_map(fn ($c) => (int) ($c['stock'] ?? 0), $finalCombos));
         } else {
             $out['variants'] = [];
             $out['variant_combinations'] = [];
+            $out['_variant_images'] = [];
             $out['inventory_mode'] = 'product';
             $out['stock'] = (int) ($first['stock'] ?? 0);
         }
@@ -1222,10 +1323,9 @@ class ProductImportService
         if ($payload['sale_price'] !== null) {
             $product->sale_price = $payload['sale_price'];
         }
-        if ($payload['images'] !== '') {
-            $product->images = $payload['images'];
-            $product->cover_image = $payload['cover_image'];
-        }
+        // Images are NOT written here: the source URLs only become final
+        // media after ingestProductMedia successfully downloads them. Writing
+        // the raw URL first would persist remote URLs on an all-failed import.
         if ((int) $payload['category_id'] > 0) {
             $product->category_id = (int) $payload['category_id'];
         }
@@ -1245,6 +1345,149 @@ class ProductImportService
         if ($payload['_status_mapped']) {
             $product->is_active = (bool) $payload['is_active'];
         }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Media ingestion                                                    */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Split a delimited image list (pipe '|' or comma ',') into trimmed URLs.
+     */
+    protected function splitImageList(string $value): array
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return [];
+        }
+        $parts = preg_split('/[|,]+/', $value) ?: [];
+        $out = [];
+        foreach ($parts as $p) {
+            $p = trim((string) $p);
+            if ($p !== '') {
+                $out[] = $p;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Download a remote image and store it under the store's disk.
+     * Source URL → local path on success; failure returns a reason string.
+     */
+    protected function ingestRemoteImage(string $url, int $storeId): array
+    {
+        try {
+            $result = (new ImageDownloader())->download($url, $storeId);
+        } catch (\Throwable $e) {
+            Log::warning('Product import image download failed', [
+                'store_id' => $storeId,
+                'url' => $url,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['error' => __('فشل تحميل الصورة')];
+        }
+
+        if (isset($result['error'])) {
+            return ['error' => $result['error']];
+        }
+
+        return ['path' => $result['path']];
+    }
+
+    /**
+     * Ingest all images for a freshly created/updated product: cover image,
+     * gallery images (order-preserving), and variant combination images.
+     * Failures are non-blocking — media errors never destroy a valid row.
+     *
+     * Replacement semantics on update: existing valid media is only replaced
+     * when at least one new image downloads successfully; a failed re-import
+     * never blanks previously-valid images. On create, a fully-failed image
+     * list results in an image-less product (reported as warnings).
+     *
+     * @return array<int, array{row: int, field: string, url_index: int, reason: string}> media warnings
+     */
+    protected function ingestProductMedia(Product $product, int $storeId, array $media, array $rowNumbers, bool $isCreate): array
+    {
+        $warnings = [];
+        $downloaded = [];
+
+        $resolve = function (string $url) use (&$downloaded, $storeId): string {
+            if (isset($downloaded[$url])) {
+                return $downloaded[$url];
+            }
+            $result = $this->ingestRemoteImage($url, $storeId);
+            if (isset($result['error'])) {
+                return '';
+            }
+            $downloaded[$url] = $result['path'];
+
+            return $result['path'];
+        };
+
+        $cover = trim((string) ($media['cover'] ?? ''));
+        $gallery = $media['gallery'] ?? [];
+        $variantImages = $media['variant_images'] ?? [];
+        $imageProvided = $cover !== '' || count($gallery) > 0;
+
+        // Build the final images list: cover first, then gallery, order-preserving,
+        // deduplicated by source URL (a URL fetched once is never fetched twice).
+        $finalImages = [];
+        $seenUrls = [];
+        if ($cover !== '') {
+            $path = $resolve($cover);
+            if ($path !== '') {
+                $finalImages[] = $path;
+                $seenUrls[$cover] = true;
+            } else {
+                $warnings[] = ['row' => $rowNumbers[0], 'field' => 'image_url', 'url_index' => 0, 'reason' => __('تعذر تحميل الصورة الرئيسية')];
+            }
+        }
+
+        foreach ($gallery as $i => $url) {
+            if (isset($seenUrls[$url])) {
+                continue;
+            }
+            $path = $resolve($url);
+            $seenUrls[$url] = true;
+            if ($path !== '') {
+                $finalImages[] = $path;
+            } else {
+                $warnings[] = ['row' => $rowNumbers[0], 'field' => 'gallery_images', 'url_index' => $i + 1, 'reason' => __('تعذر تحميل صورة المعرض')];
+            }
+        }
+
+        if (count($finalImages) > 0) {
+            $product->images = implode(',', $finalImages);
+            $product->cover_image = $finalImages[0];
+        } elseif ($imageProvided && $isCreate) {
+            // Creation with a fully-failed image list: never persist remote URLs
+            // as the final product media; the row stays valid with no image.
+            $product->images = '';
+            $product->cover_image = '';
+        }
+
+        // Variant combination images — attach by stable combo identity (uuid).
+        if (count($variantImages) > 0) {
+            $combos = $product->variant_combinations;
+            foreach ($combos as $ci => $combo) {
+                $uuid = (string) ($combo['uuid'] ?? '');
+                if ($uuid === '' || empty($variantImages[$uuid])) {
+                    continue;
+                }
+                $path = $resolve((string) $variantImages[$uuid]);
+                if ($path !== '') {
+                    $combos[$ci]['image'] = $path;
+                } else {
+                    $warnings[] = ['row' => $rowNumbers[0], 'field' => 'variant_image', 'url_index' => $ci, 'reason' => __('تعذر تحميل صورة المتغير')];
+                }
+            }
+            $product->variant_combinations = $combos;
+        }
+
+        return $warnings;
     }
 
     protected function remainingCapacity(User $user, int $storeId, string $strategy): ?array
@@ -1389,6 +1632,11 @@ class ProductImportService
             return ['status' => 'missing'];
         }
 
+        $mediaWarnings = 0;
+        foreach (($batch->decoded_results['rows'] ?? []) as $row) {
+            $mediaWarnings += count($row['warnings'] ?? []);
+        }
+
         return [
             'status' => $batch->status,
             'batch_id' => $batch->id,
@@ -1396,6 +1644,7 @@ class ProductImportService
             'created' => $batch->created_count,
             'updated' => $batch->updated_count,
             'failed' => $batch->failed_count,
+            'media_warnings' => $mediaWarnings,
             'completed_at' => $batch->completed_at ? $batch->completed_at->toDateTimeString() : null,
             'message' => $this->resultMessage($batch),
         ];
