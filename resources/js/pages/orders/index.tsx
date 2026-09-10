@@ -521,7 +521,7 @@ export default function Orders({ orders = [], pagination, filters: initialFilter
               </CardContent>
             </Card>
             {/* Mobile sticky bottom toolbar */}
-            <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 backdrop-blur p-3 lg:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+            <div className="fixed inset-x-0 z-40 border-t bg-white/95 backdrop-blur p-3 lg:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]" style={{ bottom: 'calc(56px + env(safe-area-inset-bottom))' }}>
               <div className="mx-auto max-w-lg">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-sm font-semibold ltr-num">تم تحديد {selectedIds.length} طلب</span>
