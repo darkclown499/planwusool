@@ -1592,7 +1592,7 @@ class ProductImportService
      * Formula-injection guard: lead dangerous cells with a single quote so they
      * cannot execute as spreadsheet formulas when the report is opened.
      */
-    protected function csvSafe(string $value): string
+    public function csvSafe(string $value): string
     {
         if ($value === '') {
             return $value;

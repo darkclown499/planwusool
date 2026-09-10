@@ -650,62 +650,150 @@ class ProductController extends Controller
             ->with('success', __(':count Product(s) deleted successfully.', ['count' => $deleted]));
     }
     
-    /**
-     * Export products data as CSV.
-     */
     public function export()
     {
         $user = Auth::user();
         $currentStoreId = getCurrentStoreId($user);
-        
+
         $products = Product::with('category')
                         ->where('store_id', $currentStoreId)
                         ->get();
-        
-        $csvData = [];
-        $csvData[] = ['Product Name', 'SKU', 'Category', 'Price', 'Sale Price', 'Stock', 'Variants', 'Status', 'Created Date'];
-        
-        foreach ($products as $product) {
-            $variantDetails = 'No variants';
-            if ($product->variants && is_array($product->variants) && count($product->variants) > 0) {
-                $variantList = [];
-                foreach ($product->variants as $variant) {
-                    if (is_array($variant) && isset($variant['name'])) {
-                        $variantList[] = $variant['name'] . (isset($variant['price']) ? ' (' . formatStoreCurrency($variant['price'], $user->id, $currentStoreId) . ')' : '');
-                    }
-                }
-                $variantDetails = implode('; ', $variantList);
-            }
-            
-            $csvData[] = [
-                $product->name,
-                $product->sku ?: 'Not set',
-                $product->category ? $product->category->name : 'Uncategorized',
-                formatStoreCurrency($product->price, $user->id, $currentStoreId),
-                $product->sale_price ? formatStoreCurrency($product->sale_price, $user->id, $currentStoreId) : 'Not set',
-                $product->stock,
-                $variantDetails,
-                $product->is_active ? 'Active' : 'Inactive',
-                $product->created_at->format('Y-m-d H:i:s')
-            ];
-        }
-        
-        $filename = 'products-export-' . now()->format('Y-m-d') . '.csv';
-        
+
         $headers = [
-            'Content-Type' => 'text/csv',
+            'name', 'sku', 'barcode', 'description', 'price', 'compare_at_price',
+            'stock', 'category', 'status', 'image_url', 'gallery_images', 'variant_image',
+            'option1_name', 'option1_value', 'option2_name', 'option2_value',
+            'variant_sku', 'variant_price', 'variant_stock',
+        ];
+
+        $filename = 'products-export-' . now()->format('Y-m-d') . '.csv';
+
+        $responseHeaders = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
-        
-        $callback = function() use ($csvData) {
+
+        $service = new ProductImportService();
+
+        $callback = function () use ($products, $headers, $service) {
             $file = fopen('php://output', 'w');
-            foreach ($csvData as $row) {
-                fputcsv($file, $row);
+            fwrite($file, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel/Arabic
+            fputcsv($file, $headers);
+
+            foreach ($products as $product) {
+                $rows = $this->exportProductRows($product, $service);
+                foreach ($rows as $row) {
+                    fputcsv($file, $row);
+                }
             }
+
             fclose($file);
         };
-        
-        return response()->stream($callback, 200, $headers);
+
+        return response()->stream($callback, 200, $responseHeaders);
+    }
+
+    /**
+     * Build one or more export rows for a product.
+     * Standalone: 1 row. Variant: 1 row per combination.
+     */
+    protected function exportProductRows(Product $product, ProductImportService $service): array
+    {
+        $baseRow = [
+            'name' => $product->name ?? '',
+            'sku' => $product->sku ?? '',
+            'barcode' => $product->barcode ?? '',
+            'description' => $product->description ?? '',
+            'price' => number_format((float) ($product->price ?? 0), 2, '.', ''),
+            'compare_at_price' => ($product->sale_price !== null && (float) $product->sale_price > 0)
+                ? number_format((float) $product->sale_price, 2, '.', '')
+                : '',
+            'stock' => (string) (int) ($product->stock ?? 0),
+            'category' => $product->category ? $product->category->name : '',
+            'status' => $product->is_active ? 'active' : 'inactive',
+            'image_url' => $product->cover_image ?? '',
+            'gallery_images' => $this->exportGalleryImages($product),
+            'variant_image' => '',
+            'option1_name' => '',
+            'option1_value' => '',
+            'option2_name' => '',
+            'option2_value' => '',
+            'variant_sku' => '',
+            'variant_price' => '',
+            'variant_stock' => '',
+        ];
+
+        $combos = $product->variant_combinations;
+        if (!is_array($combos) || count($combos) === 0) {
+            return [array_map(fn ($v) => $service->csvSafe((string) $v), $baseRow)];
+        }
+
+        $variants = $product->variants;
+        $opt1Name = '';
+        $opt2Name = '';
+        if (is_array($variants) && count($variants) > 0) {
+            $opt1Name = $variants[0]['name'] ?? '';
+            if (count($variants) > 1) {
+                $opt2Name = $variants[1]['name'] ?? '';
+            }
+        }
+
+        $sorted = $combos;
+        uasort($sorted, function ($a, $b) {
+            return strcmp(
+                implode('|', array_map('strval', $a['values'] ?? [])),
+                implode('|', array_map('strval', $b['values'] ?? []))
+            );
+        });
+
+        $rows = [];
+        $first = true;
+        foreach ($sorted as $combo) {
+            $values = $combo['values'] ?? [];
+            $row = $baseRow;
+            $row['option1_name'] = $first ? $opt1Name : '';
+            $row['option1_value'] = $values[0] ?? '';
+            $row['option2_name'] = $first ? $opt2Name : '';
+            $row['option2_value'] = $values[1] ?? '';
+            $row['variant_sku'] = $combo['sku'] ?? '';
+            $row['variant_price'] = isset($combo['price']) && $combo['price'] !== '' && $combo['price'] !== null
+                ? number_format((float) $combo['price'], 2, '.', '')
+                : '';
+            $row['variant_stock'] = isset($combo['stock']) ? (string) (int) $combo['stock'] : '';
+            $row['variant_image'] = $combo['image'] ?? '';
+
+            $rows[] = array_map(fn ($v) => $service->csvSafe((string) $v), $row);
+            $first = false;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Extract gallery images (all images minus cover) as pipe-delimited string.
+     */
+    protected function exportGalleryImages(Product $product): string
+    {
+        $cover = trim((string) ($product->cover_image ?? ''));
+        $raw = $product->images;
+        $all = [];
+
+        if (is_string($raw) && $raw !== '') {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $all = $decoded;
+            } else {
+                $all = str_contains($raw, ',') ? explode(',', $raw) : [$raw];
+            }
+        } elseif (is_array($raw)) {
+            $all = $raw;
+        }
+
+        $gallery = array_values(array_filter($all, function ($img) use ($cover) {
+            return trim((string) $img) !== '' && trim((string) $img) !== $cover;
+        }));
+
+        return implode('|', $gallery);
     }
 
     /**
