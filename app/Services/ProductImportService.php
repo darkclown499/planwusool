@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
 
 /**
@@ -644,7 +645,7 @@ class ProductImportService
                         }
                     }
                     if ($galleryErrors > 0) {
-                        $errs[] = ['field' => 'gallery_images', 'reason' => __('أحد روابط صور المعرض غير صالح (يجب أن تكون http/https)')];
+                        $errs[] = ['field' => 'gallery_images', 'reason' => __('أحد روابط صور المعرض غير صالح (يجب أن تكون http/https أو من مسارات متجرك)')];
                     } else {
                         $r['gallery_images'] = implode('|', $galleries);
                     }
@@ -1450,10 +1451,17 @@ class ProductImportService
             if (isset($downloaded[$url])) {
                 return $downloaded[$url];
             }
-            // Store-owned local path: use directly, never download.
+            // Store-owned local path: use directly, never download — but ONLY
+            // when the referenced file actually exists on the canonical active
+            // storage disk. A missing local reference is never silently
+            // persisted as valid media; it degrades to a media warning.
             if ($this->isValidMediaReference($url, $storeId) && !preg_match('#^https?://#i', $url)) {
-                $downloaded[$url] = $url;
-                return $url;
+                if (Storage::disk(StorageConfigService::getActiveDisk())->exists($url)) {
+                    $downloaded[$url] = $url;
+                    return $url;
+                }
+
+                return '';
             }
             $result = $this->ingestRemoteImage($url, $storeId);
             if (isset($result['error'])) {

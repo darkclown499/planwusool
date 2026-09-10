@@ -467,6 +467,193 @@ class ProductImportMediaTest extends TestCase
         $this->assertCount(1, $this->storeFiles($this->store->id), 'store A files untouched by store B import');
     }
 
+    /* ----------------------- local store-owned media references ----------------------- */
+
+    public function test_same_store_existing_local_image_accepted_with_zero_http(): void
+    {
+        $ref = 'products/' . $this->store->id . '/existing.png';
+        Storage::disk('public')->put($ref, $this->pngBody());
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-1,20,{$ref}\n");
+        $result = $this->importAndConfirm($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url']);
+
+        $this->assertSame('completed', $result['status']);
+        $this->assertEquals(1, $result['created']);
+        $this->assertEquals(0, $result['media_warnings']);
+
+        $product = $this->firstProduct('LC-1');
+        $this->assertSame($ref, $product->cover_image, 'existing local image must be referenced as-is');
+        $this->assertSame($ref, $product->images);
+        Http::assertNothingSent('an existing local reference must never be downloaded');
+    }
+
+    public function test_same_store_missing_local_image_warns_and_is_not_persisted(): void
+    {
+        $ref = 'products/' . $this->store->id . '/missing.png';
+        Storage::fake('public'); // nothing exists on the fake disk
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-2,20,{$ref}\n");
+        $result = $this->importAndConfirm($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url']);
+
+        $this->assertSame('completed', $result['status'], 'media failure must not fail the row');
+        $this->assertEquals(1, $result['created']);
+        $this->assertEquals(1, $result['media_warnings']);
+
+        $product = $this->firstProduct('LC-2');
+        $this->assertSame('', $product->cover_image, 'a missing local reference must never be persisted as media');
+        $this->assertSame('', $product->images);
+        Http::assertNothingSent('a missing local reference must never trigger a remote fetch');
+    }
+
+    public function test_foreign_store_local_reference_rejected_at_preview(): void
+    {
+        $ref = 'products/' . $this->storeB->id . '/evil.png';
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-3,20,{$ref}\n");
+        [$res, $body] = $this->preview($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url']);
+
+        $this->assertSame(200, $res->status());
+        $this->assertEquals(1, $body['summary']['errors']);
+        $reasons = collect($body['errors'][0]['errors'] ?? [])->pluck('reason')->implode(' ');
+        $this->assertStringContainsString('رابط الصورة غير صالح', $reasons);
+        Http::assertNothingSent();
+    }
+
+    public function test_local_dotdot_traversal_rejected_at_preview(): void
+    {
+        $ref = 'products/' . $this->store->id . '/../../outside.png';
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-4,20,{$ref}\n");
+        [$res, $body] = $this->preview($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url']);
+
+        $this->assertSame(200, $res->status());
+        $this->assertEquals(1, $body['summary']['errors']);
+        $this->assertCount(0, $this->storeFiles($this->store->id));
+        Http::assertNothingSent();
+    }
+
+    public function test_encoded_path_abuse_warns_and_never_persists_media(): void
+    {
+        // %2e%2e is not a literal '..' so the string check passes, but the file
+        // does not exist on the canonical disk — fail closed, never persisted.
+        $ref = 'products/' . $this->store->id . '/%2e%2e/evil.png';
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-5,20,{$ref}\n");
+        $result = $this->importAndConfirm($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url']);
+
+        $this->assertEquals(1, $result['created']);
+        $this->assertEquals(1, $result['media_warnings']);
+
+        $product = $this->firstProduct('LC-5');
+        $this->assertSame('', $product->cover_image);
+        $this->assertSame('', $product->images);
+        Http::assertNothingSent();
+    }
+
+    public function test_absolute_filesystem_path_rejected_at_preview(): void
+    {
+        $ref = 'C:\\Windows\\system32\\evil.png';
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-6,20,{$ref}\n");
+        [$res, $body] = $this->preview($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url']);
+
+        $this->assertSame(200, $res->status());
+        $this->assertEquals(1, $body['summary']['errors']);
+        Http::assertNothingSent();
+    }
+
+    public function test_separator_and_drive_path_rejected_at_preview(): void
+    {
+        $ref = '/etc/passwd';
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,gallery_images\nقميص,LC-7,20,{$ref}\n");
+        [$res, $body] = $this->preview($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'gallery_images' => 'gallery_images']);
+
+        $this->assertSame(200, $res->status());
+        $this->assertEquals(1, $body['summary']['errors']);
+        $reasons = collect($body['errors'][0]['errors'] ?? [])->pluck('reason')->implode(' ');
+        $this->assertStringContainsString('أحد روابط صور المعرض غير صالح', $reasons);
+        Http::assertNothingSent();
+    }
+
+    public function test_local_gallery_media_roundtrip(): void
+    {
+        $cover = 'products/' . $this->store->id . '/cover.png';
+        $g1 = 'products/' . $this->store->id . '/g1.png';
+        $g2 = 'products/' . $this->store->id . '/g2.png';
+        Storage::disk('public')->put($cover, $this->pngBody());
+        Storage::disk('public')->put($g1, $this->pngBody());
+        Storage::disk('public')->put($g2, $this->pngBody());
+        Http::fake();
+
+        $file = $this->csvFile("name,sku,price,image_url,gallery_images\nقميص,LC-8,20,{$cover},{$g1}|{$g2}\n");
+        $result = $this->importAndConfirm($file, ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url', 'gallery_images' => 'gallery_images']);
+
+        $this->assertEquals(0, $result['media_warnings']);
+        $product = $this->firstProduct('LC-8');
+        $parts = explode(',', $product->images);
+        $this->assertSame([$cover, $g1, $g2], $parts);
+        $this->assertSame($cover, $product->cover_image);
+        Http::assertNothingSent();
+    }
+
+    public function test_local_variant_image_roundtrip(): void
+    {
+        $img = 'products/' . $this->store->id . '/variant.png';
+        Storage::disk('public')->put($img, $this->pngBody());
+        Http::fake();
+
+        $file = $this->csvFile(
+            "sku,name,price,option1_name,option1_value,variant_sku,variant_price,variant_stock,variant_image\n" .
+            "LV-1,قميص,100,اللون,أحمر,LV-1-RED,110,5,{$img}\n"
+        );
+        $result = $this->importAndConfirm($file, [
+            'sku' => 'sku', 'name' => 'name', 'price' => 'price',
+            'option1_name' => 'option1_name', 'option1_value' => 'option1_value',
+            'variant_sku' => 'variant_sku', 'variant_price' => 'variant_price',
+            'variant_stock' => 'variant_stock', 'variant_image' => 'variant_image',
+        ]);
+
+        $this->assertEquals(1, $result['created']);
+        $this->assertEquals(0, $result['media_warnings']);
+        $product = $this->firstProduct('LV-1');
+        $this->assertCount(1, $product->variant_combinations);
+        $this->assertSame($img, $product->variant_combinations[0]['image'] ?? null);
+        Http::assertNothingSent();
+    }
+
+    public function test_no_duplicate_media_after_repeated_update_by_sku(): void
+    {
+        $ref = 'products/' . $this->store->id . '/existing.png';
+        Storage::disk('public')->put($ref, $this->pngBody());
+        Http::fake();
+        $this->productInStore('LC-9');
+
+        $file = $this->csvFile("name,sku,price,image_url\nقميص,LC-9,20,{$ref}\n");
+        $mapping = ['name' => 'name', 'sku' => 'sku', 'price' => 'price', 'image_url' => 'image_url'];
+
+        $first = $this->importAndConfirm($file, $mapping, ['strategy' => 'update_by_sku']);
+        $this->assertEquals(1, $first['updated']);
+        $this->assertEquals(0, $first['media_warnings']);
+        $imagesAfterFirst = $this->firstProduct('LC-9')->images;
+
+        $second = $this->importAndConfirm($file, $mapping, ['strategy' => 'update_by_sku']);
+        $this->assertEquals(1, $second['updated']);
+        $this->assertEquals(0, $second['media_warnings']);
+
+        $product = $this->firstProduct('LC-9');
+        $this->assertSame($imagesAfterFirst, $product->images, 'repeated update_by_sku must keep the same media reference');
+        $this->assertCount(1, $this->storeFiles($this->store->id), 'no duplicate files may be created on re-import');
+        Http::assertNothingSent();
+    }
+
     private function productInStore(string $sku, array $overrides = []): Product
     {
         return Product::factory()->create(array_merge([
