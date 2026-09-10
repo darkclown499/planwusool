@@ -5,10 +5,8 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Plan;
 use App\Models\Product;
-use App\Models\ProductImportBatch;
 use App\Models\Store;
 use App\Models\User;
-use App\Services\ProductImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Spatie\Permission\PermissionRegistrar;
@@ -86,15 +84,11 @@ class ProductRoundtripTest extends TestCase
         // Parse headers to build mapping
         $lines = explode("\n", trim($csvContent));
         $headers = str_getcsv(array_shift($lines));
-        $mapping = array_flip($headers);
         // Map each header to itself (canonical field name)
         $mapping = [];
         foreach ($headers as $h) {
             $mapping[$h] = $h;
         }
-
-        $user = $this->user;
-        $storeId = $this->store->id;
 
         // Preview
         $previewRes = $this->post(route('products.import.preview'), [
