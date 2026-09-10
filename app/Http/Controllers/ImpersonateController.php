@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -44,11 +45,19 @@ class ImpersonateController extends Controller
 
         $originalUserId = $actor->id;
 
-        Log::info('Impersonation started', [
-            'actor_id' => $originalUserId,
-            'target_id' => $target->id,
-            'ip' => $request->ip(),
-        ]);
+        AuditLogService::log(
+            action: 'impersonation.start',
+            targetType: 'User',
+            targetId: $target->id,
+            companyId: $target->id,
+            metadata: [
+                'actor_name' => $actor->name,
+                'actor_email' => $actor->email,
+                'target_name' => $target->name,
+                'target_email' => $target->email,
+            ],
+            request: $request
+        );
 
         auth()->loginUsingId($target->id);
         session()->put('impersonated_user_id', $target->id);
@@ -77,16 +86,24 @@ class ImpersonateController extends Controller
             return redirect('/login')->with('error', __('Original impersonator no longer authorized'));
         }
 
-        Log::info('Impersonation ended', [
-            'actor_id' => $originalUserId,
-            'impersonated_id' => session('impersonated_user_id'),
-            'ip' => $request->ip(),
-        ]);
+        $impersonatedUserId = session('impersonated_user_id');
 
         auth()->loginUsingId($originalUserId);
         session()->forget('impersonated_by');
         session()->forget('impersonated_user_id');
         session()->save();
+
+        AuditLogService::log(
+            action: 'impersonation.stop',
+            targetType: 'User',
+            targetId: $impersonatedUserId,
+            companyId: $impersonatedUserId,
+            metadata: [
+                'actor_name' => $originalUser->name,
+                'actor_email' => $originalUser->email,
+            ],
+            request: $request
+        );
 
         return redirect('/companies')->with('success', __('Returned to admin panel'));
     }

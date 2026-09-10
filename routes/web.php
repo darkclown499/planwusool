@@ -1277,6 +1277,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('partner/admin/{partner}/reject', [PartnerController::class, 'reject'])->name('partner.reject');
         Route::post('partner/admin/{partner}/suspend', [PartnerController::class, 'suspend'])->name('partner.suspend');
         Route::post('partner/admin/{partner}/reinstate', [PartnerController::class, 'reinstate'])->name('partner.reinstate');
+        Route::get('audit-logs', [\App\Http\Controllers\AdminAuditLogController::class, 'index'])->name('admin.audit-logs');
     });
 
 

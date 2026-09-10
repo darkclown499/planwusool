@@ -9,7 +9,7 @@ import { useSidebarSettings } from '@/contexts/SidebarContext';
 import { useBrand } from '@/contexts/BrandContext';
 import { type NavItem } from '@/types';
 import { Link, usePage, router } from '@inertiajs/react';
-import { LayoutGrid, Store, CreditCard, Briefcase, Ticket, Gift, Image, Palette, Globe2, DollarSign, Mail, MessageSquare, Settings, Bell, Building2, ChevronDown, Zap, Handshake } from 'lucide-react';
+import { LayoutGrid, Store, CreditCard, Briefcase, Ticket, Gift, Image, Palette, Globe2, DollarSign, Mail, MessageSquare, Settings, Bell, Building2, ChevronDown, Zap, Handshake, ShieldCheck } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState, useMemo } from 'react';
@@ -85,6 +85,7 @@ export function AppSidebar() {
             ],
         },
         { title: t('Currencies'), href: route('currencies.index'), icon: DollarSign, groupLabel: t('System') },
+        { title: t('Audit Log'), href: route('admin.audit-logs'), icon: ShieldCheck, groupLabel: t('System') },
         { title: t('Email Templates'), href: route('email-templates.index'), icon: Mail, groupLabel: t('System') },
         { title: t('Notification Templates'), href: route('notification-templates.index'), icon: MessageSquare, groupLabel: t('System') },
         { title: t('Settings'), href: route('settings'), icon: Settings, groupLabel: t('System') },

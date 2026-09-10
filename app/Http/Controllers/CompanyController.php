@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Plan;
+use App\Services\AuditLogService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -199,15 +200,30 @@ class CompanyController extends Controller
         return redirect()->back()->with('success', __('Company updated successfully'));
     }
     
-    public function destroy(User $company)
+    public function destroy(User $company, Request $request)
     {
         // Ensure this is a company type user
         if ($company->type !== 'company') {
             return redirect()->back()->with('error', __('Invalid company record'));
         }
-        
+
+        $companyName = $company->name;
+        $companyEmail = $company->email;
+
+        AuditLogService::log(
+            action: 'company.delete',
+            targetType: 'User',
+            targetId: $company->id,
+            companyId: $company->id,
+            metadata: [
+                'company_name' => $companyName,
+                'company_email' => $companyEmail,
+            ],
+            request: $request
+        );
+
         $company->delete();
-        
+
         return redirect()->back()->with('success', __('Company deleted successfully'));
     }
     
@@ -217,27 +233,54 @@ class CompanyController extends Controller
         if ($company->type !== 'company') {
             return redirect()->back()->with('error', __('Invalid company record'));
         }
-        
+
         $validated = $request->validate([
             'password' => ['required', 'string', 'min:8'],
         ]);
-        
+
+        AuditLogService::log(
+            action: 'company.reset_password',
+            targetType: 'User',
+            targetId: $company->id,
+            companyId: $company->id,
+            metadata: [
+                'company_name' => $company->name,
+                'company_email' => $company->email,
+            ],
+            request: $request
+        );
+
         $company->password = Hash::make($validated['password']);
         $company->save();
-        
+
         return redirect()->back()->with('success', __('Password reset successfully'));
     }
     
-    public function toggleStatus(User $company)
+    public function toggleStatus(User $company, Request $request)
     {
         // Ensure this is a company type user
         if ($company->type !== 'company') {
             return redirect()->back()->with('error', __('Invalid company record'));
         }
-        
+
+        $previousStatus = $company->status;
         $company->status = $company->status === 'active' ? 'inactive' : 'active';
         $company->save();
-        
+
+        AuditLogService::log(
+            action: 'company.toggle_status',
+            targetType: 'User',
+            targetId: $company->id,
+            companyId: $company->id,
+            metadata: [
+                'company_name' => $company->name,
+                'company_email' => $company->email,
+                'previous_status' => $previousStatus,
+                'new_status' => $company->status,
+            ],
+            request: $request
+        );
+
         return redirect()->back()->with('success', __('Company status updated successfully'));
     }
     
@@ -326,7 +369,7 @@ class CompanyController extends Controller
         if ($company->type !== 'company') {
             return back()->with('error', __('Invalid company record'));
         }
-        
+
         $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
         ]);
@@ -335,6 +378,9 @@ class CompanyController extends Controller
         if (!$plan) {
             return back()->with('error', __('Plan not found'));
         }
+
+        $previousPlanId = $company->plan_id;
+        $previousPlanName = $company->plan ? $company->plan->name : null;
 
         // Force yearly billing cycle
         $billingCycle = 'yearly';
@@ -351,12 +397,28 @@ class CompanyController extends Controller
         } else {
             $company->plan_expire_date = now()->addMonth();
         }
-        
+
         // Set plan is active
         $company->plan_is_active = 1;
-        
+
         $company->save();
-        
+
+        AuditLogService::log(
+            action: 'company.upgrade_plan',
+            targetType: 'User',
+            targetId: $company->id,
+            companyId: $company->id,
+            metadata: [
+                'company_name' => $company->name,
+                'company_email' => $company->email,
+                'previous_plan_id' => $previousPlanId,
+                'previous_plan_name' => $previousPlanName,
+                'new_plan_id' => $plan->id,
+                'new_plan_name' => $plan->name,
+            ],
+            request: $request
+        );
+
         return back()->with('success', __('Plan upgraded successfully'));
     }
 

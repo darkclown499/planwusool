@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PlanOrder;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -80,11 +81,25 @@ class PlanOrderController extends BaseController
         ]);
     }
 
-    public function approve(PlanOrder $planOrder)
+    public function approve(PlanOrder $planOrder, Request $request)
     {
         try {
             $planOrder->approve(Auth::id());
-            
+
+            AuditLogService::log(
+                action: 'plan_order.approve',
+                targetType: 'PlanOrder',
+                targetId: $planOrder->id,
+                companyId: $planOrder->user_id,
+                metadata: [
+                    'order_number' => $planOrder->order_number,
+                    'plan_id' => $planOrder->plan_id,
+                    'user_id' => $planOrder->user_id,
+                    'total_amount' => $planOrder->total_amount,
+                ],
+                request: $request
+            );
+
             return redirect()->route('plan-orders.index')
                 ->with('success', __('Plan order approved successfully!'));
         } catch (\Exception $e) {
@@ -101,7 +116,21 @@ class PlanOrderController extends BaseController
             ]);
 
             $planOrder->reject(Auth::id(), $request->notes);
-            
+
+            AuditLogService::log(
+                action: 'plan_order.reject',
+                targetType: 'PlanOrder',
+                targetId: $planOrder->id,
+                companyId: $planOrder->user_id,
+                metadata: [
+                    'order_number' => $planOrder->order_number,
+                    'plan_id' => $planOrder->plan_id,
+                    'user_id' => $planOrder->user_id,
+                    'notes' => $request->notes,
+                ],
+                request: $request
+            );
+
             return redirect()->route('plan-orders.index')
                 ->with('success', __('Plan order rejected successfully!'));
         } catch (\Exception $e) {

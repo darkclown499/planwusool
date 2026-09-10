@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Partner;
 use App\Models\Store;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -192,7 +193,7 @@ class PartnerController extends Controller
     /**
      * Approve a pending partner.
      */
-    public function approve(Partner $partner)
+    public function approve(Partner $partner, Request $request)
     {
         if ($partner->status !== Partner::STATUS_PENDING) {
             return back()->withErrors(['error' => __('Only pending applications can be approved.')]);
@@ -203,6 +204,18 @@ class PartnerController extends Controller
         $partner->rejected_at = null;
         $partner->suspended_at = null;
         $partner->save();
+
+        AuditLogService::log(
+            action: 'partner.approve',
+            targetType: 'Partner',
+            targetId: $partner->id,
+            companyId: $partner->user_id,
+            metadata: [
+                'partner_name' => $partner->company_name,
+                'partner_email' => $partner->email,
+            ],
+            request: $request
+        );
 
         return back()->with('success', __('Partner approved.'));
     }
@@ -227,6 +240,18 @@ class PartnerController extends Controller
         $partner->notes = $validated['notes'] ?? null;
         $partner->save();
 
+        AuditLogService::log(
+            action: 'partner.reject',
+            targetType: 'Partner',
+            targetId: $partner->id,
+            companyId: $partner->user_id,
+            metadata: [
+                'partner_name' => $partner->company_name,
+                'partner_email' => $partner->email,
+            ],
+            request: $request
+        );
+
         return back()->with('success', __('Partner application rejected.'));
     }
 
@@ -250,13 +275,25 @@ class PartnerController extends Controller
         $partner->notes = $validated['notes'] ?? $partner->notes;
         $partner->save();
 
+        AuditLogService::log(
+            action: 'partner.suspend',
+            targetType: 'Partner',
+            targetId: $partner->id,
+            companyId: $partner->user_id,
+            metadata: [
+                'partner_name' => $partner->company_name,
+                'partner_email' => $partner->email,
+            ],
+            request: $request
+        );
+
         return back()->with('success', __('Partner suspended.'));
     }
 
     /**
      * Reinstate a suspended partner.
      */
-    public function reinstate(Partner $partner)
+    public function reinstate(Partner $partner, Request $request)
     {
         if ($partner->status !== Partner::STATUS_SUSPENDED) {
             return back()->withErrors(['error' => __('Only suspended partners can be reinstated.')]);
@@ -265,6 +302,18 @@ class PartnerController extends Controller
         $partner->status = Partner::STATUS_APPROVED;
         $partner->suspended_at = null;
         $partner->save();
+
+        AuditLogService::log(
+            action: 'partner.reinstate',
+            targetType: 'Partner',
+            targetId: $partner->id,
+            companyId: $partner->user_id,
+            metadata: [
+                'partner_name' => $partner->company_name,
+                'partner_email' => $partner->email,
+            ],
+            request: $request
+        );
 
         return back()->with('success', __('Partner reinstated.'));
     }

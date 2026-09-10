@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -328,7 +329,7 @@ class UserController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         $this->authorizeUserTarget(Auth::user(), $user);
 
@@ -336,6 +337,22 @@ class UserController extends BaseController
             // Prevent deleting yourself
             if ((int) $user->id === (int) Auth::id()) {
                 return redirect()->back()->with('error', __('Cannot delete your own account'));
+            }
+
+            $actor = Auth::user();
+            if ($actor->isSuperAdmin()) {
+                AuditLogService::log(
+                    action: 'user.delete',
+                    targetType: 'User',
+                    targetId: $user->id,
+                    companyId: $user->created_by ?: null,
+                    metadata: [
+                        'user_name' => $user->name,
+                        'user_email' => $user->email,
+                        'user_type' => $user->type,
+                    ],
+                    request: $request
+                );
             }
 
             $user->delete();
@@ -354,6 +371,22 @@ class UserController extends BaseController
         $request->validate([
             'password' => 'required|min:8|confirmed',
         ]);
+
+        $actor = Auth::user();
+        if ($actor->isSuperAdmin()) {
+            AuditLogService::log(
+                action: 'user.reset_password',
+                targetType: 'User',
+                targetId: $user->id,
+                companyId: $user->created_by ?: (($user->type === 'company') ? $user->id : null),
+                metadata: [
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'user_type' => $user->type,
+                ],
+                request: $request
+            );
+        }
 
         $user->password = Hash::make($request->password);
         $user->save();
@@ -397,7 +430,7 @@ class UserController extends BaseController
     /**
      * Toggle user status
      */
-    public function toggleStatus(User $user)
+    public function toggleStatus(Request $request, User $user)
     {
         $this->authorizeUserTarget(Auth::user(), $user);
 
@@ -406,8 +439,26 @@ class UserController extends BaseController
             return redirect()->back()->with('error', __('Cannot change your own status'));
         }
 
+        $previousStatus = $user->status;
         $user->status = $user->status === 'active' ? 'inactive' : 'active';
         $user->save();
+
+        $actor = Auth::user();
+        if ($actor->isSuperAdmin()) {
+            AuditLogService::log(
+                action: 'user.toggle_status',
+                targetType: 'User',
+                targetId: $user->id,
+                companyId: $user->created_by ?: (($user->type === 'company') ? $user->id : null),
+                metadata: [
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'previous_status' => $previousStatus,
+                    'new_status' => $user->status,
+                ],
+                request: $request
+            );
+        }
 
         return redirect()->route('users.index')->with('success', __('User status updated successfully'));
     }
