@@ -51,6 +51,7 @@ class MerchantNotification extends Model
         'cod_collected' => 'cod_collected',
         'abandoned_cart' => 'abandoned_cart',
         'wishlist_added' => 'wishlist_added',
+        'payment_failed' => 'payment_failed',
         'system' => 'system',
     ];
 
@@ -71,6 +72,7 @@ class MerchantNotification extends Model
         'cod_collected' => 'green',
         'abandoned_cart' => 'yellow',
         'wishlist_added' => 'pink',
+        'payment_failed' => 'red',
         'system' => 'gray',
     ];
 

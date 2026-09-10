@@ -172,6 +172,21 @@ class Order extends Model
     {
         parent::boot();
 
+        // Notify the merchant exactly once when an order's payment transitions
+        // INTO failed (never on creation-already-failed, never on non-failed
+        // updates, never duplicated by repeated failed saves).
+        static::updated(function (Order $order) {
+            if ((string) $order->payment_status === 'failed'
+                && $order->wasChanged('payment_status')
+                && (string) $order->getOriginal('payment_status') !== 'failed') {
+                try {
+                    \App\Services\MerchantNotificationService::paymentFailed($order);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Payment failed notification could not be created', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                }
+            }
+        });
+
         static::updating(function (Order $order) {
             // Financial refund no longer auto-restores inventory — only failed/cancelled do.
             $terminal = in_array(strtolower((string) $order->status), ['failed', 'cancelled'], true)

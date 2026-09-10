@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette, type LucideIcon } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ClipboardList, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette, type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,10 +33,7 @@ interface Props {
       monthlyGrowth?: number;
       ordersGrowth?: number;
       productsGrowth?: number;
-      customersGrowth?: number;
-      pendingRequests?: number;
-      pendingOrders?: number;
-      approvedOrders?: number;
+customersGrowth?: number;
       totalOrders?: number;
       activeCoupons?: number;
       totalCoupons?: number;
@@ -62,6 +59,13 @@ interface Props {
   };
   currentStore?: any;
   storeUrl?: string;
+  dailyOperations?: {
+    orders_needing_action?: { count: number; visible: boolean; href: string | null };
+    failed_payments?: { count: number; visible: boolean; href: string | null };
+    low_stock?: { count: number; visible: boolean; href: string | null };
+    unassigned_deliveries?: { count: number; visible: boolean; href: string | null };
+    abandoned_carts?: { count: number; visible: boolean; href: string | null };
+  };
   onboarding?: {
     show: boolean;
     pendingCount: number;
@@ -101,7 +105,7 @@ interface Props {
   isSuperAdmin: boolean;
 }
 
-export default function Dashboard({ dashboardData, currentStore, storeUrl, onboarding, isSuperAdmin }: Props) {
+export default function Dashboard({ dashboardData, currentStore, storeUrl, onboarding, dailyOperations, isSuperAdmin }: Props) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [chartMode, setChartMode] = useState<'sales' | 'revenue'>('sales');
@@ -184,7 +188,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
     return isSuperAdmin || hasPermission(permission);
   };
 
-  const hasPendingAlerts = (visibleAlerts.length) > 0 || (dashboardData.metrics.pendingOrders || 0) > 0 || (dashboardData.metrics.pendingRequests || 0) > 0;
+  const hasPendingAlerts = (visibleAlerts.length) > 0;
 
   const handleCardClick = (routeName: string, requiredPermission: string, id?: any) => {
     if (!checkPermission(requiredPermission, (usePage().props as any).auth)) {
@@ -249,7 +253,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
       label: t('Refresh'),
       icon: <RefreshCw className="h-4 w-4" />,
       variant: 'outline',
-      onClick: () => router.reload({ only: ['dashboardData'] })
+      onClick: () => router.reload({ only: ['dashboardData', 'dailyOperations'] })
     }
   ];
 
@@ -1019,6 +1023,58 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           </Card>
         )}
 
+        {/* Daily Operations */}
+        {!!dailyOperations && Object.values(dailyOperations).some((item) => item?.visible) && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <ClipboardList className="h-4 w-4 text-primary" />
+                {t('العمليات اليومية')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                {([
+                  { key: 'orders_needing_action', label: t('طلبات تتطلب إجراء'), icon: Package },
+                  { key: 'failed_payments', label: t('مدفوعات فاشلة'), icon: CreditCard },
+                  { key: 'low_stock', label: t('مخزون منخفض أو منتهٍ'), icon: Boxes },
+                  { key: 'unassigned_deliveries', label: t('طلبات بانتظار تعيين سائق'), icon: Truck },
+                  { key: 'abandoned_carts', label: t('سلال متروكة'), icon: ShoppingCart },
+                ] as { key: 'orders_needing_action' | 'failed_payments' | 'low_stock' | 'unassigned_deliveries' | 'abandoned_carts'; label: string; icon: LucideIcon }[]).map(({ key, label, icon: ItemIcon }) => {
+                  const item = (dailyOperations || {})[key];
+                  if (!item || !item.visible) return null;
+                  const hasItems = (item.count || 0) > 0;
+                  const danger = key === 'failed_payments' && hasItems;
+                  const chip = (
+                    <div className={`flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors ${danger ? 'border-red-300 bg-red-50/60' : hasItems ? 'border-amber-300 bg-amber-50/60' : 'border-gray-200 bg-white'}`}>
+                      <ItemIcon className={`h-4 w-4 flex-shrink-0 ${danger ? 'text-red-600' : hasItems ? 'text-amber-600' : 'text-gray-400'}`} />
+                      <span className={`text-sm font-medium ${hasItems ? '' : 'text-muted-foreground'}`}>{label}</span>
+                      {hasItems && (
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold text-white ${danger ? 'bg-red-600' : 'bg-amber-600'}`}>
+                          {item.count}
+                        </span>
+                      )}
+                    </div>
+                  );
+                  return item.href ? (
+                    <button key={key} type="button" className="text-start transition-shadow hover:shadow-sm" onClick={() => router.visit(item.href as string)}>
+                      {chip}
+                    </button>
+                  ) : (
+                    <div key={key}>{chip}</div>
+                  );
+                })}
+                {Object.values(dailyOperations).filter((item) => item?.visible && (item.count || 0) > 0).length === 0 && (
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-700">{t('كل شيء محدّث — لا توجد متابعات اليوم')}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Vital Alerts */}
         {userHasPermission('manage-orders') && (
           <Card className={hasPendingAlerts ? "border-amber-200 bg-amber-50/50" : "border-emerald-200 bg-emerald-50/50"}>
@@ -1085,19 +1141,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                     </div>
                   );
                 })}
-                {(dashboardData.metrics.pendingOrders || 0) > 0 && (
-                  <div className="flex items-center gap-2 rounded-lg bg-white border border-amber-200 px-3 py-2">
-                    <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                    <span className="text-sm font-medium">{dashboardData.metrics.pendingOrders} {t('pending orders awaiting shipment')}</span>
-                  </div>
-                )}
-                {(dashboardData.metrics.pendingRequests || 0) > 0 && (
-                  <div className="flex items-center gap-2 rounded-lg bg-white border border-orange-200 px-3 py-2">
-                    <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-                    <span className="text-sm font-medium">{dashboardData.metrics.pendingRequests} {t('pending plan requests')}</span>
-                  </div>
-                )}
-                {(!dashboardData.alerts || dashboardData.alerts.length === 0) && (dashboardData.metrics.pendingOrders || 0) === 0 && (dashboardData.metrics.pendingRequests || 0) === 0 && (
+                {(!dashboardData.alerts || dashboardData.alerts.length === 0) && (
                   <div className="flex items-center gap-2 rounded-lg bg-white border border-emerald-200 px-3 py-2">
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
                     <span className="text-sm font-medium text-emerald-700">{t('All orders are up to date — no pending actions')}</span>

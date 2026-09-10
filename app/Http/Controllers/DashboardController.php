@@ -16,6 +16,7 @@ use App\Models\PlanRequest;
 use App\Models\Coupon;
 use App\Services\MerchantNotificationService;
 use App\Services\PaymentFinancialMetrics;
+use App\Services\AbandonedCartService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -97,6 +98,7 @@ class DashboardController extends Controller
         if (!$storeId) {
             return Inertia::render('dashboard', [
                 'dashboardData' => $this->getEmptyDashboard(),
+                'dailyOperations' => $this->getDailyOperations($storeId, $user),
                 'currentStore' => null,
                 'isSuperAdmin' => false
             ]);
@@ -107,6 +109,7 @@ class DashboardController extends Controller
         
         return Inertia::render('dashboard', [
             'dashboardData' => $dashboardData,
+            'dailyOperations' => $this->getDailyOperations($storeId, $user),
             'currentStore' => $currentStore,
             'storeUrl' => $currentStore->getStoreUrl(),
             'onboarding' => $this->getOnboardingChecklist($currentStore, $user),
@@ -604,6 +607,124 @@ class DashboardController extends Controller
             ]);
     }
     
+    /**
+     * العمليات اليومية — counts of operational items needing merchant attention.
+     * Backend-authoritative: each item is permission-gated (invisible for users
+     * without the permission) and scoped to the current store. Counts match the
+     * canonical list semantics of their target pages.
+     */
+    private function getDailyOperations($storeId, $user)
+    {
+        $operational = \App\Http\Controllers\DeliveryController::OPERATIONAL_DELIVERY_STATUSES;
+
+        $canOrders = $user->can('manage-orders');
+        $canProducts = $user->can('manage-products');
+        $canCarts = $user->can('manage-abandoned-carts');
+        $sid = $storeId ? (int) $storeId : null;
+
+        $ordersNeedingAction = 0;
+        if ($canOrders && $sid) {
+            $ordersNeedingAction = Order::where('store_id', $sid)
+                ->whereIn('status', $operational)
+                ->count();
+        }
+
+        $failedPayments = 0;
+        if ($canOrders && $sid) {
+            $failedPayments = Order::where('store_id', $sid)
+                ->where('payment_status', 'failed')
+                ->count();
+        }
+
+        $lowStock = 0;
+        if ($canProducts && $sid) {
+            $lowStock = $this->countLowStockProducts($sid);
+        }
+
+        $unassignedDeliveries = 0;
+        if ($canOrders && $sid) {
+            $unassignedDeliveries = Order::where('store_id', $sid)
+                ->where('delivery_status', 'unassigned')
+                ->whereIn('status', $operational)
+                ->count();
+        }
+
+        $abandonedCarts = 0;
+        if ($canCarts && $sid) {
+            $stats = app(AbandonedCartService::class)->getStats($sid);
+            $abandonedCarts = (int) ($stats['pending'] ?? 0);
+        }
+
+        return [
+            'orders_needing_action' => [
+                'count' => $ordersNeedingAction,
+                'visible' => $canOrders,
+                'href' => $canOrders ? route('orders.index') : null,
+            ],
+            'failed_payments' => [
+                'count' => $failedPayments,
+                'visible' => $canOrders,
+                'href' => $canOrders ? route('orders.index', ['payment_status' => 'failed']) : null,
+            ],
+            'low_stock' => [
+                'count' => $lowStock,
+                'visible' => $canProducts,
+                'href' => $canProducts ? route('products.index', ['status' => 'low_stock']) : null,
+            ],
+            'unassigned_deliveries' => [
+                'count' => $unassignedDeliveries,
+                'visible' => $canOrders,
+                'href' => $canOrders ? route('delivery.index', ['bucket' => 'unassigned']) : null,
+            ],
+            'abandoned_carts' => [
+                'count' => $abandonedCarts,
+                'visible' => $canCarts,
+                'href' => $canCarts ? route('abandoned-carts.index') : null,
+            ],
+        ];
+    }
+
+    /**
+     * Variant-aware low-stock count (combined low + out of stock) for tracked,
+     * non-backorder products — mirrors InventoryController's stockStatus
+     * semantics. A variant product counts once if ANY combination is at or
+     * below its own (or inherited) threshold.
+     */
+    private function countLowStockProducts(int $storeId): int
+    {
+        $threshold = (int) getSetting('low_stock_threshold', 5) ?: 5;
+
+        $nonVariant = Product::where('store_id', $storeId)
+            ->where('track_inventory', true)
+            ->where('allow_backorder', false)
+            ->where('stock', '<=', $threshold)
+            ->where(function ($q) {
+                $q->where('inventory_mode', '!=', 'variant')
+                    ->orWhereNull('inventory_mode');
+            })
+            ->count();
+
+        $variantCount = 0;
+        $variants = Product::where('store_id', $storeId)
+            ->where('track_inventory', true)
+            ->where('allow_backorder', false)
+            ->where('inventory_mode', 'variant')
+            ->get(['id', 'low_stock_warning', 'variant_combinations']);
+
+        foreach ($variants as $product) {
+            foreach (($product->variant_combinations ?? []) as $combo) {
+                $s = (int) ($combo['stock'] ?? 0);
+                $th = (int) ($combo['low_stock_warning'] ?? $product->low_stock_warning ?? $threshold) ?: $threshold;
+                if ($s <= $th) {
+                    $variantCount++;
+                    break;
+                }
+            }
+        }
+
+        return $nonVariant + $variantCount;
+    }
+
     private function getEmptyDashboard()
     {
         return [

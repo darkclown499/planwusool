@@ -95,6 +95,47 @@ class MerchantNotificationService
     }
 
     /**
+     * Create a notification when an order payment fails.
+     * Idempotent: fires exactly once per order regardless of how many
+     * transitions/paths converge on payment_status = failed.
+     */
+    public static function paymentFailed(Order $order, ?string $reason = null): void
+    {
+        $store = $order->store;
+        if (!$store || !$store->user) {
+            return;
+        }
+
+        $exists = MerchantNotification::where('store_id', $order->store_id)
+            ->where('related_id', $order->id)
+            ->where('related_type', 'order')
+            ->where('type', 'payment_failed')
+            ->exists();
+        if ($exists) return;
+
+        $amount = $order->total_amount;
+
+        self::create([
+            'user_id' => $store->user_id,
+            'store_id' => $order->store_id,
+            'type' => 'payment_failed',
+            'title' => 'فشل الدفع',
+            'body' => "فشل الدفع للطلب #{$order->order_number} بقيمة {$amount}" . ($reason ? ": {$reason}" : ''),
+            'icon' => 'CreditCard',
+            'color' => 'red',
+            'action_url' => route('orders.show', $order->id, false),
+            'related_id' => $order->id,
+            'related_type' => 'order',
+            'data' => [
+                'order_number' => $order->order_number,
+                'order_total' => $amount,
+                'reason' => $reason,
+            ],
+            'is_urgent' => true,
+        ]);
+    }
+
+    /**
      * Create a notification when a delivery driver is assigned to an order.
      */
     public static function deliveryDriverAssigned(Order $order, string $driverName): void
