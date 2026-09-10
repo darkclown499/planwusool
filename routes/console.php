@@ -14,6 +14,15 @@ Schedule::command('app:check-abandoned-carts --hours=24')
     ->withoutOverlapping()
     ->sendOutputTo(storage_path('logs/abandoned-carts.log'));
 
+// Draft → ABANDONED lifecycle: every 15 minutes mark drafts idle >30min as
+// abandoned, generate a recovery token and trigger the WhatsApp automation.
+// Reuses the canonical AbandonedCartService::markStaleDraftsAsAbandoned
+// (idempotent + store-scoped). The reminder run above is a separate flow.
+Schedule::call(function () {
+    app(\App\Services\AbandonedCartService::class)->markStaleDraftsAsAbandoned(30);
+})->everyFifteenMinutes()->name('abandoned-mark-stale')->withoutOverlapping()
+    ->sendOutputTo(storage_path('logs/abandoned-mark.log'));
+
 // Check for expired trials and downgrade to Starter plan daily at 2 AM
 Schedule::command('app:check-expired-trials')
     ->dailyAt('02:00')
@@ -41,3 +50,9 @@ Schedule::command('loyalty:expire')
     ->dailyAt('03:30')
     ->withoutOverlapping()
     ->sendOutputTo(storage_path('logs/loyalty-expire.log'));
+
+// Back up database + storage to S3 daily at 3 AM (keep 7 days)
+Schedule::command('backup:s3 --all --compress --keep=7')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->sendOutputTo(storage_path('logs/backup-s3.log'));
