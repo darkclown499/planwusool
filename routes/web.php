@@ -1003,6 +1003,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('orders/{id}/confirm-bank', [\App\Http\Controllers\OrderController::class, 'confirmBank'])->middleware('permission:edit-orders')->name('orders.confirm-bank');
             Route::post('orders/{id}/reject-bank', [\App\Http\Controllers\OrderController::class, 'rejectBank'])->middleware('permission:edit-orders')->name('orders.reject-bank');
             Route::get('orders/{id}/receipt', [\App\Http\Controllers\OrderController::class, 'receipt'])->middleware('permission:view-orders')->name('orders.receipt');
+            Route::get('orders/{id}/invoice', [\App\Http\Controllers\OrderController::class, 'invoice'])->middleware('permission:view-orders')->name('orders.invoice');
             Route::delete('orders/{id}', [\App\Http\Controllers\OrderController::class, 'destroy'])->middleware('permission:delete-orders')->name('orders.destroy');
             Route::get('orders/{id}', [\App\Http\Controllers\OrderController::class, 'show'])->middleware('permission:view-orders')->name('orders.show');
 

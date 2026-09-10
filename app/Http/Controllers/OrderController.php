@@ -232,8 +232,8 @@ class OrderController extends Controller
                 'phone' => $order->customer_phone,
                 'order_count' => $customerOrderCount,
             ],
-            // invoice_pdf_url: storefront route is in a domain group — frontend must construct via store slug
-            'invoice_pdf_url' => null,
+            // Server-generated, tenant-scoped invoice PDF (orders.invoice) on the merchant dashboard domain.
+            'invoice_pdf_url' => route('orders.invoice', $order->id, false),
             'shippingAddress' => [
                 'name' => $order->customer_first_name . ' ' . $order->customer_last_name,
                 'street' => $order->shipping_address,
@@ -886,6 +886,26 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
         }
+    }
+
+    /**
+     * Tenant-scoped PDF invoice for the store's own order (view-orders).
+     * Shares the single invoice renderer used on the customer storefront.
+     */
+    public function invoice($id)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+
+        $order = Order::where('store_id', $storeId)
+            ->where('id', $id)
+            ->with(['items.product', 'shippingMethod'])
+            ->firstOrFail();
+
+        $store = \App\Models\Store::find($order->store_id);
+        abort_unless($store, 404);
+
+        return app(\App\Services\OrderInvoiceService::class)->download($order, $store);
     }
 
     /**

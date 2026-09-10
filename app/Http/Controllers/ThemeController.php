@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Services\CartCalculationService;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ThemeController extends Controller
 {
@@ -1332,83 +1331,19 @@ class ThemeController extends Controller
     public function downloadOrderPdf($storeSlug, $orderNumber)
     {
         $store = $this->getStore($storeSlug);
-        
+
         // Get order data (ownership-scoped to prevent IDOR)
         $orderData = $this->findOwnedOrder($orderNumber, $store['id']);
-            
+
         if (!$orderData) {
             abort(404, 'Order not found');
         }
-        
-        // Get store configuration
+
         $storeModel = Store::find($store['id']);
-        $storeSettings = [];
-        $currencies = [];
-        
-        if ($storeModel && $storeModel->user) {
-            $storeSettings = \App\Models\Setting::getUserSettings($storeModel->user->id, $store['id']);
-            $currencies = \App\Models\Currency::all()->map(function ($currency) {
-                return [
-                    'code' => $currency->code,
-                    'symbol' => $currency->symbol,
-                    'name' => $currency->name
-                ];
-            })->toArray();
+        if (!$storeModel) {
+            abort(404, 'Store not found');
         }
-        
-        $order = [
-            'id' => $orderData->order_number,
-            'date' => $orderData->created_at->toISOString(),
-            'status' => ucfirst($orderData->status),
-            'total' => (float) $orderData->total_amount,
-            'subtotal' => (float) $orderData->subtotal,
-            'discount' => (float) $orderData->discount_amount,
-            'shipping' => (float) $orderData->shipping_amount,
-            'tax' => (float) $orderData->tax_amount,
-            'currency' => $storeSettings['currency_symbol'] ?? '$',
-            'coupon' => $orderData->coupon_code,
-            'payment_method' => $orderData->payment_method === 'cod' ? 'Cash on Delivery' : ucfirst(str_replace('_', ' ', $orderData->payment_method)),
-            'customer' => [
-                'name' => $orderData->customer_first_name . ' ' . $orderData->customer_last_name,
-                'email' => $orderData->customer_email,
-                'phone' => $orderData->customer_phone,
-            ],
-            'shipping_address' => [
-                'name' => $orderData->customer_first_name . ' ' . $orderData->customer_last_name,
-                'address' => $orderData->shipping_address,
-                'city' => is_numeric($orderData->shipping_city) ? (\App\Models\City::find($orderData->shipping_city)->name ?? $orderData->shipping_city) : $orderData->shipping_city,
-                'state' => is_numeric($orderData->shipping_state) ? (\App\Models\State::find($orderData->shipping_state)->name ?? $orderData->shipping_state) : $orderData->shipping_state,
-                'postal_code' => $orderData->shipping_postal_code,
-                'country' => is_numeric($orderData->shipping_country) ? (\App\Models\Country::find($orderData->shipping_country)->name ?? $orderData->shipping_country) : $orderData->shipping_country,
-            ],
-            'items' => $orderData->items->map(function ($item) {
-                $taxDetails = json_decode($item->tax_details, true) ?? [];
-                return [
-                    'name' => $item->product_name,
-                    'price' => (float) $item->unit_price,
-                    'quantity' => $item->quantity,
-                    'variants' => $item->product_variants,
-                    'tax_name' => $taxDetails['tax_name'] ?? null,
-                    'tax_percentage' => $taxDetails['tax_percentage'] ?? null,
-                    'tax_amount' => (float) ($taxDetails['tax_amount'] ?? 0),
-                ];
-            })->toArray(),
-        ];
-        
-        $storeData = $this->getStoreConfig($store);
-        
-        $data = [
-            'orderNumber' => $orderNumber,
-            'order' => $order,
-            'config' => $storeData['config'],
-            'storeSettings' => $storeSettings,
-            'currencies' => $currencies,
-            'secondaryCurrency' => $this->resolveSecondaryCurrency($storeSettings),
-            'vat' => $storeData['config']['vat'],
-            'locale' => $storeData['config']['locale'],
-        ];
-        
-        $pdf = Pdf::loadView('pdf.invoice', $data);
-        return $pdf->download("invoice-{$orderNumber}.pdf");
+
+        return app(\App\Services\OrderInvoiceService::class)->download($orderData, $storeModel);
     }
 }
