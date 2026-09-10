@@ -297,8 +297,8 @@ class ProductImportService
      */
     public function templateCsv(): \Closure
     {
-        $headers = ['name', 'sku', 'barcode', 'description', 'price', 'compare_at_price', 'stock', 'category', 'status', 'image_url', 'option1_name', 'option1_value', 'option2_name', 'option2_value', 'variant_sku', 'variant_price', 'variant_stock'];
-        $example = ['قميص قطني', 'SH-001', '6250001234567', 'قميص قطني مريح للاستخدام اليومي', '89.90', '119.90', '25', 'ملابس', 'active', 'https://example.com/shirt.jpg', 'اللون', 'أحمر', 'المقاس', 'L', 'SH-001-RED-L', '94.90', '10'];
+        $headers = ['name', 'sku', 'barcode', 'description', 'price', 'compare_at_price', 'stock', 'category', 'status', 'image_url', 'gallery_images', 'variant_image', 'option1_name', 'option1_value', 'option2_name', 'option2_value', 'variant_sku', 'variant_price', 'variant_stock'];
+        $example = ['قميص قطني', 'SH-001', '6250001234567', 'قميص قطني مريح للاستخدام اليومي', '89.90', '119.90', '25', 'ملابس', 'active', 'https://example.com/shirt.jpg', '', '', 'اللون', 'أحمر', 'المقاس', 'L', 'SH-001-RED-L', '94.90', '10'];
 
         return function () use ($headers, $example) {
             $file = fopen('php://output', 'w');
@@ -621,11 +621,8 @@ class ProductImportService
             // image_url — conservative: store as reference string only (never fetched server-side).
             $image = trim((string) ($r['image_url'] ?? ''));
             if ($image !== '') {
-                $scheme = strtolower((string) parse_url($image, PHP_URL_SCHEME));
-                if (!in_array($scheme, ['http', 'https'], true)) {
-                    $errs[] = ['field' => 'image_url', 'reason' => __('رابط الصورة غير صالح (يجب أن يكون http/https)')];
-                } elseif (str_contains($image, '..') || str_contains($image, '<script') || str_contains($image, 'javascript:')) {
-                    $errs[] = ['field' => 'image_url', 'reason' => __('رابط الصورة غير آمن')];
+                if (!$this->isValidMediaReference($image, $storeId)) {
+                    $errs[] = ['field' => 'image_url', 'reason' => __('رابط الصورة غير صالح')];
                 } else {
                     $r['image_url'] = $image;
                 }
@@ -642,8 +639,7 @@ class ProductImportService
                 } else {
                     $galleryErrors = 0;
                     foreach ($galleries as $g) {
-                        $gs = strtolower((string) parse_url($g, PHP_URL_SCHEME));
-                        if (!in_array($gs, ['http', 'https'], true) || str_contains($g, '..') || str_contains($g, '<script') || str_contains($g, 'javascript:')) {
+                        if (!$this->isValidMediaReference($g, $storeId)) {
                             $galleryErrors++;
                         }
                     }
@@ -660,11 +656,8 @@ class ProductImportService
             // variant_image — single image URL attached to the variant combination.
             $vImage = trim((string) ($r['variant_image'] ?? ''));
             if ($vImage !== '') {
-                $s = strtolower((string) parse_url($vImage, PHP_URL_SCHEME));
-                if (!in_array($s, ['http', 'https'], true)) {
-                    $errs[] = ['field' => 'variant_image', 'reason' => __('رابط صورة المتغير غير صالح (يجب أن يكون http/https)')];
-                } elseif (str_contains($vImage, '..') || str_contains($vImage, '<script') || str_contains($vImage, 'javascript:')) {
-                    $errs[] = ['field' => 'variant_image', 'reason' => __('رابط صورة المتغير غير آمن')];
+                if (!$this->isValidMediaReference($vImage, $storeId)) {
+                    $errs[] = ['field' => 'variant_image', 'reason' => __('رابط صورة المتغير غير صالح')];
                 } else {
                     $r['variant_image'] = $vImage;
                 }
@@ -1373,6 +1366,45 @@ class ProductImportService
     }
 
     /**
+     * Validate a media reference: must be an http/https URL or a store-owned local path.
+     * Local path format: products/{store_id}/{filename}
+     */
+    protected function isValidMediaReference(string $ref, int $storeId): bool
+    {
+        $ref = trim($ref);
+        if ($ref === '') {
+            return true; // empty is always valid (no media)
+        }
+
+        // External URL — accepted
+        $scheme = strtolower((string) parse_url($ref, PHP_URL_SCHEME));
+        if (in_array($scheme, ['http', 'https'], true)) {
+            if (str_contains($ref, '..') || str_contains($ref, '<script') || str_contains($ref, 'javascript:')) {
+                return false;
+            }
+            return true;
+        }
+
+        // Local store-owned path: products/{store_id}/{filename}
+        $localPattern = '/^products\/(\d+)\/(.+)$/';
+        if (preg_match($localPattern, $ref, $m)) {
+            $refStoreId = (int) $m[1];
+            $filename = $m[2];
+            // Reject traversal / null bytes
+            if (str_contains($filename, '..') || str_contains($filename, "\0")) {
+                return false;
+            }
+            // Reject cross-store
+            if ($refStoreId !== $storeId) {
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Download a remote image and store it under the store's disk.
      * Source URL → local path on success; failure returns a reason string.
      */
@@ -1417,6 +1449,11 @@ class ProductImportService
         $resolve = function (string $url) use (&$downloaded, $storeId): string {
             if (isset($downloaded[$url])) {
                 return $downloaded[$url];
+            }
+            // Store-owned local path: use directly, never download.
+            if ($this->isValidMediaReference($url, $storeId) && !preg_match('#^https?://#i', $url)) {
+                $downloaded[$url] = $url;
+                return $url;
             }
             $result = $this->ingestRemoteImage($url, $storeId);
             if (isset($result['error'])) {
