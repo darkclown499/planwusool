@@ -9,8 +9,11 @@ use App\Models\Shipping;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\City;
+use App\Services\ManualOrderService;
+use App\Services\OrderTransitionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -510,30 +513,126 @@ class OrderController extends Controller
                 ];
             });
             
-        // Get products for dropdown
-        $products = Product::where('store_id', $storeId)
+        $store = \App\Models\Store::find($storeId);
+
+        // Products with variant data so the frontend can preview the
+        // server-authoritative unit price (final math happens server-side).
+        $products = Product::with('tax')->where('store_id', $storeId)
             ->where('is_active', true)
-            ->select('id', 'name', 'price', 'sale_price')
-            ->get()
+            ->get(['id', 'name', 'sku', 'price', 'sale_price', 'stock', 'is_tax_included', 'track_inventory', 'variants', 'variant_combinations'])
             ->map(function ($product) {
+                $variants = collect($product->variant_combinations ?? [])->map(function ($vc) use ($product) {
+                    return [
+                        'id' => $vc['id'] ?? null,
+                        'uuid' => $vc['uuid'] ?? null,
+                        'label' => $vc['label'] ?? '',
+                        'price' => (float) ($vc['price'] ?? 0),
+                        'sku' => $vc['sku'] ?? $product->sku,
+                        'stock' => (int) ($vc['stock'] ?? 0),
+                    ];
+                })->values();
                 return [
                     'id' => $product->id,
-                    'name' => $product->name,
+                    'name' => cleanUtf8($product->name),
+                    'sku' => $product->sku,
                     'price' => (float) ($product->sale_price ?? $product->price),
+                    'is_tax_included' => (bool) $product->is_tax_included,
+                    'stock' => (int) $product->stock,
+                    'has_variants' => $variants->isNotEmpty(),
+                    'variant_combinations' => $variants,
                 ];
-            });
-            
-        // Get shipping methods
+            })->values();
+
+        // Shipping methods (full cost data for the fee preview).
         $shippingMethods = Shipping::where('store_id', $storeId)
             ->where('is_active', true)
-            ->select('id', 'name', 'cost')
-            ->get();
-        
+            ->select('id', 'name', 'type', 'cost', 'handling_fee')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($method) {
+                return [
+                    'id' => $method->id,
+                    'name' => cleanUtf8($method->name),
+                    'type' => $method->type,
+                    'cost' => (float) $method->cost,
+                    'handling_fee' => (float) ($method->handling_fee ?? 0),
+                ];
+            });
+
+        $paymentMethods = collect(OrderTransitionService::OFFLINE_PAYMENT_METHODS)
+            ->map(fn ($value) => ['value' => $value, 'label' => $this->manualPaymentLabel($value)])
+            ->values();
+
+        $currency = 'ILS';
+        if ($store && !empty($store->currency)) {
+            $currency = strtoupper($store->currency);
+        } else {
+            try {
+                $settings = app(\App\Services\Currency\CurrencyService::class)->getCurrencySettings($user->id, $storeId);
+                $code = $settings['defaultCurrency'] ?? null;
+                $currency = $code ? strtoupper($code) : $currency;
+            } catch (\Throwable $e) {
+                // fall back to default
+            }
+        }
+
         return Inertia::render('orders/create', [
             'customers' => $customers,
             'products' => $products,
             'shippingMethods' => $shippingMethods,
+            'paymentMethods' => $paymentMethods,
+            'currency' => $currency,
         ]);
+    }
+
+    /**
+     * Create a manual merchant order (phone/WhatsApp/offline) for a store.
+     * All money is authoritative server-side (see ManualOrderService) — the
+     * client can never set prices/totals/status, and all lookups are store-scoped.
+     */
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+
+        $data = $request->validate([
+            'idempotency_key' => ['nullable', 'string', 'max:255'],
+            'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')->where('store_id', $storeId)],
+            'first_name' => ['nullable', 'string', 'max:255'],
+            'last_name' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'integer'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.variant_id' => ['nullable', 'string', 'max:255'],
+            'items.*.variant_uuid' => ['nullable', 'string', 'max:255'],
+            'shipping_method_id' => ['nullable', 'integer', Rule::exists('shippings', 'id')->where('store_id', $storeId)->where('is_active', true)],
+            'payment_method' => ['required', Rule::in(OrderTransitionService::OFFLINE_PAYMENT_METHODS)],
+            'shipping_address' => ['nullable', 'string', 'max:1000'],
+            'shipping_city' => ['nullable', 'string', 'max:255'],
+            'shipping_state' => ['nullable', 'string', 'max:255'],
+            'shipping_postal_code' => ['nullable', 'string', 'max:50'],
+            'shipping_country' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $key = $data['idempotency_key'] ?? null;
+        if ($key) {
+            $existing = Order::where('store_id', $storeId)->where('idempotency_key', $key)->first();
+            if ($existing) {
+                return redirect()->route('orders.show', $existing->id);
+            }
+        }
+
+        try {
+            $order = app(ManualOrderService::class)->createManualOrder($storeId, $data);
+        } catch (\Exception $e) {
+            return back()->withErrors(['general' => $e->getMessage()])->withInput();
+        }
+
+        return redirect()->route('orders.show', $order->id)
+            ->with('success', __('Order created successfully'));
     }
 
     /**
@@ -920,11 +1019,18 @@ class OrderController extends Controller
         $user = Auth::user();
         $storeId = getCurrentStoreId($user);
         $order = Order::where('store_id',$storeId)->where('id',$id)->firstOrFail();
+        $wantsJson = $request->header('X-Inertia') || $request->wantsJson();
         try {
             $fresh = \App\Services\OrderTransitionService::collectCod($order);
-            return response()->json(['message'=>'تم تأكيد استلام المبلغ','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
+            if ($wantsJson) {
+                return response()->json(['message'=>'تم تأكيد استلام المبلغ','order'=>['id'=>$fresh->id,'status'=>$fresh->status,'payment_status'=>$fresh->payment_status]]);
+            }
+            return redirect()->route('orders.show', $fresh->id)->with('success', __('Order collected successfully'));
         } catch (\Exception $e) {
-            return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
+            if ($wantsJson) {
+                return response()->json(['message'=>$e->getMessage(),'errors'=>['payment_status'=>[$e->getMessage()]]], 422);
+            }
+            return back()->withErrors(['general' => $e->getMessage()]);
         }
     }
 
@@ -1094,5 +1200,17 @@ class OrderController extends Controller
         };
         
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function manualPaymentLabel(string $method): string
+    {
+        return match ($method) {
+            'cod', 'cash_on_delivery' => 'الدفع عند الاستلام',
+            'cash' => 'كاش',
+            'bank', 'bank_transfer' => 'تحويل بنكي',
+            'whatsapp' => 'واتساب',
+            'offline' => 'دفع يدوي',
+            default => $method,
+        };
     }
 }

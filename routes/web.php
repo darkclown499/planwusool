@@ -996,6 +996,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('orders', [\App\Http\Controllers\OrderController::class, 'index'])->middleware('permission:manage-orders')->name('orders.index');
             Route::get('orders/export', [\App\Http\Controllers\OrderController::class, 'export'])->middleware('permission:export-orders')->name('orders.export');
             Route::get('orders/create', [\App\Http\Controllers\OrderController::class, 'create'])->middleware('permission:create-orders')->name('orders.create');
+            Route::post('orders', [\App\Http\Controllers\OrderController::class, 'store'])->middleware('permission:create-orders')->name('orders.store');
             Route::get('orders/{id}/edit', [\App\Http\Controllers\OrderController::class, 'edit'])->middleware('permission:edit-orders')->name('orders.edit');
             Route::put('orders/{id}', [\App\Http\Controllers\OrderController::class, 'update'])->middleware('permission:edit-orders')->name('orders.update');
             Route::post('orders/{id}/transition', [\App\Http\Controllers\OrderController::class, 'transition'])->middleware('permission:edit-orders')->name('orders.transition');
