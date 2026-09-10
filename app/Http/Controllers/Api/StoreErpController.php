@@ -34,6 +34,10 @@ class StoreErpController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        if (!$this->checkAccountingFeature($request, $store)) {
+            return response()->json(['success' => false, 'message' => 'Accounting integration is not included in your current plan.'], 403);
+        }
+
         $validated = $this->validateConfig($request, $store, false);
 
         $config = StoreErpConfig::create(array_merge([
@@ -146,6 +150,15 @@ class StoreErpController extends Controller
         }
 
         return $validated;
+    }
+
+    protected function checkAccountingFeature(Request $request, Store $store): bool
+    {
+        $user = $request->user();
+        if (!$user || $user->isSuperAdmin() || $user->isAdmin()) {
+            return true;
+        }
+        return $store->canUsePlanFeature('accounting_integration');
     }
 
     protected function authorize(Request $request, Store $store): bool

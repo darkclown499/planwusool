@@ -29,7 +29,7 @@ class StoreOfferController extends Controller
 
         $caps = getTemplateCapabilities($request->user());
         if (!$caps['offers']) {
-            return response()->json(['error' => 'Offers require the Growth plan or above.'], 403);
+            return response()->json(['error' => 'This feature requires a higher plan tier. Please upgrade your plan.'], 403);
         }
 
         $validated = $request->validate([
@@ -60,7 +60,7 @@ class StoreOfferController extends Controller
 
         $caps = getTemplateCapabilities($request->user());
         if (!$caps['offers']) {
-            return response()->json(['error' => 'Offers require the Growth plan or above.'], 403);
+            return response()->json(['error' => 'This feature requires a higher plan tier. Please upgrade your plan.'], 403);
         }
 
         $validated = $request->validate([

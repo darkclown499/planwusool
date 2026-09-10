@@ -30,7 +30,7 @@ class StorePageController extends Controller
 
         $caps = getTemplateCapabilities($request->user());
         if (!$caps['pages']) {
-            return response()->json(['error' => 'Custom pages require the Professional plan.'], 403);
+            return response()->json(['error' => 'This feature requires a higher plan tier. Please upgrade your plan.'], 403);
         }
 
         $validated = $request->validate([
@@ -68,7 +68,7 @@ class StorePageController extends Controller
 
         $caps = getTemplateCapabilities($request->user());
         if (!$caps['pages']) {
-            return response()->json(['error' => 'Custom pages require the Professional plan.'], 403);
+            return response()->json(['error' => 'This feature requires a higher plan tier. Please upgrade your plan.'], 403);
         }
 
         $validated = $request->validate([

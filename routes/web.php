@@ -1289,11 +1289,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('currencies/{currency}', [CurrencyController::class, 'destroy'])->middleware('permission:delete-currencies')->name('currencies.destroy');
     });
 
-    // ChatGPT routes (legacy)
-    Route::post('api/chatgpt/generate', [\App\Http\Controllers\ChatGptController::class, 'generate'])->name('chatgpt.generate');
-    // Free Google Gemini AI generation (Free tier - gemini-1.5-flash)
-    Route::post('api/ai/generate', [\App\Http\Controllers\AiAssistantController::class, 'generate'])->name('ai.generate');
-    Route::post('api/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])->name('api.ai-chat');
+    // ChatGPT routes (legacy) — feature-gated: chatgpt
+    Route::post('api/chatgpt/generate', [\App\Http\Controllers\ChatGptController::class, 'generate'])->middleware('feature.access:chatgpt,json')->name('chatgpt.generate');
+    // Free Google Gemini AI generation (Free tier - gemini-1.5-flash) — feature-gated: chatgpt
+    Route::post('api/ai/generate', [\App\Http\Controllers\AiAssistantController::class, 'generate'])->middleware('feature.access:chatgpt,json')->name('ai.generate');
+    Route::post('api/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])->middleware('feature.access:chatgpt,json')->name('api.ai-chat');
     
 
     

@@ -30,7 +30,6 @@ use Inertia\Inertia;
 Route::middleware(['auth', 'verified', 'permission:manage-settings'])->group(function () {
     Route::get('/payment-methods', [PaymentSettingController::class, 'getPaymentMethods'])->name('payment.methods');
     Route::get('/enabled-payment-methods', [PaymentSettingController::class, 'getEnabledMethods'])->name('payment.enabled-methods');
-    Route::post('/plan-orders', [PlanOrderController::class, 'create'])->name('plan-orders.create');
     Route::post('/stripe-payment', [StripePaymentController::class, 'processPayment'])->name('settings.stripe.payment');
     Route::post('/paypal-payment', [PayPalPaymentController::class, 'processPayment'])->name('settings.paypal.payment');
     Route::post('/bank-payment', [BankPaymentController::class, 'processPayment'])->name('settings.bank.payment');
@@ -41,12 +40,12 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     Route::post('/payment-settings', [PaymentSettingController::class, 'store'])->name('payment.settings');
     Route::post('/payment-settings/test-telegram', [PaymentSettingController::class, 'testTelegram'])->name('payment.settings.test-telegram');
     
-    // Twilio Settings
-    Route::post('/settings/twilio', [TwilioSettingController::class, 'store'])->name('settings.twilio');
-    Route::post('/settings/twilio/test', [TwilioSettingController::class, 'test'])->name('settings.twilio.test');
+    // Twilio Settings (feature-gated: sms)
+    Route::post('/settings/twilio', [TwilioSettingController::class, 'store'])->middleware('feature.access:sms,json')->name('settings.twilio');
+    Route::post('/settings/twilio/test', [TwilioSettingController::class, 'test'])->middleware('feature.access:sms,json')->name('settings.twilio.test');
 
-    // HotSMS Settings
-    Route::post('/settings/hotsms/test', [TwilioSettingController::class, 'testHotsms'])->name('settings.hotsms.test');
+    // HotSMS Settings (feature-gated: sms)
+    Route::post('/settings/hotsms/test', [TwilioSettingController::class, 'testHotsms'])->middleware('feature.access:sms,json')->name('settings.hotsms.test');
     
     // Profile settings page with profile and password sections
     Route::get('profile', function () {
@@ -103,10 +102,10 @@ Route::middleware(['auth', 'verified', 'plan.access'])->group(function () {
     // Accounting Integration routes (platform-level; merchants use /stores/{id}/integrations/erp)
     Route::middleware('platform.admin')->group(function () {
         Route::get('settings/accounting', [AccountingSettingController::class, 'index'])->name('settings.accounting.index');
-        Route::post('settings/accounting', [AccountingSettingController::class, 'store'])->name('settings.accounting.store');
+        Route::post('settings/accounting', [AccountingSettingController::class, 'store'])->middleware('feature.access:accounting_integration,json')->name('settings.accounting.store');
         Route::delete('settings/accounting', [AccountingSettingController::class, 'destroy'])->name('settings.accounting.destroy');
-        Route::post('settings/accounting/test-connection', [AccountingSettingController::class, 'testConnection'])->name('settings.accounting.test-connection');
-        Route::post('settings/accounting/sync-now', [AccountingSettingController::class, 'syncNow'])->name('settings.accounting.sync-now');
+        Route::post('settings/accounting/test-connection', [AccountingSettingController::class, 'testConnection'])->middleware('feature.access:accounting_integration,json')->name('settings.accounting.test-connection');
+        Route::post('settings/accounting/sync-now', [AccountingSettingController::class, 'syncNow'])->middleware('feature.access:accounting_integration,json')->name('settings.accounting.sync-now');
     });
 
 });

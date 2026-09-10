@@ -137,6 +137,7 @@ class CheckPlanAccess
     public static function featureColumnMap(): array
     {
         return [
+            'sms' => 'enable_sms',
             'shipping_method' => 'enable_shipping_method',
             'pwa' => 'pwa_business',
             'custom_domain' => 'enable_custdomain',

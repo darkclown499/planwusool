@@ -9,13 +9,19 @@ class CheckFeatureAccess
 {
     /**
      * Handle an incoming request.
+     *
+     * Usage in routes:
+     *   ->middleware('feature.access:chatgpt')        // redirect on web
+     *   ->middleware('feature.access:chatgpt,json')   // 403 JSON on API
      */
-    public function handle(Request $request, Closure $next, string $feature)
+    public function handle(Request $request, Closure $next, string $feature, string $responseType = 'redirect')
     {
         $user = auth()->user();
         
         if (!$user) {
-            return redirect()->route('login');
+            return $responseType === 'json'
+                ? response()->json(['message' => 'Unauthenticated.'], 401)
+                : redirect()->route('login');
         }
 
         // Super admin has full access
@@ -25,13 +31,18 @@ class CheckFeatureAccess
 
         // Only company users need feature checks
         if ($user->type !== 'company') {
-            return redirect()->route('dashboard')->with('error', __('Access denied.'));
+            $message = __('Access denied.');
+            return $responseType === 'json'
+                ? response()->json(['success' => false, 'message' => $message], 403)
+                : redirect()->route('dashboard')->with('error', $message);
         }
 
-        // Check feature access
-        $featureCheck = $user->hasFeatureAccess($feature);
+        // Check feature access via canonical featureColumnMap
+        $featureCheck = \App\Http\Middleware\CheckPlanAccess::checkFeatureAccess($user, $feature);
         if (!$featureCheck['allowed']) {
-            return redirect()->route('dashboard')->with('error', $featureCheck['message']);
+            return $responseType === 'json'
+                ? response()->json(['success' => false, 'message' => $featureCheck['message']], 403)
+                : redirect()->route('dashboard')->with('error', $featureCheck['message']);
         }
 
         return $next($request);

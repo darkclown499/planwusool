@@ -405,16 +405,32 @@ class PlanController extends Controller
         
         $user = auth()->user();
         $plan = Plan::findOrFail($request->plan_id);
-        if ($user->is_trial || $plan->is_trial !== 'on') {
-            return back()->withErrors(['error' => 'Trial not available']);
+
+        // Server-side trial entitlement checks
+        if ($plan->is_trial !== 'on') {
+            return back()->withErrors(['error' => 'This plan does not offer a trial period.']);
+        }
+
+        if ($plan->is_plan_enable !== 'on') {
+            return back()->withErrors(['error' => 'This plan is not currently available.']);
+        }
+
+        if ($user->is_trial) {
+            return back()->withErrors(['error' => 'You have already used your trial period.']);
+        }
+
+        if ($user->plan_is_active && $user->plan_id) {
+            return back()->withErrors(['error' => 'You already have an active plan subscription.']);
         }
         
-        $user->update([
+        // These fields are guarded (ownership/plan state) — update() would
+        // silently drop them, so use forceFill like assignPlanToUser does.
+        $user->forceFill([
             'plan_id' => $plan->id,
             'is_trial' => 1,
             'trial_day' => $plan->trial_day,
             'trial_expire_date' => now()->addDays($plan->trial_day)
-        ]);
+        ])->save();
         
         return back()->with('success', __('Trial started successfully'));
     }
@@ -481,8 +497,9 @@ class PlanController extends Controller
                 'status' => 'pending'
             ]);
             
-            // Redirect to payment gateway selection
-            return redirect()->route('payment.select', ['plan_order_id' => $planOrder->id])
+            // For paid plans, create pending order and redirect to plans page
+            // (payment gateway selection is handled per-gateway in the frontend)
+            return redirect()->route('plans.index')
                 ->with('success', __('Please complete the payment to activate your plan.'));
             
         } catch (\Exception $e) {
