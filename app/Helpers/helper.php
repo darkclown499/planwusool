@@ -707,6 +707,52 @@ if (! function_exists('getEnabledPaymentMethods')) {
     }
 }
 
+if (! function_exists('hasUsablePaymentMethods')) {
+    /**
+     * Count payment methods that can genuinely accept a payment.
+     *
+     * Manual/offline methods (COD, bank transfer, WhatsApp, wallets) are
+     * usable when enabled — they need no API credentials.
+     *
+     * Connected/international gateways (Stripe, PayPal, etc.) are only
+     * usable when enabled AND at least one credential field has a saved
+     * non-empty value.  An enabled toggle alone does not make a gateway
+     * usable — the payment processing layer will reject the order if
+     * required keys are missing.
+     *
+     * @param int|null $userId
+     * @param int|null $storeId
+     * @return int  number of genuinely usable payment methods
+     */
+    function hasUsablePaymentMethods($userId = null, $storeId = null)
+    {
+        $enabled = getEnabledPaymentMethods($userId, $storeId);
+        if (empty($enabled)) {
+            return 0;
+        }
+
+        $usable = 0;
+        foreach ($enabled as $method => $config) {
+            $info = \App\Services\Payment\PaymentProviderCatalog::get($method);
+            $type = $info['type'] ?? 'international';
+
+            // Manual/offline methods are usable when enabled — no credentials needed
+            if ($type === \App\Services\Payment\PaymentProviderCatalog::TYPE_MANUAL) {
+                $usable++;
+                continue;
+            }
+
+            // Connected/international gateways need at least one credential
+            $credentialValues = array_diff_key($config, array_flip(['enabled']));
+            if (count(array_filter($credentialValues, fn ($v) => !empty($v))) > 0) {
+                $usable++;
+            }
+        }
+
+        return $usable;
+    }
+}
+
 if (! function_exists('validatePaymentMethodConfig')) {
     /**
      * Validate payment method configuration

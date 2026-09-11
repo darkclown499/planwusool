@@ -209,6 +209,61 @@ class DashboardChecklistReadinessTest extends TestCase
         $this->assertFalse($this->getReadiness($user)['items']['payment']);
     }
 
+    // ── 6b. Enabled-but-incomplete gateway does NOT complete payment ────
+
+    public function test_enabled_gateway_without_credentials_does_not_count(): void
+    {
+        $user = $this->merchantUser();
+        $store = $this->createStore($user, 'checklist-incomplete-gw');
+
+        // Enable Stripe but leave all keys empty
+        PaymentSetting::updateOrCreate(
+            ['user_id' => $user->id, 'store_id' => $store->id, 'key' => 'is_stripe_enabled'],
+            ['value' => '1']
+        );
+
+        $this->assertFalse($this->getReadiness($user)['items']['payment'],
+            'Stripe enabled without credentials must NOT count as usable payment');
+    }
+
+    public function test_cod_alone_completes_payment(): void
+    {
+        $user = $this->merchantUser();
+        $store = $this->createStore($user, 'checklist-cod-only');
+
+        // COD is a manual method — no credentials needed
+        PaymentSetting::updateOrCreate(
+            ['user_id' => $user->id, 'store_id' => $store->id, 'key' => 'is_cod_enabled'],
+            ['value' => '1']
+        );
+
+        $this->assertTrue($this->getReadiness($user)['items']['payment'],
+            'COD (manual method) must count as usable when enabled');
+    }
+
+    public function test_enabled_gateway_with_credentials_counts(): void
+    {
+        $user = $this->merchantUser();
+        $store = $this->createStore($user, 'checklist-configured-gw');
+
+        // Enable Stripe WITH credentials
+        PaymentSetting::updateOrCreate(
+            ['user_id' => $user->id, 'store_id' => $store->id, 'key' => 'is_stripe_enabled'],
+            ['value' => '1']
+        );
+        PaymentSetting::updateOrCreate(
+            ['user_id' => $user->id, 'store_id' => $store->id, 'key' => 'stripe_key'],
+            ['value' => 'pk_test_123']
+        );
+        PaymentSetting::updateOrCreate(
+            ['user_id' => $user->id, 'store_id' => $store->id, 'key' => 'stripe_secret'],
+            ['value' => 'sk_test_456']
+        );
+
+        $this->assertTrue($this->getReadiness($user)['items']['payment'],
+            'Stripe enabled WITH credentials must count as usable');
+    }
+
     // ── 7. Design truth ─────────────────────────────────────────────────
 
     public function test_design_readiness_reflects_theme_selection(): void

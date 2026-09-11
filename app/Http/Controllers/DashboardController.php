@@ -143,7 +143,7 @@ class DashboardController extends Controller
         // actual deliverable method for the customer.
         $hasShippingEntitlement = $store->canUsePlanFeature('shipping_method');
         $hasShipping = $hasShippingEntitlement && \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
-        $hasPayments = count(getEnabledPaymentMethods($user->id, $store->id)) > 0;
+        $hasPayments = hasUsablePaymentMethods($user->id, $store->id) > 0;
         $hasTaxes = \App\Models\Tax::where('store_id', $store->id)->exists();
         $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);
         $hasSeo = !empty($config['meta_title']) || !empty($config['seo_title']);
