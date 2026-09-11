@@ -658,8 +658,8 @@ Route::get('/translations/{locale}', [TranslationController::class, 'getTranslat
 
 
 
-    // Email Templates routes - moved inside authenticated middleware
-    Route::middleware(['auth'])->group(function () {
+    // Email Templates routes - platform-admin only (global transactional templates affect all stores)
+    Route::middleware(['auth', 'platform.admin'])->group(function () {
         Route::get('email-templates', [\App\Http\Controllers\EmailTemplateController::class, 'index'])->name('email-templates.index');
         Route::get('email-templates/{emailTemplate}', [\App\Http\Controllers\EmailTemplateController::class, 'show'])->name('email-templates.show');
         Route::put('email-templates/{emailTemplate}/settings', [\App\Http\Controllers\EmailTemplateController::class, 'updateSettings'])->name('email-templates.update-settings');
@@ -668,8 +668,8 @@ Route::get('/translations/{locale}', [TranslationController::class, 'getTranslat
         Route::get('email-templates/{emailTemplate}/variables', [\App\Http\Controllers\EmailTemplateController::class, 'getVariables'])->name('email-templates.variables');
     });
 
-// Notification Templates routes
-Route::middleware(['auth'])->group(function () {
+// Notification Templates routes - platform-admin only (global SMS templates affect all stores)
+Route::middleware(['auth', 'platform.admin'])->group(function () {
     Route::get('notification-templates', [\App\Http\Controllers\NotificationTemplateController::class, 'index'])->name('notification-templates.index');
     Route::get('notification-templates/{id}', [\App\Http\Controllers\NotificationTemplateController::class, 'show'])->name('notification-templates.show');
     Route::put('notification-templates/{id}', [\App\Http\Controllers\NotificationTemplateController::class, 'update'])->name('notification-templates.update');
