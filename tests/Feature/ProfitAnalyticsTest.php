@@ -221,4 +221,169 @@ class ProfitAnalyticsTest extends TestCase
         $this->assertNull($item->product_id);
         $this->assertSame(60.0, (float) $item->unit_cost);
     }
+
+    protected function makeOrder(Store $store, array $attrs, array $items): Order
+    {
+        $order = Order::forceCreate(array_merge([
+            'order_number' => Order::generateOrderNumber(),
+            'store_id' => $store->id,
+            'status' => 'delivered',
+            'payment_status' => 'paid',
+            'customer_email' => 't@t.com', 'customer_phone' => '0',
+            'customer_first_name' => 'T', 'customer_last_name' => 'T',
+            'shipping_address' => 'x', 'shipping_city' => 'y', 'shipping_state' => '', 'shipping_country' => '',
+            'billing_address' => 'x', 'billing_city' => 'y', 'billing_state' => '', 'billing_country' => '',
+            'subtotal' => 0, 'tax_amount' => 0, 'shipping_amount' => 0, 'discount_amount' => 0, 'total_amount' => 0,
+            'currency' => 'ILS', 'payment_method' => 'cod', 'order_source' => 'storefront',
+            'refunded_amount' => 0,
+        ], $attrs));
+
+        foreach ($items as $item) {
+            OrderItem::create(array_merge([
+                'order_id' => $order->id,
+                'product_id' => null,
+                'product_name' => 'P',
+                'product_sku' => 'SKU',
+                'product_price' => 0,
+                'quantity' => 1,
+                'unit_price' => 0,
+                'total_price' => 0,
+            ], $item));
+        }
+
+        return $order;
+    }
+
+    protected function period(): array
+    {
+        return (new \App\Support\AnalyticsPeriod('Asia/Hebron', now()))->resolve('last_30_days');
+    }
+
+    public function test_summary_computes_known_revenue_cogs_profit_and_coverage(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, [], [
+            ['unit_price' => 100, 'total_price' => 200, 'quantity' => 2, 'unit_cost' => 60],
+        ]);
+        $this->makeOrder($store, [], [
+            ['unit_price' => 50, 'total_price' => 50, 'quantity' => 1, 'unit_cost' => null],
+        ]);
+
+        $out = app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS');
+        $s = collect($out['summary'])->firstWhere('code', 'ILS');
+
+        $this->assertSame(200.0, $s['known_revenue']);
+        $this->assertSame(50.0, $s['unknown_cost_revenue']);
+        $this->assertSame(250.0, $s['total_revenue']);
+        $this->assertSame(120.0, $s['cogs']);
+        $this->assertSame(80.0, $s['gross_profit']);
+        $this->assertSame(40.0, $s['gross_margin_pct']);
+        $this->assertSame(80.0, $s['cost_coverage_pct']);
+        $this->assertSame(1, $s['known_cost_orders']);
+        $this->assertSame(2, $s['total_orders']);
+    }
+
+    public function test_margin_is_zero_when_no_known_revenue(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, [], [['unit_price' => 50, 'total_price' => 50, 'quantity' => 1, 'unit_cost' => null]]);
+
+        $s = collect(app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['summary'])->firstWhere('code', 'ILS');
+        $this->assertSame(0.0, $s['gross_margin_pct']);
+        $this->assertSame(0.0, $s['cost_coverage_pct']);
+        $this->assertNull($s['refund_adjusted_profit']);
+    }
+
+    public function test_cancelled_and_failed_orders_are_excluded(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, ['status' => 'cancelled'], [['total_price' => 999, 'unit_price' => 999, 'quantity' => 1, 'unit_cost' => 500]]);
+        $this->makeOrder($store, ['status' => 'delivered'], [['total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 40]]);
+
+        $s = collect(app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['summary'])->firstWhere('code', 'ILS');
+        $this->assertSame(100.0, $s['known_revenue']);
+        $this->assertSame(60.0, $s['gross_profit']);
+    }
+
+    public function test_currencies_are_grouped_and_never_mixed(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, ['currency' => 'ILS'], [['total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 40]]);
+        $this->makeOrder($store, ['currency' => 'USD'], [['total_price' => 200, 'unit_price' => 200, 'quantity' => 1, 'unit_cost' => 120]]);
+
+        $summary = app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['summary'];
+        $ils = collect($summary)->firstWhere('code', 'ILS');
+        $usd = collect($summary)->firstWhere('code', 'USD');
+        $this->assertSame(100.0, $ils['known_revenue']);
+        $this->assertSame(200.0, $usd['known_revenue']);
+    }
+
+    public function test_full_coverage_refund_is_subtracted_and_partial_is_excluded(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, ['refunded_amount' => 30, 'refunded_at' => now()], [
+            ['total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 40],
+        ]);
+        $this->makeOrder($store, ['refunded_amount' => 25, 'refunded_at' => now()], [
+            ['total_price' => 200, 'unit_price' => 200, 'quantity' => 1, 'unit_cost' => 100],
+            ['total_price' => 50, 'unit_price' => 50, 'quantity' => 1, 'unit_cost' => null],
+        ]);
+
+        $s = collect(app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['summary'])->firstWhere('code', 'ILS');
+        $this->assertSame(30.0, $s['attributable_refunds']);
+        $this->assertSame(25.0, $s['excluded_refunds']);
+        $this->assertSame('partial', $s['refund_state']);
+        $this->assertSame(160.0, $s['gross_profit']);
+        $this->assertSame(130.0, $s['refund_adjusted_profit']);
+    }
+
+    public function test_ranking_orders_by_gross_profit_not_revenue(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, [], [
+            ['product_name' => 'HighRevenueLowMargin', 'total_price' => 1000, 'unit_price' => 1000, 'quantity' => 1, 'unit_cost' => 950],
+            ['product_name' => 'LowRevenueHighMargin', 'total_price' => 300, 'unit_price' => 300, 'quantity' => 1, 'unit_cost' => 50],
+        ]);
+
+        $top = app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['top'];
+        $this->assertSame('LowRevenueHighMargin', $top[0]['product_name'], 'ranked by gross profit');
+        $this->assertSame(250.0, $top[0]['gross_profit']);
+    }
+
+    public function test_negative_margin_products_are_surfaced(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, [], [
+            ['product_name' => 'Loss', 'total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 150],
+        ]);
+
+        $neg = app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['negative'];
+        $this->assertCount(1, $neg);
+        $this->assertSame('Loss', $neg[0]['product_name']);
+        $this->assertSame(-50.0, $neg[0]['gross_profit']);
+    }
+
+    public function test_store_isolation_excludes_other_store_orders(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $otherUser = User::factory()->create(['type' => 'company', 'email_verified_at' => now(), 'onboarded_at' => now()]);
+        $otherStore = Store::factory()->create(['user_id' => $otherUser->id, 'currency' => 'ILS']);
+
+        $this->makeOrder($store, [], [['total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 40]]);
+        $this->makeOrder($otherStore, [], [['total_price' => 777, 'unit_price' => 777, 'quantity' => 1, 'unit_cost' => 300]]);
+
+        $s = collect(app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['summary'])->firstWhere('code', 'ILS');
+        $this->assertSame(100.0, $s['known_revenue'], 'other store must not leak');
+    }
+
+    public function test_trend_has_one_point_per_bucket(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, [], [['total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 40]]);
+
+        $trend = app(\App\Services\ProfitAnalyticsService::class)->overview($store->id, $this->period(), 'ILS')['trend'];
+        $this->assertNotEmpty($trend['labels']);
+        $this->assertCount(count($trend['labels']), $trend['gross_profit']);
+        $this->assertSame(60.0, array_sum($trend['gross_profit']));
+    }
 }
