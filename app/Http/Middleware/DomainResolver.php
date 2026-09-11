@@ -13,6 +13,45 @@ use Symfony\Component\HttpFoundation\Response;
 class DomainResolver
 {
     /**
+     * Store payment callback/success routes that are NOT rendered through
+     * handleStoreRequest(). These routes are matched before middleware runs,
+     * so without this passthrough they would be aborted with a 404 before the
+     * registered store.status / webhook.signature middleware could run.
+     *
+     * Each name corresponds to a route registered inside the store subdomain
+     * group in routes/web.php and remains protected by its own web/CSRF and
+     * webhook.signature middleware. Requests to the main app domain never
+     * reach this list (early $next() above). Default storefront paths keep
+     * resolving through handleStoreRequest as before.
+     */
+    private const STORE_PAYMENT_ROUTE_NAMES = [
+        'store.midtrans.callback',
+        'store.midtrans.success',
+        'store.skrill.callback',
+        'store.skrill.success',
+        'store.coingate.callback',
+        'store.coingate.success',
+        'store.mollie.callback',
+        'store.mollie.success',
+        'store.benefit.callback',
+        'store.benefit.success',
+        'store.yookassa.callback',
+        'store.yookassa.success',
+        'store.paytabs.callback',
+        'store.paytabs.success',
+        'store.cashfree.webhook',
+        'store.cashfree.verify-payment',
+        'store.cashfree.success',
+        'store.xendit.success',
+        'store.toyyibpay.success',
+        'store.flutterwave.success',
+        'store.paystack.success',
+        'store.mercadopago.success',
+        'store.mercadopago.failure',
+        'store.mercadopago.pending',
+    ];
+
+    /**
      * Handle an incoming request.
      */
     public function handle(Request $request, Closure $next)
@@ -191,6 +230,15 @@ class DomainResolver
                     ])->toResponse($request)->setStatusCode(503);
                 }
                 
+                // Pass canonical store payment routes through to their registered
+                // route so the store.status and webhook.signature middleware and
+                // the payment controller still run. Store status checks above keep
+                // disabled/maintenance stores short-circuiting exactly as before.
+                $routeName = $request->route() ? $request->route()->getName() : null;
+                if (in_array($routeName, self::STORE_PAYMENT_ROUTE_NAMES, true)) {
+                    return $next($request);
+                }
+
                 // Route the request to appropriate store controller method
                 $response = $this->handleStoreRequest($request, $store);
 
