@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { route } from 'ziggy-js';
 import { PageTemplate } from '@/components/page-template';
 import { router } from '@inertiajs/react';
-import { CalendarRange, ChevronDown, Download, FileText, Inbox, Repeat, Users } from 'lucide-react';
+import { CalendarRange, ChevronDown, Download, FileText, Inbox, PiggyBank, Repeat, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -213,6 +213,15 @@ export default function AnalyticsCustomers({ customerAnalytics, preset, from, to
         <div className="flex items-center gap-2">
           <PeriodPicker preset={preset} />
           <ExportCsv preset={preset} from={from} to={to} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-2"
+            onClick={() => router.get(route('analytics.profit'), {}, { preserveScroll: true })}
+          >
+            <PiggyBank className="h-4 w-4 text-muted-foreground" />
+            {t('Profit')}
+          </Button>
         </div>
       }
       breadcrumbs={[

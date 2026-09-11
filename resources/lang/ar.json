@@ -5698,5 +5698,21 @@
     "Store setup steps": "مراحل إعداد المتجر",
     "Saving…": "جارٍ الحفظ…",
     "All changes saved": "تم حفظ التغييرات",
-    "Complete the required fields to continue": "أكمل الحقول المطلوبة للمتابعة"
+    "Complete the required fields to continue": "أكمل الحقول المطلوبة للمتابعة",
+    "Profit": "الربح",
+    "Known Cost Revenue": "إجمالي الإيراد المعروف التكلفة",
+    "Cost of Goods Sold": "تكلفة البضاعة (COGS)",
+    "Gross Profit": "الربح الإجمالي",
+    "Gross Margin": "هامش الربح الإجمالي",
+    "Cost Coverage": "تغطية بيانات التكلفة",
+    "Refund-Adjusted Profit": "الربح بعد الاستردادات",
+    "Unknown Cost Profit Banner": "بعض الطلبات لا تحتوي على بيانات تكلفة، لذلك الربح محسوب على الطلبات ذات التكلفة المعروفة فقط.",
+    "Partial Refund Banner": "بعض مبالغ الاسترداد تعود لطلبات بدون بيانات تكلفة كاملة، لذلك لم تُخصم من الربح المعدل.",
+    "No cost data yet": "لا توجد بيانات تكلفة بعد",
+    "Set cost price guidance": "قم بتحديد سعر التكلفة على المنتجات لبدء احتساب الأرباح؛ الطلبات التاريخية بدون بيانات تكلفة تبقى غير معروفة.",
+    "Most Profitable Products": "المنتجات الأكثر ربحية",
+    "Negative Margin Products": "منتجات بهامش سلبي",
+    "Margin": "الهامش",
+    "Refunded Orders": "الطلبات المستردة",
+    "Complete": "كاملة"
 }

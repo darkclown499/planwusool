@@ -386,4 +386,37 @@ class ProfitAnalyticsTest extends TestCase
         $this->assertCount(count($trend['labels']), $trend['gross_profit']);
         $this->assertSame(60.0, array_sum($trend['gross_profit']));
     }
+
+    public function test_profit_route_renders_for_authorized_merchant(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->makeOrder($store, [], [['total_price' => 100, 'unit_price' => 100, 'quantity' => 1, 'unit_cost' => 40]]);
+
+        $response = $this->actingAs($user)
+            ->get(route('analytics.profit'));
+
+        $response->assertStatus(200);
+        $props = $response->inertiaPage()['props'];
+        $this->assertArrayHasKey('profit', $props);
+        $this->assertNotEmpty($props['profit']['summary']);
+    }
+
+    public function test_profit_route_is_forbidden_without_manage_analytics_permission(): void
+    {
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $plan = Plan::factory()->create(['name' => 'Pro-' . uniqid(), 'price' => 99, 'themes' => ['all']]);
+        $user = User::factory()->create([
+            'type' => 'company',
+            'plan_id' => $plan->id,
+            'plan_expire_date' => now()->addMonth(),
+            'onboarded_at' => now(),
+            'email_verified_at' => now(),
+        ]);
+        $store = Store::factory()->create(['user_id' => $user->id, 'currency' => 'ILS']);
+        $user->current_store = $store->id;
+        $user->save();
+        $this->actingAs($user);
+
+        $this->get(route('analytics.profit'))->assertStatus(403);
+    }
 }

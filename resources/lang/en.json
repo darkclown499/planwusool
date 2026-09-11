@@ -5252,5 +5252,21 @@
     "Store setup steps": "Store setup steps",
     "Saving…": "Saving…",
     "All changes saved": "All changes saved",
-    "Complete the required fields to continue": "Complete the required fields to continue"
+    "Complete the required fields to continue": "Complete the required fields to continue",
+    "Profit": "Profit",
+    "Known Cost Revenue": "Known cost revenue",
+    "Cost of Goods Sold": "Cost of goods sold (COGS)",
+    "Gross Profit": "Gross profit",
+    "Gross Margin": "Gross margin",
+    "Cost Coverage": "Cost data coverage",
+    "Refund-Adjusted Profit": "Refund-adjusted profit",
+    "Unknown Cost Profit Banner": "Some orders have no cost data, so profit is calculated only for orders with known cost.",
+    "Partial Refund Banner": "Some refunds belong to orders without complete cost data, so they were not deducted from the adjusted profit.",
+    "No cost data yet": "No cost data yet",
+    "Set cost price guidance": "Set a cost price on your products to start calculating profit; historical orders without cost data remain unknown.",
+    "Most Profitable Products": "Most profitable products",
+    "Negative Margin Products": "Negative margin products",
+    "Margin": "Margin",
+    "Refunded Orders": "Refunded orders",
+    "Complete": "Complete"
 }

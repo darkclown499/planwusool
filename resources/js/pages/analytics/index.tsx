@@ -9,6 +9,7 @@ import {
   FileDown,
   FileText,
   Inbox,
+  PiggyBank,
   ShoppingCart,
   TrendingUp,
   Users,
@@ -423,6 +424,15 @@ export default function Analytics({ analytics, preset, from, to }: Props) {
         <div className="flex items-center gap-2">
           <DateRangePicker preset={preset} from={from} to={to} />
           <ExportDropdown preset={preset} from={from} to={to} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-2"
+            onClick={() => router.get(route('analytics.profit'), {}, { preserveScroll: true })}
+          >
+            <PiggyBank className="h-4 w-4 text-muted-foreground" />
+            {t('Profit')}
+          </Button>
         </div>
       }
       breadcrumbs={[

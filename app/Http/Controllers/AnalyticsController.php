@@ -117,6 +117,57 @@ class AnalyticsController extends Controller
         ]);
     }
 
+    public function profit(Request $request)
+    {
+        $user = Auth::user();
+        $storeId = getCurrentStoreId($user);
+
+        if (! $storeId) {
+            return Inertia::render('analytics/profit', [
+                'profit' => $this->emptyProfitPayload(),
+                'preset' => 'last_30_days',
+                'from' => null,
+                'to' => null,
+                'primary_currency' => 'ILS',
+                'period' => null,
+            ]);
+        }
+
+        [$period, $preset, $from, $to] = $this->resolvePeriod($request);
+        $primaryCurrency = $this->primaryCurrency($user->id, $storeId);
+
+        return Inertia::render('analytics/profit', [
+            'profit' => app(\App\Services\ProfitAnalyticsService::class)->overview($storeId, $period, $primaryCurrency),
+            'preset' => $preset,
+            'from' => $from,
+            'to' => $to,
+            'primary_currency' => $primaryCurrency,
+            'period' => [
+                'key' => $period['key'],
+                'timezone' => $period['timezone'],
+                'from' => $period['from']->toISOString(),
+                'to' => $period['to']->toISOString(),
+                'from_label' => $period['labels']['from'],
+                'to_label' => $period['labels']['to'],
+            ],
+        ]);
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function emptyProfitPayload(): array
+    {
+        return [
+            'has_no_store' => true,
+            'summary' => [],
+            'trend' => ['labels' => [], 'known_revenue' => [], 'cogs' => [], 'gross_profit' => [], 'margin_pct' => []],
+            'top' => [],
+            'negative' => [],
+            'refunded_orders' => [],
+        ];
+    }
+
     public function export(Request $request)
     {
         [$period, $primaryCurrency, $storeId] = $this->exportContext($request);
