@@ -310,6 +310,28 @@ class Product extends Model
     }
 
     /**
+     * Canonical unit cost for a given variant selection.
+     * Precedence: variant-combination cost_price → product cost_price → null (unknown).
+     * NULL is a first-class "unknown cost" signal — never coerced to 0.
+     */
+    public function costPriceForVariant($selection): ?float
+    {
+        $combo = $this->resolveVariantCombination($selection);
+        if ($combo && array_key_exists('cost_price', $combo) && $combo['cost_price'] !== '' && $combo['cost_price'] !== null) {
+            $vCost = (float) $combo['cost_price'];
+            if ($vCost >= 0 && $vCost < 9999999) {
+                return $vCost;
+            }
+        }
+
+        if ($this->cost_price !== null && $this->cost_price !== '') {
+            return (float) $this->cost_price;
+        }
+
+        return null;
+    }
+
+    /**
      * Whether product has any variant combinations with explicit price.
      */
     public function hasVariantPrices(): bool
