@@ -64,9 +64,24 @@ class SkrillController extends Controller
             $storeModel    = \App\Models\Store::find($order->store_id);
             $skrillConfig  = getPaymentMethodConfig('skrill', $storeModel->user->id, $order->store_id);
 
+            // FAIL CLOSED: a store-level Skrill callback must never verify
+            // against md5('') when no usable secret word is configured.
+            // A missing / empty / whitespace secret word is a misconfigured
+            // gateway - reject before computing any signature and before any
+            // order/payment mutation. Skrill still gets its "OK" so it stops
+            // retrying, exactly like a rejected IPN.
+            $secretWord = trim((string) ($skrillConfig['secret_word'] ?? ''));
+            if ($secretWord === '') {
+                \Illuminate\Support\Facades\Log::warning('Skrill callback rejected: missing secret word', [
+                    'order_id' => $order->id,
+                    'store_id' => $order->store_id,
+                ]);
+                return response('OK');
+            }
+
             $concatFields = $request->merchant_id
                 . $request->transaction_id
-                . strtoupper(md5($skrillConfig['secret_word']))
+                . strtoupper(md5($secretWord))
                 . $request->mb_amount
                 . $request->mb_currency
                 . $request->status;
