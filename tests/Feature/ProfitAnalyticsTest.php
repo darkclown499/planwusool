@@ -419,4 +419,27 @@ class ProfitAnalyticsTest extends TestCase
 
         $this->get(route('analytics.profit'))->assertStatus(403);
     }
+
+    public function test_storefront_customer_payloads_never_serialize_cost_data(): void
+    {
+        $theme = file_get_contents(app_path('Http/Controllers/ThemeController.php'));
+        $this->assertStringNotContainsString('unit_cost', $theme, 'storefront invoice builder must not expose cost');
+        $this->assertStringNotContainsString('cost_price', $theme, 'storefront invoice builder must not expose cost');
+        $this->assertStringContainsString("'name' => \$item->product_name", $theme, 'invoice items must stay whitelisted');
+        $this->assertStringContainsString("'price' => (float) \$item->unit_price", $theme, 'invoice items must stay whitelisted');
+        $this->assertStringNotContainsString('$item->toArray()', $theme, 'invoice items must never be dumped wholesale');
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(resource_path('js/templates-v2'), \FilesystemIterator::SKIP_DOTS)
+        );
+        $templates = 0;
+        foreach ($iterator as $file) {
+            if (in_array($file->getExtension(), ['tsx', 'ts'], true)) {
+                $templates++;
+                $this->assertStringNotContainsString('unit_cost', file_get_contents($file->getPathname()));
+                $this->assertStringNotContainsString('cost_price', file_get_contents($file->getPathname()));
+            }
+        }
+        $this->assertGreaterThan(0, $templates, 'storefront templates must exist to be guarded');
+    }
 }
