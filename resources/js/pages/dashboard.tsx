@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { PageTemplate, type PageAction } from '@/components/page-template';
-import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ClipboardList, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette, type LucideIcon } from 'lucide-react';
+import { RefreshCw, BarChart3, Building2, ShoppingCart, Users, Wallet, Package, TrendingUp, Copy, Check, CreditCard, FileText, Tag, Activity, Store, Clock, Zap, ChevronRight, Settings, AlertTriangle, Boxes, Star, Timer, XCircle, Bell, CheckCircle, ClipboardList, ExternalLink, MessageSquare, X, Plus, Download, QrCode, Globe, Truck, Percent, Folder, Palette, HeartPulse, Info, type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -105,9 +105,24 @@ customersGrowth?: number;
     };
   };
   isSuperAdmin: boolean;
+  storeHealth?: {
+    score: number;
+    status: string;
+    counts: { critical: number; warning: number; info: number };
+    issues: {
+      key: string;
+      severity: string;
+      title: string;
+      description: string;
+      count: number;
+      action_label: string;
+      action_route: string;
+      category: string;
+    }[];
+  };
 }
 
-export default function Dashboard({ dashboardData, currentStore, storeUrl, onboarding, dailyOperations, isSuperAdmin }: Props) {
+export default function Dashboard({ dashboardData, currentStore, storeUrl, onboarding, dailyOperations, isSuperAdmin, storeHealth }: Props) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [chartMode, setChartMode] = useState<'sales' | 'revenue'>('sales');
@@ -115,6 +130,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
   const [qrOpen, setQrOpen] = useState(false);
   const qrDialogRef = useRef<HTMLDivElement>(null);
   const [checklistExpanded, setChecklistExpanded] = useState(false);
+  const [healthExpanded, setHealthExpanded] = useState(false);
   const nextAction = onboarding?.nextAction ?? null;
 
   const formatPrice = (value: number | string) => {
@@ -392,6 +408,25 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
     Bell,
   };
   const getAlertIcon = (icon: string | null | undefined) => alertIconMap[icon || ''] || Activity;
+
+  const healthScoreStyles: Record<string, { border: string; text: string; label: string }> = {
+    healthy: { border: 'border-emerald-500', text: 'text-emerald-700', label: t('متجرك بحالة ممتازة') },
+    good: { border: 'border-sky-500', text: 'text-sky-700', label: t('أداء جيد') },
+    needs_attention: { border: 'border-amber-500', text: 'text-amber-700', label: t('يحتاج متابعة') },
+    critical: { border: 'border-red-500', text: 'text-red-700', label: t('يحتاج تدخل') },
+  };
+  const healthSeverityStyles: Record<string, { icon: LucideIcon; color: string; badge: string; label: string }> = {
+    critical: { icon: XCircle, color: 'text-red-600', badge: 'bg-red-100 text-red-700 border-red-200', label: 'حرج' },
+    warning: { icon: AlertTriangle, color: 'text-amber-600', badge: 'bg-amber-100 text-amber-700 border-amber-200', label: 'تنبيه' },
+    info: { icon: Info, color: 'text-sky-600', badge: 'bg-sky-100 text-sky-700 border-sky-200', label: 'معلومة' },
+  };
+
+  const sortedHealthIssues = useMemo(() => {
+    if (!storeHealth) return [];
+    const order: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+    return [...(storeHealth.issues || [])].sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+  }, [storeHealth]);
+  const visibleHealthIssues = healthExpanded ? sortedHealthIssues : sortedHealthIssues.slice(0, 3);
 
   const TrendLine = ({ value }: { value?: number }) => {
     if (value === undefined || value === null) {
@@ -1086,6 +1121,99 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                     <CheckCircle className="h-4 w-4 text-emerald-600" />
                     <span className="text-sm font-medium text-emerald-700">{t('كل شيء محدّث — لا توجد متابعات اليوم')}</span>
                   </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Store Health */}
+        {storeHealth && (
+          <Card className="border-slate-200 bg-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <HeartPulse className="h-4 w-4 text-rose-600" />
+                {t('صحة المتجر')}
+              </CardTitle>
+              <Badge variant="secondary" className="text-xs">
+                {sortedHealthIssues.length > 0 ? `${sortedHealthIssues.length} ${t('مشكلة')}` : t('لا مشاكل')}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-4">
+                  <div className={`flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border-4 bg-slate-50 ${healthScoreStyles[storeHealth.status]?.border || 'border-slate-300'}`}>
+                    <span className={`ltr-num text-xl font-bold ${healthScoreStyles[storeHealth.status]?.text || 'text-slate-700'}`}>{storeHealth.score}</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className={`text-sm font-semibold ${healthScoreStyles[storeHealth.status]?.text || 'text-slate-700'}`}>
+                      {healthScoreStyles[storeHealth.status]?.label || t('صحة المتجر')}
+                    </div>
+                    {(storeHealth.counts.critical > 0 || storeHealth.counts.warning > 0 || storeHealth.counts.info > 0) && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {(['critical', 'warning', 'info'] as const).map((sev) => {
+                          const c = storeHealth.counts[sev];
+                          if (!c) return null;
+                          const s = healthSeverityStyles[sev];
+                          return (
+                            <span key={sev} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${s.badge}`}>
+                              <s.icon className="h-3 w-3" />
+                              {c} {t(s.label)}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {visibleHealthIssues.length === 0 ? (
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
+                    <CheckCircle className="h-4 w-4 flex-shrink-0 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-700">{t('متجرك بحالة ممتازة — لا توجد مشاكل تستدعي التدخل')}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {visibleHealthIssues.map((issue) => {
+                        const style = healthSeverityStyles[issue.severity] || healthSeverityStyles.info;
+                        const Icon = style.icon;
+                        return (
+                          <div key={issue.key} className="flex items-start gap-2 rounded-lg border bg-white px-3 py-2">
+                            <Icon className={`mt-0.5 h-4 w-4 flex-shrink-0 ${style.color}`} />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                <span className="text-sm font-medium">{t(issue.title)}</span>
+                                {issue.count > 0 && (
+                                  <span className="ltr-num flex-shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">×{issue.count}</span>
+                                )}
+                              </div>
+                              <p className="max-w-full truncate text-xs text-muted-foreground">{t(issue.description)}</p>
+                            </div>
+                            <button
+                              type="button"
+                              dir="ltr"
+                              onClick={() => router.visit(issue.action_route)}
+                              className="flex flex-shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                            >
+                              {t(issue.action_label)}
+                              <ExternalLink className="h-3 w-3" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {sortedHealthIssues.length > 3 && (
+                      <button
+                        type="button"
+                        onClick={() => setHealthExpanded(!healthExpanded)}
+                        className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900"
+                      >
+                        {healthExpanded ? t('تصغير') : t('عرض كل المشاكل')}
+                        <ChevronRight className={`h-3 w-3 transition-transform ${healthExpanded ? 'rotate-90' : ''}`} />
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </CardContent>
