@@ -113,22 +113,32 @@ class MidtransController extends Controller
 
             // Get store Midtrans config
             $midtransConfig = getPaymentMethodConfig('midtrans', $order->store->user->id, $order->store_id);
-            $serverKey      = $midtransConfig['secret_key'] ?? $midtransConfig['server_key'] ?? '';
+            $serverKey      = $midtransConfig['secret_key'] ?? '';
+
+            // Fail closed: without a store-bound server key we cannot verify
+            // the webhook, so the callback is always rejected (503). Never
+            // skip signature verification when the key is missing.
+            if (empty($serverKey)) {
+                Log::warning('Midtrans webhook rejected: store Midtrans not configured', [
+                    'order_id' => $orderId,
+                    'store_id' => $order->store_id,
+                ]);
+                return response()->json(['error' => 'Midtrans not configured'], 503);
+            }
 
             // Verify the webhook signature (SHA512 over
             // order_id + status_code + gross_amount + server_key).
-            if ($serverKey && $signatureKey && $statusCode !== null && $grossAmount !== null) {
-                $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-                if (!hash_equals($expectedSignature, (string) $signatureKey)) {
-                    Log::warning('Midtrans webhook signature verification failed', [
-                        'order_id' => $orderId,
-                    ]);
-                    return response()->json(['error' => 'Invalid signature'], 403);
-                }
-            } elseif ($serverKey) {
-                // Signature required whenever a server key is configured.
+            if (!$signatureKey || $statusCode === null || $grossAmount === null) {
                 Log::warning('Midtrans webhook missing signature', ['order_id' => $orderId]);
                 return response()->json(['error' => 'Missing signature'], 403);
+            }
+
+            $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
+            if (!hash_equals($expectedSignature, (string) $signatureKey)) {
+                Log::warning('Midtrans webhook signature verification failed', [
+                    'order_id' => $orderId,
+                ]);
+                return response()->json(['error' => 'Invalid signature'], 403);
             }
 
             // Verify the amount matches the order total when available.
