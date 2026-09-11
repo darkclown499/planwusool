@@ -88,6 +88,7 @@ customersGrowth?: number;
     readiness?: {
       items: {
         basics: boolean;
+        design: boolean;
         products: boolean;
         payment: boolean;
         delivery: boolean;
@@ -96,6 +97,7 @@ customersGrowth?: number;
       readyToSell: boolean;
       completeCount: number;
       totalCount: number;
+      percentage: number;
       nextStep: {
         key: string;
         href: string | null;
@@ -736,6 +738,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
         {onboarding?.readiness && currentStore && !isSuperAdmin && (() => {
           const readinessItems: { key: string; label: string; icon: LucideIcon; ready: boolean; href: string }[] = [
             { key: 'basics', label: 'الأساسيات', icon: Building2, ready: onboarding.readiness.items.basics, href: `/stores/${currentStore.id}/settings?tab=general` },
+            { key: 'design', label: 'التصميم', icon: Palette, ready: onboarding.readiness.items.design, href: route('stores.designer', currentStore.id) + '?tab=templates' },
             { key: 'products', label: 'المنتجات', icon: Package, ready: onboarding.readiness.items.products, href: route('products.create') },
             { key: 'payment', label: 'المدفوعات', icon: CreditCard, ready: onboarding.readiness.items.payment, href: `/stores/${currentStore.id}/settings?tab=payments` },
             { key: 'delivery', label: 'التوصيل', icon: Truck, ready: onboarding.readiness.items.delivery, href: route('delivery.index') },
@@ -743,6 +746,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           ];
           const isReadyToSell = onboarding.readiness.readyToSell;
           const completeCount = onboarding.readiness.completeCount;
+          const percentage = onboarding.readiness.percentage ?? Math.round((completeCount / onboarding.readiness.totalCount) * 100);
           return (
             <Card className={isReadyToSell ? "border-emerald-200 bg-emerald-50" : "border-primary/30 bg-primary/5"}>
               <CardHeader className="pb-3">
@@ -750,19 +754,32 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                   <div className="flex items-center gap-2">
                     {isReadyToSell ? <CheckCircle className="h-4 w-4 text-emerald-600" /> : <Zap className="h-4 w-4 text-primary" />}
                     <CardTitle className={isReadyToSell ? "text-base text-emerald-800" : "text-base"}>
-                      {isReadyToSell ? 'متجرك جاهز للبيع 🎉' : t('جاهزية المتجر للبيع')}
+                      {isReadyToSell ? 'متجرك جاهز للبيع' : t('جاهزية المتجر للبيع')}
                     </CardTitle>
                   </div>
                   <span className={isReadyToSell ? "text-sm font-semibold text-emerald-700" : "text-sm font-semibold text-primary"}>
                     <span className="ltr-num" dir="ltr">{completeCount}/{onboarding.readiness.totalCount}</span> {isReadyToSell ? '— جاهز للبيع' : 'مكتمل'}
                   </span>
                 </div>
+                {!isReadyToSell && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                      <span>{percentage}%</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-primary/10">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
                 {isReadyToSell && (
                   <p className="mt-1 text-sm text-emerald-700">ممتاز! المتجر منشور وجاهز لاستقبال الطلبات.</p>
                 )}
               </CardHeader>
               <CardContent>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {readinessItems.map((item) => {
                     const Icon = item.icon;
                     const inner = (
@@ -787,12 +804,12 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                   })}
                 </div>
                 <button type="button" onClick={() => setChecklistExpanded((v) => !v)} className="mt-3 flex w-full items-center justify-between rounded-lg border border-dashed bg-white px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-                  <span>{checklistExpanded ? 'تصغير الخطوات الاختيارية' : 'عرض جميع الخطوات'}</span>
+                  <span>{checklistExpanded ? 'تصغير الخطوات' : 'عرض جميع الخطوات'}</span>
                   <ChevronRight className={checklistExpanded ? "h-4 w-4 rotate-90" : "h-4 w-4"} />
                 </button>
                 {checklistExpanded && (
-                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {onboarding.steps.map((step) => {
+                  <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                    {onboarding.steps.map((step, idx) => {
                       const stepMeta = {
                         store_info: { icon: Building2, label: t('إعداد معلومات المتجر') },
                         design: { icon: Palette, label: t('اختيار التصميم') },
@@ -814,7 +831,7 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                         </div>
                       ) : (
                         <Link key={step.key} href={step.href || '#'} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm transition-colors hover:border-primary hover:bg-primary/5">
-                          <Icon className="h-4 w-4 flex-shrink-0 text-primary" />
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">{idx + 1}</span>
                           <span className="min-w-0 flex-1 truncate text-xs font-medium">{stepMeta.label}</span>
                           <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                         </Link>

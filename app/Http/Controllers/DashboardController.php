@@ -258,9 +258,11 @@ class DashboardController extends Controller
     private function buildReadinessSnapshot(Store $store, $user, array $config, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable): array
     {
         $hasBasics = !empty($store->name) && !empty($store->slug);
+        $hasDesign = !empty($store->theme) || !empty($config['design_tokens']) || !empty($config['template_overrides']);
 
         $items = [
             'basics'    => ['ready' => $hasBasics,    'href' => route('stores.settings', $store->id) . '?tab=general'],
+            'design'    => ['ready' => $hasDesign,    'href' => route('stores.designer', $store->id) . '?tab=templates'],
             'products'  => ['ready' => $hasProducts,  'href' => route('products.create')],
             'payment'   => ['ready' => $hasPayments,  'href' => '/stores/' . $store->id . '/settings?tab=payments'],
             'delivery'  => ['ready' => $hasShipping,  'href' => route('delivery.index')],
@@ -275,17 +277,22 @@ class DashboardController extends Controller
             }
         }
 
+        $completeCount = count(array_filter($items, fn ($item) => $item['ready']));
+        $totalCount = count($items);
+
         return [
             'items' => [
                 'basics'    => $hasBasics,
+                'design'    => $hasDesign,
                 'products'  => $hasProducts,
                 'payment'   => $hasPayments,
                 'delivery'  => $hasShipping,
                 'published' => $isPublishable,
             ],
-            'readyToSell' => $hasBasics && $hasProducts && $hasPayments && $hasShipping && $isPublishable,
-            'completeCount' => count(array_filter($items, fn ($item) => $item['ready'])),
-            'totalCount' => 5,
+            'readyToSell' => $hasBasics && $hasDesign && $hasProducts && $hasPayments && $hasShipping && $isPublishable,
+            'completeCount' => $completeCount,
+            'totalCount' => $totalCount,
+            'percentage' => $totalCount > 0 ? (int) round(($completeCount / $totalCount) * 100) : 0,
             'nextStep' => $nextStep,
         ];
     }
