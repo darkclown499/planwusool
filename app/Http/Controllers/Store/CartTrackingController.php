@@ -39,7 +39,6 @@ class CartTrackingController extends Controller
     private function handleDraft(Request $request)
     {
         $request->validate([
-            'store_id' => 'required|exists:stores,id',
             'items' => 'nullable|array',
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
@@ -50,7 +49,16 @@ class CartTrackingController extends Controller
             'customer_phone' => 'nullable|string|max:20',
         ]);
 
-        $storeId = $request->store_id;
+        // Tenant authority is resolved server-side ONLY (resolved domain,
+        // owner preview, authenticated customer, or session store context).
+        // The client-supplied `store_id` is never trusted: /api/cart/* is also
+        // reachable on the main app domain where DomainResolver never resolves
+        // a store, so a forked body could otherwise write/update AbandonedCart
+        // rows for any tenant. Fail closed when no authority exists.
+        $storeId = getAuthoritativeStoreId($request);
+        if ($storeId === null) {
+            return response()->json(['message' => 'Store context is required.'], 422);
+        }
         $sessionId = session()->getId();
         $customerId = \Auth::guard('customer')->id();
 
