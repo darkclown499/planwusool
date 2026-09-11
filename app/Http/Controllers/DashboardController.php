@@ -17,6 +17,7 @@ use App\Models\Coupon;
 use App\Services\MerchantNotificationService;
 use App\Services\PaymentFinancialMetrics;
 use App\Services\AbandonedCartService;
+use App\Services\StoreHealthService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -100,7 +101,13 @@ class DashboardController extends Controller
                 'dashboardData' => $this->getEmptyDashboard(),
                 'dailyOperations' => $this->getDailyOperations($storeId, $user),
                 'currentStore' => null,
-                'isSuperAdmin' => false
+                'isSuperAdmin' => false,
+                'storeHealth' => [
+                    'score' => 100,
+                    'status' => 'healthy',
+                    'counts' => ['critical' => 0, 'warning' => 0, 'info' => 0],
+                    'issues' => [],
+                ],
             ]);
         }
         
@@ -113,7 +120,8 @@ class DashboardController extends Controller
             'currentStore' => $currentStore,
             'storeUrl' => $currentStore->getStoreUrl(),
             'onboarding' => $this->getOnboardingChecklist($currentStore, $user),
-            'isSuperAdmin' => false
+            'isSuperAdmin' => false,
+            'storeHealth' => app(StoreHealthService::class)->evaluate($currentStore, $user),
         ]);
     }
     
