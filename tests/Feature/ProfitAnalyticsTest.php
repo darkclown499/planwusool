@@ -9,6 +9,9 @@ use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\ManualOrderService;
+use App\Services\OrderService;
+use App\Services\PointOfSaleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -134,5 +137,88 @@ class ProfitAnalyticsTest extends TestCase
             ],
         ]);
         $this->assertNull($p3->costPriceForVariant('Red‖S'));
+    }
+
+    public function test_order_item_snapshots_product_cost_via_canonical_order_service(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $p = $this->product($store, ['price' => 100, 'cost_price' => 60, 'stock' => 10]);
+
+        $order = app(OrderService::class)->createOrder([
+            'store_id' => $store->id,
+            'customer_email' => 'a@b.com', 'customer_phone' => '0',
+            'customer_first_name' => 'A', 'customer_last_name' => 'B',
+            'shipping_address' => 'x', 'shipping_city' => 'y', 'shipping_state' => '', 'shipping_country' => '',
+            'billing_address' => 'x', 'billing_city' => 'y', 'billing_state' => '', 'billing_country' => '',
+            'subtotal' => 200, 'tax_amount' => 0, 'shipping_amount' => 0, 'discount_amount' => 0, 'total_amount' => 200,
+            'payment_method' => 'cod', 'order_source' => 'storefront', 'currency' => 'ILS',
+        ], [[
+            'product_id' => $p->id, 'name' => $p->name, 'sku' => 'S', 'price' => 100, 'quantity' => 2, 'variants' => null,
+            'unit_cost' => $p->costPriceForVariant(null),
+        ]]);
+
+        $this->assertSame(60.0, (float) OrderItem::firstWhere('order_id', $order->id)->unit_cost);
+    }
+
+    public function test_order_item_snapshots_variant_combo_cost(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $p = $this->variantProduct($store, ['cost_price' => 33]);
+
+        $order = app(ManualOrderService::class)->createManualOrder($store->id, [
+            'items' => [['product_id' => $p->id, 'variant_id' => 'Red‖M', 'quantity' => 1]],
+            'payment_method' => 'cod', 'first_name' => 'M', 'last_name' => 'O', 'email' => 'm@o.com',
+        ]);
+
+        $this->assertSame(45.0, (float) OrderItem::firstWhere('order_id', $order->id)->unit_cost);
+    }
+
+    public function test_unknown_cost_is_snapshotted_as_null_not_zero(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $p = $this->product($store, ['cost_price' => null]);
+
+        $order = app(ManualOrderService::class)->createManualOrder($store->id, [
+            'items' => [['product_id' => $p->id, 'quantity' => 1]],
+            'payment_method' => 'cod', 'first_name' => 'M', 'last_name' => 'O', 'email' => 'm@o.com',
+        ]);
+
+        $this->assertNull(OrderItem::firstWhere('order_id', $order->id)->unit_cost);
+    }
+
+    public function test_cost_snapshot_is_immutable_across_product_edits(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $p = $this->product($store, ['cost_price' => 60]);
+
+        $order = app(ManualOrderService::class)->createManualOrder($store->id, [
+            'items' => [['product_id' => $p->id, 'quantity' => 1]],
+            'payment_method' => 'cod', 'first_name' => 'M', 'last_name' => 'O', 'email' => 'm@o.com',
+        ]);
+
+        $p->update(['cost_price' => 999]);
+        $this->assertSame(60.0, (float) OrderItem::firstWhere('order_id', $order->id)->unit_cost);
+    }
+
+    public function test_cost_snapshot_survives_product_deletion(): void
+    {
+        [$user, $store] = $this->merchantWithStore();
+        $this->actingAs($user);
+        $p = $this->product($store, ['cost_price' => 60]);
+
+        $order = app(ManualOrderService::class)->createManualOrder($store->id, [
+            'items' => [['product_id' => $p->id, 'quantity' => 1]],
+            'payment_method' => 'cod', 'first_name' => 'M', 'last_name' => 'O', 'email' => 'm@o.com',
+        ]);
+        $p->delete();
+
+        $item = OrderItem::firstWhere('order_id', $order->id);
+        $this->assertNotNull($item);
+        $this->assertNull($item->product_id);
+        $this->assertSame(60.0, (float) $item->unit_cost);
     }
 }

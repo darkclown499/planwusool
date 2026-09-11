@@ -436,6 +436,7 @@ class OrderController extends Controller
                     'sale_price' => null,
                     'quantity' => $item->quantity,
                     'variants' => $item->variants,
+                    'unit_cost' => method_exists($item->product, 'costPriceForVariant') ? $item->product->costPriceForVariant($variantSel) : null,
                     'taxName' => $item->product->tax->name ?? NULL,
                     'taxPercentage' => $item->product->tax->rate ?? 0,
                     'taxType' => $item->product->tax->type ?? NULL,

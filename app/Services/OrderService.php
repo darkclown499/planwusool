@@ -144,6 +144,7 @@ class OrderService
                     'inventory_mode' => $inventoryMode,
                     'unit_price' => $unitPrice,
                     'total_price' => $itemTotal,
+                    'unit_cost' => $cartItem['unit_cost'] ?? null,
                     'tax_details' => json_encode([
                         'tax_name' => $taxName,
                         'tax_percentage' => $taxPercentage,

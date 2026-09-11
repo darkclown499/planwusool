@@ -91,6 +91,7 @@ class ManualOrderService
                     'price' => $unitPrice,
                     'quantity' => $qty,
                     'variants' => $selection,
+                    'unit_cost' => $product->costPriceForVariant($selection),
                 ];
 
                 // Per-line tax mirrors CartCalculationService (discount = 0).

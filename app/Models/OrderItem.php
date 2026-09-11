@@ -20,6 +20,7 @@ class OrderItem extends Model
         'inventory_mode',
         'unit_price',
         'total_price',
+        'unit_cost',
         'tax_details',
     ];
 
@@ -27,6 +28,7 @@ class OrderItem extends Model
         'product_price' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'total_price' => 'decimal:2',
+        'unit_cost' => 'decimal:2',
         'product_variants' => 'array',
     ];
 

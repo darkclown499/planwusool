@@ -146,6 +146,7 @@ class PointOfSaleService
                 'price' => $unitPrice,
                 'quantity' => $qty,
                 'variants' => $selection,
+                'unit_cost' => $product->costPriceForVariant($selection),
             ];
             if ($product->tax) {
                 $linePayload['taxName'] = $product->tax->name ?? null;
