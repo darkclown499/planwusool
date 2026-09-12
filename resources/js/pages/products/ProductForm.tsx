@@ -28,8 +28,21 @@ import {
   type VariantCombination,
 } from '@/utils/variant-combinations';
 
+// FIX PACK 01 — Latin-only slug preview: Arabic names transliterate to a valid
+// URL-safe slug automatically so merchants never touch advanced SEO fields.
+// The backend remains authoritative (ProductSlugService) and may differ
+// slightly; an empty preview means the server will generate the slug.
+const AR_SLUG_MAP: Record<string, string> = {
+  'ا': 'a', 'أ': 'a', 'إ': 'i', 'آ': 'a', 'ء': 'a', 'ؤ': 'o', 'ئ': 'e', 'ى': 'a', 'ة': 'h',
+  'ب': 'b', 'ت': 't', 'ث': 'th', 'ج': 'j', 'ح': 'h', 'خ': 'kh', 'د': 'd', 'ذ': 'th',
+  'ر': 'r', 'ز': 'z', 'س': 's', 'ش': 'sh', 'ص': 's', 'ض': 'd', 'ط': 't', 'ظ': 'z',
+  'ع': 'a', 'غ': 'gh', 'ف': 'f', 'ق': 'q', 'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n',
+  'ه': 'h', 'و': 'w', 'ي': 'y', '(': '', ')': '',
+};
+
 function slugify(value: string): string {
-  return String(value).trim().toLowerCase().replace(/[^\w\s\u0600-\u06FF-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const transliterated = String(value).split('').map((ch) => AR_SLUG_MAP[ch] ?? ch).join('');
+  return transliterated.trim().toLowerCase().replace(/[^a-z0-9\s_-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 }
 
 type ProductLike = any;

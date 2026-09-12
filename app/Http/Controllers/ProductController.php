@@ -236,6 +236,18 @@ class ProductController extends Controller
         if ($request->input('name') === '') {
             return redirect()->back()->withErrors(['name' => __('Product name cannot be empty.')])->withInput();
         }
+        // FIX PACK 01 — backend-authoritative slug: blank or non-ASCII
+        // (Arabic auto-derived) slugs are replaced with a valid transliterated
+        // store-scoped unique slug BEFORE validation. Latin invalid slugs still
+        // fail validation with a clear error so manual mistakes stay visible.
+        if (\App\Services\ProductSlugService::needsGeneration($request->input('seo_url_slug'))) {
+            $request->merge([
+                'seo_url_slug' => \App\Services\ProductSlugService::generate(
+                    (string) $request->input('name'),
+                    (int) $currentStoreId
+                ),
+            ]);
+        }
         // Validation — single source of truth for create+edit
         $request->validate([
             'name' => 'required|string|max:255',
@@ -268,7 +280,9 @@ class ProductController extends Controller
             'variant_combinations' => 'nullable|array|max:100',
             'custom_fields' => 'nullable|array|max:20',
             'quick_specs' => 'nullable|array|max:20',
-        ], [], [
+        ], [
+            'seo_url_slug.regex' => __('رابط المنتج يجب أن يحتوي على أحرف لاتينية وأرقام وشرطات فقط.'),
+        ], [
             'name' => __('Product Name'),
             'sku' => __('SKU'),
             'category_id' => __('Category'),
@@ -276,11 +290,19 @@ class ProductController extends Controller
             'price' => __('Price'),
             'stock' => __('Stock Quantity'),
         ]);
-        
+
         // Store isolation: category must belong to this store and be active (or allow but warn)
         $categoryValid = Category::where('id', $request->category_id)->where('store_id', $currentStoreId)->exists();
         if (!$categoryValid) {
             return redirect()->back()->withErrors(['category_id' => __('Invalid category.')])->withInput();
+        }
+        // FIX PACK 01 — store-scoped slug uniqueness: a manual slug already used
+        // by another product in THIS store is rejected clearly (cross-store reuse
+        // stays allowed). Auto-generated slugs never reach this branch as
+        // duplicates because the service already suffixed them.
+        $finalSlug = trim((string) $request->input('seo_url_slug'));
+        if ($finalSlug !== '' && Product::where('store_id', $currentStoreId)->where('seo_url_slug', $finalSlug)->exists()) {
+            return redirect()->back()->withErrors(['seo_url_slug' => __('رابط المنتج مستخدم بالفعل في متجرك. اختر رابطاً آخر.')])->withInput();
         }
         // sale_price sanity: must be < price if set, else ignore (store null)
         $priceVal = (float)$request->input('price');
@@ -435,6 +457,24 @@ class ProductController extends Controller
         if ($request->input('name') === '') {
             return redirect()->back()->withErrors(['name' => __('Product name cannot be empty.')])->withInput();
         }
+        // FIX PACK 01 — preserve live URLs: an Arabic auto-derived slug on edit
+        // must not clobber an existing valid slug. Only generate when the stored
+        // slug is empty; otherwise keep the stored URL and respect Latin manual
+        // overrides. Latin invalid slugs still fail validation clearly.
+        $incomingSlug = $request->has('seo_url_slug') ? trim((string) $request->input('seo_url_slug')) : null;
+        if ($incomingSlug !== null && \App\Services\ProductSlugService::needsGeneration($incomingSlug)) {
+            if (!empty($product->seo_url_slug) && preg_match('/^[a-z0-9\-_]+$/i', (string) $product->seo_url_slug)) {
+                $request->merge(['seo_url_slug' => $product->seo_url_slug]);
+            } else {
+                $request->merge([
+                    'seo_url_slug' => \App\Services\ProductSlugService::generate(
+                        (string) $request->input('name'),
+                        (int) $currentStoreId,
+                        (int) $product->id
+                    ),
+                ]);
+            }
+        }
         $request->validate([
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:100',
@@ -466,7 +506,9 @@ class ProductController extends Controller
             'variant_combinations' => 'nullable|array|max:100',
             'custom_fields' => 'nullable|array|max:20',
             'quick_specs' => 'nullable|array|max:20',
-        ], [], [
+        ], [
+            'seo_url_slug.regex' => __('رابط المنتج يجب أن يحتوي على أحرف لاتينية وأرقام وشرطات فقط.'),
+        ], [
             'name' => __('Product Name'),
             'sku' => __('SKU'),
             'category_id' => __('Category'),
@@ -479,6 +521,13 @@ class ProductController extends Controller
         $categoryValid = Category::where('id', $request->category_id)->where('store_id', $currentStoreId)->exists();
         if (!$categoryValid) {
             return redirect()->back()->withErrors(['category_id' => __('Invalid category.')])->withInput();
+        }
+        // FIX PACK 01 — store-scoped slug uniqueness on edit (excluding self).
+        if ($request->has('seo_url_slug')) {
+            $finalSlug = trim((string) $request->input('seo_url_slug'));
+            if ($finalSlug !== '' && Product::where('store_id', $currentStoreId)->where('seo_url_slug', $finalSlug)->where('id', '!=', $product->id)->exists()) {
+                return redirect()->back()->withErrors(['seo_url_slug' => __('رابط المنتج مستخدم بالفعل في متجرك. اختر رابطاً آخر.')])->withInput();
+            }
         }
         $priceVal = (float)$request->input('price');
         $saleVal = $request->input('sale_price') !== null && $request->input('sale_price') !== '' ? (float)$request->input('sale_price') : null;
