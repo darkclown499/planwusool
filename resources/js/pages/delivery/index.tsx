@@ -284,7 +284,7 @@ export default function DeliveryHub() {
               </span>
               <div className="min-w-0">
                 <h2 className="text-sm font-bold text-amber-900">التوصيل غير متاح في خطتك الحالية</h2>
-                <p className="text-xs text-amber-800 mt-0.5">أضف طرق توصيل ومناطق تغطية ليتمكن عملاؤك من اختيار التوصيل عند الدفع.</p>
+                <p className="text-xs text-amber-800 mt-0.5">التوصيل ميزة اختيارية مدفوعة — يمكنك النشر واستقبال الطلبات بدونها، وستتم إدارة الطلبات يدوياً.</p>
                 <p className="text-xs text-amber-700 mt-0.5">متاح في خطة Growth أو أعلى.</p>
               </div>
             </div>

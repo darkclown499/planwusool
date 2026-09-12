@@ -78,6 +78,7 @@ customersGrowth?: number;
     isReadyToPublish: boolean;
     isPublishable: boolean;
     missingForPublish: string[];
+    deliveryApplicable?: boolean;
     nextAction?: {
       type: string;
       title: string;
@@ -98,6 +99,7 @@ customersGrowth?: number;
       completeCount: number;
       totalCount: number;
       percentage: number;
+      deliveryApplicable?: boolean;
       nextStep: {
         key: string;
         href: string | null;
@@ -771,13 +773,16 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
             NOT READY rows deep-link to their canonical setup route without
             becoming a competing primary CTA. */}
         {onboarding?.readiness && currentStore && !isSuperAdmin && (() => {
-          const readinessItems: { key: string; label: string; icon: LucideIcon; ready: boolean; href: string }[] = [
-            { key: 'basics', label: 'الأساسيات', icon: Building2, ready: onboarding.readiness.items.basics, href: `/stores/${currentStore.id}/settings?tab=general` },
-            { key: 'design', label: 'التصميم', icon: Palette, ready: onboarding.readiness.items.design, href: route('stores.designer', currentStore.id) + '?tab=templates' },
-            { key: 'products', label: 'المنتجات', icon: Package, ready: onboarding.readiness.items.products, href: route('products.create') },
-            { key: 'payment', label: 'المدفوعات', icon: CreditCard, ready: onboarding.readiness.items.payment, href: `/stores/${currentStore.id}/settings?tab=payments` },
-            { key: 'delivery', label: 'التوصيل', icon: Truck, ready: onboarding.readiness.items.delivery, href: route('delivery.index') },
-            { key: 'published', label: 'النشر', icon: CheckCircle, ready: onboarding.readiness.items.published, href: `/stores/${currentStore.id}/settings?tab=general` },
+          // FIX PACK 01 — delivery is N/A (غير مشمول في خطتك) when the plan
+          // excludes shipping_method; it is never rendered as "غير جاهز".
+          const deliveryApplicable = onboarding.readiness.deliveryApplicable ?? onboarding.deliveryApplicable ?? true;
+          const readinessItems: { key: string; label: string; icon: LucideIcon; ready: boolean; href: string; applicable: boolean }[] = [
+            { key: 'basics', label: 'الأساسيات', icon: Building2, ready: onboarding.readiness.items.basics, href: `/stores/${currentStore.id}/settings?tab=general`, applicable: true },
+            { key: 'design', label: 'التصميم', icon: Palette, ready: onboarding.readiness.items.design, href: route('stores.designer', currentStore.id) + '?tab=templates', applicable: true },
+            { key: 'products', label: 'المنتجات', icon: Package, ready: onboarding.readiness.items.products, href: route('products.create'), applicable: true },
+            { key: 'payment', label: 'المدفوعات', icon: CreditCard, ready: onboarding.readiness.items.payment, href: `/stores/${currentStore.id}/settings?tab=payments`, applicable: true },
+            { key: 'delivery', label: 'التوصيل', icon: Truck, ready: onboarding.readiness.items.delivery, href: route('delivery.index'), applicable: deliveryApplicable },
+            { key: 'published', label: 'النشر', icon: CheckCircle, ready: onboarding.readiness.items.published, href: `/stores/${currentStore.id}/settings?tab=general`, applicable: true },
           ];
           const isReadyToSell = onboarding.readiness.readyToSell;
           const completeCount = onboarding.readiness.completeCount;
@@ -817,6 +822,15 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {readinessItems.map((item) => {
                     const Icon = item.icon;
+                    if (!item.applicable) {
+                      return (
+                        <div key={item.key} className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                          <Icon className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-500">{item.label}</span>
+                          <Badge variant="outline" className="shrink-0 border-gray-200 bg-gray-100 text-xs text-gray-500">غير مشمول في خطتك</Badge>
+                        </div>
+                      );
+                    }
                     const inner = (
                       <>
                         <Icon className={item.ready ? "h-4 w-4 flex-shrink-0 text-green-600" : "h-4 w-4 flex-shrink-0 text-amber-600"} />
@@ -879,8 +893,12 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
           );
         })()}
 
-        {/* Publish Readiness Warning */}
-        {onboarding && !onboarding.isReadyToPublish && onboarding.missingForPublish && onboarding.missingForPublish.length > 0 && (
+        {/* FIX PACK 01 — publish truth: "المتجر غير جاهز للنشر" is shown ONLY
+            when the store is actually unpublished (store_status=false). A live
+            store with setup gaps gets soft non-blocking copy instead, so the
+            dashboard can never claim "النشر جاهز" and "غير جاهز للنشر"
+            simultaneously while the storefront is live. */}
+        {onboarding && !onboarding.isReadyToPublish && onboarding.isPublishable === false && onboarding.missingForPublish && onboarding.missingForPublish.length > 0 && (
           <Card className="border-amber-200 bg-amber-50">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-amber-800">
@@ -908,6 +926,43 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                 )}
                 {onboarding.missingForPublish.includes('المنتجات') && (
                   <Button size="sm" variant="outline" onClick={() => router.visit(route('products.create'))} className="gap-1.5 border-amber-300 bg-white text-amber-800 hover:bg-amber-100">
+                    <Package className="h-4 w-4" /> إضافة منتجات
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Live store with setup gaps — truthful non-blocking guidance. */}
+        {onboarding && !onboarding.isReadyToPublish && onboarding.isPublishable === true && onboarding.missingForPublish && onboarding.missingForPublish.length > 0 && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-blue-800">
+                <CheckCircle className="h-5 w-5 text-blue-600" />
+                متجرك منشور، لكن هناك إعدادات ننصح بإكمالها
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-3 text-sm text-blue-700">متجرك متاح للعملاء. إكمال الإعدادات التالية يحسّن تجربة البيع:</p>
+              <ul className="mb-4 list-disc space-y-1 ps-5 text-sm font-medium text-blue-800">
+                {onboarding.missingForPublish.map((item: string, idx: number) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-2">
+                {onboarding.missingForPublish.includes('الشحن والتوصيل') && (
+                  <Button size="sm" variant="outline" onClick={() => router.visit(route('delivery.index'))} className="gap-1.5 border-blue-300 bg-white text-blue-800 hover:bg-blue-100">
+                    <Truck className="h-4 w-4" /> إعداد الشحن
+                  </Button>
+                )}
+                {onboarding.missingForPublish.includes('طرق الدفع') && (
+                  <Button size="sm" variant="outline" onClick={() => router.visit(`/stores/${currentStore.id}/settings?tab=payments`)} className="gap-1.5 border-blue-300 bg-white text-blue-800 hover:bg-blue-100">
+                    <CreditCard className="h-4 w-4" /> إعداد الدفع
+                  </Button>
+                )}
+                {onboarding.missingForPublish.includes('المنتجات') && (
+                  <Button size="sm" variant="outline" onClick={() => router.visit(route('products.create'))} className="gap-1.5 border-blue-300 bg-white text-blue-800 hover:bg-blue-100">
                     <Package className="h-4 w-4" /> إضافة منتجات
                   </Button>
                 )}
