@@ -212,6 +212,9 @@ class DashboardController extends Controller
                 'key' => 'shipping',
                 'done' => $hasShipping,
                 'href' => $hasShipping ? null : route('delivery.index'),
+                // FIX PACK 01 — Starter plans without the shipping_method
+                // entitlement see delivery as NOT APPLICABLE: never pending.
+                'applicable' => $deliveryApplicable,
             ],
             [
                 'key' => 'payments',
@@ -238,12 +241,15 @@ class DashboardController extends Controller
         // Keep payments step as canonical for backward compatibility, but ensure it points to the unified tab
         // (already handled in shipping/payments above)
 
-        $pendingCount = collect($steps)->where('done', false)->count();
+        // FIX PACK 01 — wizard counts only applicable steps so Starter is never
+        // told delivery is "pending" for a feature its plan excludes.
+        $applicableSteps = collect($steps)->where(fn ($s) => ($s['applicable'] ?? true));
+        $pendingCount = $applicableSteps->where('done', false)->count();
 
         return [
             'show' => true, // Always show until fully published and ready — don't hide when pending
             'pendingCount' => $pendingCount,
-            'totalCount' => count($steps),
+            'totalCount' => $applicableSteps->count(),
             'steps' => $steps,
             'isReadyToPublish' => $isReadyToPublish,
             'isPublishable' => $isPublishable,

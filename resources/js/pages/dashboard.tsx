@@ -74,6 +74,7 @@ customersGrowth?: number;
       key: string;
       done: boolean;
       href: string | null;
+      applicable?: boolean;
     }[];
     isReadyToPublish: boolean;
     isPublishable: boolean;
@@ -873,6 +874,17 @@ export default function Dashboard({ dashboardData, currentStore, storeUrl, onboa
                         published: { icon: CheckCircle, label: t('نشر المتجر') },
                       }[step.key] || { icon: CheckCircle, label: step.key };
                       const Icon = stepMeta.icon;
+                      // FIX PACK 01 — plan-excluded steps (Starter delivery) render
+                      // as N/A, never as pending.
+                      if (step.applicable === false) {
+                        return (
+                          <div key={step.key} className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+                            <Icon className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                            <span className="min-w-0 flex-1 truncate text-xs font-medium text-gray-500">{stepMeta.label}</span>
+                            <span className="shrink-0 text-[10px] font-medium text-gray-500">غير مشمول في خطتك</span>
+                          </div>
+                        );
+                      }
                       return step.done ? (
                         <div key={step.key} className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
                           <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />

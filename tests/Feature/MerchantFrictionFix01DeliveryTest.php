@@ -193,4 +193,28 @@ class MerchantFrictionFix01DeliveryTest extends TestCase
         $this->assertNotNull($readiness);
         $this->assertFalse($readiness['deliveryApplicable']);
     }
+
+    public function test_starter_wizard_shipping_step_is_not_pending(): void
+    {
+        [$user, $store] = $this->merchant('off');
+        $onboarding = $this->onboarding($user);
+        $steps = collect($onboarding['steps']);
+        $shipping = $steps->firstWhere('key', 'shipping');
+        $this->assertNotNull($shipping);
+        $this->assertFalse($shipping['applicable'] ?? true, 'Starter wizard must mark shipping N/A');
+        $this->assertSame(9, $onboarding['totalCount'], 'Starter wizard denominator excludes N/A delivery');
+        $expectedPending = $steps->where(fn ($s) => !($s['done'] ?? false) && ($s['applicable'] ?? true))->count();
+        $this->assertSame($expectedPending, $onboarding['pendingCount']);
+        $this->assertStringContainsString('غير مشمول في خطتك', file_get_contents(resource_path('js/pages/dashboard.tsx')));
+    }
+
+    public function test_growth_wizard_shipping_step_remains_applicable(): void
+    {
+        [$user, $store] = $this->merchant('on');
+        $onboarding = $this->onboarding($user);
+        $shipping = collect($onboarding['steps'])->firstWhere('key', 'shipping');
+        $this->assertNotNull($shipping);
+        $this->assertTrue($shipping['applicable'] ?? false);
+        $this->assertSame(10, $onboarding['totalCount']);
+    }
 }

@@ -204,6 +204,10 @@ class StoreHealthServiceTest extends TestCase
         $this->assertNotNull($issue);
         $this->assertSame('critical', $issue['severity']);
         $this->assertSame(75, $result['score']);
+
+        // Hygiene: evaluate() warms the process-wide config cache; clear it so
+        // later tests reusing this store id see fresh defaults, not our false.
+        StoreConfiguration::forgetConfiguration($store->id);
     }
 
     public function test_no_payment_method_is_critical(): void
@@ -557,6 +561,9 @@ class StoreHealthServiceTest extends TestCase
         $this->assertNotContains('no_delivery_method', $keys);
         $this->assertNotContains('email_not_ready', $keys);
         $this->assertContains('low_stock', $keys);
+
+        // Hygiene: keep the process-wide config cache clean for later tests.
+        StoreConfiguration::forgetConfiguration($store->id);
     }
 
     public function test_health_is_tenant_scoped(): void
@@ -603,6 +610,9 @@ class StoreHealthServiceTest extends TestCase
         $this->assertCount(1, collect($result['issues'])->where('key', 'store_unpublished'));
         $this->assertCount(1, collect($result['issues'])->where('key', 'no_payment_method'));
         $this->assertCount(1, collect($result['issues'])->where('key', 'no_delivery_method'));
+
+        // Hygiene: keep the process-wide config cache clean for later tests.
+        StoreConfiguration::forgetConfiguration($store->id);
     }
 
     public function test_score_clamps_and_never_goes_below_zero(): void
@@ -627,5 +637,8 @@ class StoreHealthServiceTest extends TestCase
             StoreHealthService::STATUS_NEEDS_ATTENTION,
             StoreHealthService::STATUS_CRITICAL,
         ]);
+
+        // Hygiene: keep the process-wide config cache clean for later tests.
+        StoreConfiguration::forgetConfiguration($store->id);
     }
 }

@@ -223,8 +223,13 @@ export default function ProductForm({ mode, product, categories: initialCategori
     }));
     // inventory_mode: explicit merchant intent; only allow variant when variants actually exist
     const effectiveMode: 'product' | 'variant' = (formData.track_inventory && variantsEnabled && cleanedVariants.length > 0 && combos.length > 0 && inventoryMode === 'variant') ? 'variant' : 'product';
+    // FIX PACK 01 — backend-authoritative slug: unless the merchant manually
+    // edited the SEO slug, submit it blank so ProductSlugService generates the
+    // canonical store-scoped unique slug (and suffixes duplicates instead of
+    // rejecting them). Manual Latin slugs are still sent and validated.
     return {
       ...formData,
+      seo_url_slug: hasEditedSlug.current ? formData.seo_url_slug : '',
       price: formData.price === '' ? 0 : formData.price,
       is_active: draft ? false : formData.is_active,
       is_published: draft ? false : formData.is_active,
