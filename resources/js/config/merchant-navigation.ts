@@ -250,6 +250,41 @@ export function resolvePrimaryId(url: string, storeId?: string | number | null):
 }
 
 // ─────────────────────────────────────────────────────────────
+// Active Level-2 child resolution
+// Normalizes trailing slashes/query strings, strips host from
+// absolute URLs and picks the LONGEST matching candidate so deeper
+// subpaths highlight the correct child (never multiple children at
+// once). Supports query params via activePaths.
+// ─────────────────────────────────────────────────────────────
+function normalizeNavPath(p: string): string {
+    const path = (p || '').split('?')[0];
+    let clean = path;
+    if (/^https?:\/\//i.test(path)) {
+        try { clean = new URL(path).pathname; } catch { clean = path; }
+    }
+    return clean.replace(/\/+$/, '') || '/';
+}
+
+export function resolveActiveChild(items: ContextNavItem[], currentUrl: string): ContextNavItem | null {
+    const current = normalizeNavPath(currentUrl);
+    let best: ContextNavItem | null = null;
+    let bestLen = -1;
+    for (const item of items) {
+        const candidates = item.activePaths && item.activePaths.length > 0 ? item.activePaths : item.href ? [item.href] : [];
+        for (const candidate of candidates) {
+            const cand = normalizeNavPath(candidate);
+            if (cand === current || current.startsWith(cand + '/')) {
+                if (cand.length > bestLen) {
+                    best = item;
+                    bestLen = cand.length;
+                }
+            }
+        }
+    }
+    return best;
+}
+
+// ─────────────────────────────────────────────────────────────
 // Contextual Level-2 navigation map
 // Returns contextual items for the active primary area.
 // Must reuse existing canonical routes, no duplicate feature
@@ -436,5 +471,37 @@ export function getMerchantContextNav(
         }
         default:
             return null;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Canonical Level-1 href resolver
+// Single source of truth for primary area destinations so the
+// desktop rail, collapsed flyout rail and mobile drawer all share
+// exactly the same route resolution (no duplicated switches).
+// ─────────────────────────────────────────────────────────────
+export function getMerchantPrimaryHref(areaId: PrimaryId, storeId?: string | number | null): string {
+    const sid = storeId ? String(storeId) : '';
+    try {
+        switch (areaId) {
+            case 'dashboard': return route('dashboard');
+            case 'orders': return route('orders.index');
+            case 'delivery': try { return route('delivery.index'); } catch { return '/delivery'; }
+            case 'payments': try { return route('cod-payments.index'); } catch { return '/cod-payments'; }
+            case 'sales': try { return route('pos.index'); } catch { return '/pos'; }
+            case 'products': return route('products.index');
+            case 'customers': return route('customers.index');
+            case 'store':
+                try { return route('stores.index'); }
+                catch { return sid ? `/stores/${sid}/designer` : '/stores'; }
+            case 'marketing':
+                try { return route('coupon-system.index'); }
+                catch { return '/coupon-system'; }
+            case 'analytics': return route('analytics.index');
+            case 'settings': return sid ? `/stores/${sid}/settings` : route('dashboard');
+            default: return route('dashboard');
+        }
+    } catch {
+        return '/dashboard';
     }
 }

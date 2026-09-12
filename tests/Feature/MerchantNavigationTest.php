@@ -147,38 +147,34 @@ class MerchantNavigationTest extends TestCase
         $this->assertStringContainsString("loyalty", $content, "Loyalty must be resolved to marketing area");
     }
 
-    /** AppSidebar uses two-level components + premium widths */
-    public function test_app_sidebar_uses_two_level(): void
+    /** AppSidebar uses single unified rail + shared renderers */
+    public function test_app_sidebar_uses_single_unified_rail(): void
     {
         $content = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
-        $this->assertStringContainsString("MerchantPrimaryNav", $content);
-        $this->assertStringContainsString("MerchantContextNav", $content);
+        $this->assertStringContainsString("MerchantNavList", $content);
+        $this->assertStringContainsString("MerchantCollapsedNav", $content);
         $this->assertStringContainsString("resolvePrimaryId", $content);
         $this->assertStringContainsString("getMerchantContextNav", $content);
-        // Refined widths: primary 168px + context 180px = 348px (21.75rem);
-        // primary-only (dashboard/analytics/store-settings) collapses to 10.5rem.
-        $this->assertStringContainsString("'21.75rem'", $content, "Sidebar width should be 21.75rem with context (168+180)");
-        $this->assertStringContainsString("'10.5rem'", $content, "Sidebar width should be 10.5rem without context (168px)");
+        // Unified merchant rail: single 240px (15rem) expanded sidebar with inline
+        // accordion children; true icon-collapsed rail via --sidebar-width-icon (4.5rem).
+        $this->assertStringContainsString("'15rem'", $content, "Expanded sidebar width should be 15rem (240px)");
+        $this->assertStringContainsString("'4.5rem'", $content, "Collapsed icon rail width should be 4.5rem (~80px)");
+        $this->assertStringNotContainsString("'21.75rem'", $content, "Stale two-column 21.75rem width must be removed");
+        $this->assertStringNotContainsString("'10.5rem'", $content, "Stale primary-only 10.5rem width must be removed");
         $this->assertStringNotContainsString("'19rem'", $content, "Stale 19rem/304px width must be removed");
-        $this->assertStringNotContainsString("5.75rem", $content);
-        $this->assertStringContainsString("w-[168px]", $content, "Primary nav column is 168px");
-        $this->assertStringContainsString("w-[180px]", $content, "Context nav column is 180px");
+        $this->assertStringNotContainsString("w-[168px]", $content, "Old 168px primary column must be removed");
+        $this->assertStringNotContainsString("w-[180px]", $content, "Old 180px context column must be removed");
     }
 
-    /** Desktop navigation hierarchy is lighter premium style */
-    public function test_desktop_hierarchy_premium_style(): void
+    /** Navigation hierarchy is lighter premium style */
+    public function test_navigation_hierarchy_premium_style(): void
     {
-        $primary = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
+        $list = file_get_contents(resource_path('js/components/merchant/MerchantNavList.tsx'));
         // Quieter inactive, emerald active without heavy border/shadow
-        $this->assertStringContainsString("bg-emerald-50", $primary, "Active should use subtle emerald background");
-        $this->assertStringNotContainsString("shadow-[0_1px_3px", $primary, "Should not have heavy card shadow on primary items");
-        $this->assertStringContainsString("text-gray-600", $primary, "Inactive should be quieter");
-
-        $context = file_get_contents(resource_path('js/components/merchant/MerchantContextNav.tsx'));
-        $this->assertStringContainsString("text-[10.5px]", $context, "Context section title should be small muted");
-        $this->assertStringContainsString("uppercase", $context);
-        $this->assertStringNotContainsString("rounded-xl", $context, "Context should not use large cards");
-        $this->assertStringContainsString("bg-emerald-50", $context);
+        $this->assertStringContainsString("bg-emerald-50", $list, "Active should use subtle emerald background");
+        $this->assertStringNotContainsString("shadow-[0_1px_3px", $list, "Should not have heavy card shadow on primary items");
+        $this->assertStringContainsString("text-gray-600", $list, "Inactive should be quieter");
+        $this->assertStringContainsString("border-s", $list, "Inline accordion children use start border (RTL-aware)");
     }
 
     /** Layout includes mobile switcher + drawer architecture, 1280 breakpoint */
@@ -195,15 +191,16 @@ class MerchantNavigationTest extends TestCase
         $this->assertStringContainsString("1280", $hook, "Mobile breakpoint must be 1280");
     }
 
-    /** Mobile drawer is single Sheet from right with nested primary+context */
-    public function test_mobile_drawer_single_sheet_nested(): void
+    /** Mobile drawer is single Sheet from right with shared renderer */
+    public function test_mobile_drawer_single_sheet(): void
     {
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
-        $this->assertStringContainsString("MerchantDrawerNav", $sidebar, "Drawer should use nested MerchantDrawerNav");
-        $this->assertStringContainsString("border-s", $sidebar, "Nested context should have start border (RTL-aware)");
+        $this->assertStringContainsString("MerchantNavList", $sidebar, "Drawer should use the shared MerchantNavList renderer");
+        $this->assertStringNotContainsString("MerchantDrawerNav", $sidebar, "Old dedicated drawer implementation must be removed");
         // Drawer footer contains compact plan + user
         $this->assertStringContainsString("compactPlanRow", $sidebar);
         $this->assertStringContainsString("NavUser", $sidebar);
+        $this->assertStringContainsString("xl:hidden", $sidebar, "Drawer renders <xl only");
 
         $uiSidebar = file_get_contents(resource_path('js/components/ui/sidebar.tsx'));
         $this->assertStringContainsString("isMobile", $uiSidebar);
@@ -214,11 +211,12 @@ class MerchantNavigationTest extends TestCase
     /** Context links available inside drawer (no duplicate definitions) */
     public function test_context_links_available_in_drawer(): void
     {
-        $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
-        // Drawer iterates MERCHANT_PRIMARY_AREAS and renders contextNav.items nested under active
-        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $sidebar);
-        $this->assertStringContainsString("contextNav.items", $sidebar);
+        $list = file_get_contents(resource_path('js/components/merchant/MerchantNavList.tsx'));
+        // Shared renderer iterates MERCHANT_PRIMARY_AREAS and renders contextNav.items nested under active
+        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $list);
+        $this->assertStringContainsString("contextNav.items", $list);
         // Must not duplicate navigation definitions — reuse config
+        $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
         $this->assertStringContainsString("getMerchantContextNav", $sidebar);
         $this->assertStringContainsString("resolvePrimaryId", $sidebar);
     }
@@ -270,7 +268,7 @@ class MerchantNavigationTest extends TestCase
     {
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
         $this->assertStringContainsString("--sidebar-width", $sidebar);
-        $this->assertStringContainsString("21.75rem", $sidebar);
+        $this->assertStringContainsString("'15rem'", $sidebar);
         $this->assertStringNotContainsString("304px", $sidebar);
 
         $ui = file_get_contents(resource_path('js/components/ui/sidebar.tsx'));
@@ -355,9 +353,11 @@ class MerchantNavigationTest extends TestCase
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
         $this->assertStringContainsString("getMerchantContextNav", $sidebar);
         $this->assertStringContainsString("resolvePrimaryId", $sidebar);
-        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $sidebar);
-        $primary = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
-        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $primary, "Desktop primary nav must iterate canonical config");
+        $this->assertStringContainsString("MerchantNavList", $sidebar);
+        $this->assertStringContainsString("MerchantCollapsedNav", $sidebar);
+        $list = file_get_contents(resource_path('js/components/merchant/MerchantNavList.tsx'));
+        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $list, "Shared nav list must iterate canonical config");
+        $this->assertStringContainsString("getMerchantPrimaryHref", $list, "Shared nav list must resolve hrefs via canonical resolver");
     }
 
     // ── P2D-01: Mobile Bottom Navigation Tests ──────────────────────
@@ -422,8 +422,8 @@ class MerchantNavigationTest extends TestCase
     {
         $sidebar = file_get_contents(resource_path('js/components/app-sidebar.tsx'));
         $this->assertStringContainsString("hidden xl:flex", $sidebar, "Desktop nav must remain xl:flex only");
-        $primary = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
-        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $primary, "Desktop primary nav unchanged");
+        $list = file_get_contents(resource_path('js/components/merchant/MerchantNavList.tsx'));
+        $this->assertStringContainsString("MERCHANT_PRIMARY_AREAS", $list, "Desktop nav must iterate canonical config");
     }
 
     /** Mobile nav does not create unauthorized links */

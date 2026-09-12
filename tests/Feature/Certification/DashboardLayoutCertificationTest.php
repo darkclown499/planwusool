@@ -16,7 +16,8 @@ use Tests\TestCase;
  *    once, via the sidebar flex gap/placeholder).
  *  - The main workspace is flex-1 + min-w-0, no global max-width on the
  *    merchant page wrapper.
- *  - Secondary (context) nav is conditional; no invisible secondary stub width.
+ *  - The merchant sidebar is a single unified rail (shared renderer + true
+ *    icon-collapsed variant); no two-column/context stub width.
  *  - SidebarContent keeps overflow-y-auto + overflow-x-hidden (local guard OK),
  *    but there is no global scrollbar mask hiding ALL horizontal scrollbars.
  */
@@ -59,13 +60,16 @@ class DashboardLayoutCertificationTest extends TestCase
         $this->assertStringNotContainsString('max-w-[', $dashboard);
     }
 
-    public function test_secondary_context_nav_is_conditional(): void
+    public function test_merchant_sidebar_is_single_unified_rail(): void
     {
         $src = $this->appSidebarSrc();
-        // Two-column desktop width only applies when context nav is active.
-        $this->assertStringContainsString('desktopContextActive', $src);
-        // No invisible secondary width: the width must branch on the flag.
-        $this->assertStringContainsString('desktopContextActive ?', $src);
+        // One shared renderer drives both desktop rail and mobile drawer.
+        $this->assertStringContainsString('MerchantNavList', $src);
+        // The merchant sidebar is a single 15rem rail (no 168px+180px columns).
+        $this->assertStringContainsString("'15rem'", $src);
+        $this->assertStringNotContainsString('desktopContextActive', $src, 'Two-column context flag must be removed');
+        $this->assertStringNotContainsString('w-[168px]', $src, 'Old primary column must be removed');
+        $this->assertStringNotContainsString('w-[180px]', $src, 'Old context column must be removed');
     }
 
     public function test_sidebar_content_scroll_guard_local(): void

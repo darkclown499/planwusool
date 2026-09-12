@@ -17,9 +17,9 @@ import { useTranslation } from 'react-i18next';
 import { hasPermission as hasPermHook } from '@/utils/permissions';
 import { getImageUrl } from '@/utils/image-helper';
 import DesignerNavigationModal from '@/components/DesignerNavigationModal';
-import { MerchantPrimaryNav } from '@/components/merchant/MerchantPrimaryNav';
-import { MerchantContextNav } from '@/components/merchant/MerchantContextNav';
-import { getMerchantContextNav, MERCHANT_PRIMARY_AREAS, resolvePrimaryId, isStoreSettingsUrl } from '@/config/merchant-navigation';
+import { MerchantNavList } from '@/components/merchant/MerchantNavList';
+import { MerchantCollapsedNav } from '@/components/merchant/MerchantCollapsedNav';
+import { getMerchantContextNav, resolvePrimaryId, isStoreSettingsUrl } from '@/config/merchant-navigation';
 
 export function AppSidebar() {
     const { t } = useTranslation();
@@ -94,6 +94,7 @@ export function AppSidebar() {
     const { position } = useLayout();
     const { variant, collapsible, style } = useSidebarSettings();
     const { logoLight, logoDark, favicon, titleText, updateBrandSettings } = useBrand();
+    const { state: sidebarState } = useSidebar();
     const [sidebarStyle, setSidebarStyle] = useState({});
 
     useEffect(() => {
@@ -104,7 +105,7 @@ export function AppSidebar() {
 
     const isMerchant = userRole !== 'superadmin';
 
-    // Merchant two-level navigation
+    // Merchant single-rail navigation
     const activePrimary = useMemo(() => {
         if (!isMerchant) return null;
         return resolvePrimaryId(pageUrl, currentStoreId);
@@ -125,33 +126,24 @@ export function AppSidebar() {
         });
     }, [isMerchant, activePrimary, currentStoreId, t, auth?.permissions, pageUrl]);
 
-    const hasContext = !!contextNav && contextNav.items.length > 0;
-
     // Store Settings cluster (General, Payments, Shipping, Taxes, Email,
-    // Domains, Integrations) — the heaviest "sidebar inside sidebar". For these
-    // pages the desktop Level-2 column is dropped so the merchant sidebar
-    // collapses to a single primary column; the settings sub-nav is recomposed
-    // as horizontal in-page tabs (StoreSettingsNav). Mobile/tablet is
-    // unaffected (drawer + section switcher still show the sub-items).
+    // Domains, Integrations) — the heaviest "sidebar inside sidebar". On these
+    // pages the desktop sidebar children are dropped so the sub-nav is recomposed
+    // as horizontal in-page tabs (StoreSettingsNav) without double-rendering.
+    // Mobile/tablet is unaffected (drawer still shows the sub-items).
     const isStoreSettings = isStoreSettingsUrl(pageUrl);
-    const desktopContextActive = hasContext && !isStoreSettings;
+    const desktopContextNav = isStoreSettings ? null : contextNav;
 
-    // Refined SaaS: primary 168px + context 180px = 348px (21.75rem)
-    // Fits Arabic labels without clipping, avoids oversized empty column,
-    // and keeps combined nav under 34% at 1024px.
-    // No context (dashboard, analytics, store-settings) collapses to primary only
-    // to avoid reserving an empty 180px column.
-    const sidebarWidth = isMerchant ? (desktopContextActive ? '21.75rem' : '10.5rem') : undefined;
-
-    // Sync CSS variable to provider wrapper so SidebarInset offset equals actual width
-    // (Sidebar component's fixed element alone doesn't affect peer offset)
+    // Unified merchant rail: single 240px (15rem) expanded sidebar with inline
+    // accordion children; collapses to a ~80px icon rail (4.5rem) when the user
+    // prefers the icon collapsible. Superadmin keeps the platform defaults.
     useEffect(() => {
         if (!isMerchant) return;
         const wrapper = document.querySelector('[data-slot="sidebar-wrapper"]') as HTMLElement | null;
         if (!wrapper) return;
-        if (sidebarWidth) wrapper.style.setProperty('--sidebar-width', sidebarWidth);
-        else wrapper.style.removeProperty('--sidebar-width');
-    }, [isMerchant, sidebarWidth]);
+        wrapper.style.setProperty('--sidebar-width', '15rem');
+        wrapper.style.setProperty('--sidebar-width-icon', '4.5rem');
+    }, [isMerchant]);
 
     const filteredNavItems = getSuperAdminNavItems();
 
@@ -192,17 +184,16 @@ export function AppSidebar() {
         return (
             <Sidebar
                 side={position}
-                collapsible={collapsible === 'icon' ? 'offcanvas' : collapsible}
+                collapsible={collapsible}
                 variant={variant}
                 className={style !== 'plain' ? 'sidebar-custom-style' : ''}
                 data-sidebar-style={style}
                 dir={position === 'right' ? 'rtl' : 'ltr'}
-                style={sidebarWidth ? ({ '--sidebar-width': sidebarWidth, '--sidebar-width-icon': '5rem' } as React.CSSProperties) : undefined}
             >
                 <SidebarHeader className={`h-[68px] shrink-0 justify-center border-b border-gray-100 bg-white ${style !== 'plain' ? 'sidebar-styled' : ''}`} style={sidebarStyle}>
                     <div className="flex justify-center items-center min-w-0 overflow-hidden px-2">
                         <Link href={route('dashboard')} prefetch className="flex items-center justify-center min-w-0 overflow-hidden">
-                            <div className="flex items-center min-w-0">
+                            <div className="flex items-center min-w-0 group-data-[collapsible=icon]:hidden">
                                 {(() => {
                                     const isDark = document.documentElement.classList.contains('dark');
                                     const currentLogo = isDark ? logoLight : logoDark;
@@ -213,10 +204,17 @@ export function AppSidebar() {
                                     );
                                 })()}
                             </div>
+                            <div className="hidden group-data-[collapsible=icon]:block shrink-0">
+                                {favicon ? (
+                                    <img src={getImageUrl(favicon)} alt="Icon" className="h-8 w-8 rounded-lg object-contain" />
+                                ) : (
+                                    <div className="h-8 w-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm font-bold shrink-0">{(titleText || 'و').slice(0, 1)}</div>
+                                )}
+                            </div>
                         </Link>
                     </div>
                     {businesses.length > 1 && (
-                        <div className="px-2 pt-1 pb-1.5">
+                        <div className="px-2 pt-1 pb-1.5 group-data-[collapsible=icon]:hidden">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="w-full justify-between h-7 px-2 text-[11px] font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50" style={{ color: style !== 'plain' ? 'inherit' : undefined }}>
@@ -241,25 +239,21 @@ export function AppSidebar() {
                     )}
                 </SidebarHeader>
 
-                <SidebarContent className="p-0 min-h-0 overflow-hidden">
-                    {/* Desktop: coherent two-column shell — xl+ only (1280+). <1280 uses Sheet drawer */}
+                <SidebarContent className="p-0 min-h-0">
+                    {/* Desktop: single unified rail — xl+ only (1280+). <1280 uses Sheet drawer */}
                     <div className="hidden xl:flex h-full w-full min-h-0 overflow-hidden bg-[#fcfcfc] border-e border-gray-100">
-                        {/* Level 1 — primary (168px) */}
-                        <div className="w-[168px] shrink-0 border-e border-gray-100/80 bg-[#fcfcfc] flex flex-col overflow-y-auto overflow-x-hidden min-h-0 scrollbar-thin" style={sidebarStyle as any}>
-                            <MerchantPrimaryNav activePrimary={activePrimary} />
+                        <div className="hidden group-data-[collapsible=icon]:block w-full h-full min-h-0 overflow-x-hidden">
+                            <MerchantCollapsedNav activePrimary={activePrimary} contextNav={desktopContextNav} flyoutSide={position === 'right' ? 'left' : 'right'} />
                         </div>
-                        {/* Level 2 — contextual, subtle (180px) — only rendered when route has children */}
-                        {desktopContextActive && contextNav ? (
-                            <div className="w-[180px] shrink-0 bg-white/80 border-e border-gray-100 overflow-y-auto overflow-x-hidden min-h-0 scrollbar-thin">
-                                <MerchantContextNav title={contextNav.title} items={contextNav.items} storeId={currentStoreId} />
-                            </div>
-                        ) : null}
+                        <div className="group-data-[collapsible=icon]:hidden w-full h-full min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
+                            <MerchantNavList activePrimary={activePrimary} contextNav={desktopContextNav} />
+                        </div>
                     </div>
 
-                    {/* Mobile/Tablet drawer (<xl): ONE Sheet from right, nested hierarchy */}
-                    <div className="xl:hidden flex flex-col h-full min-h-0 overflow-y-auto overflow-x-hidden bg-white">
-                        <div className="flex-1 min-h-0 overflow-x-hidden">
-                            <MerchantDrawerNav activePrimary={activePrimary} contextNav={contextNav} />
+                    {/* Mobile/Tablet drawer (<xl): ONE Sheet from right, shared renderer */}
+                    <div className="xl:hidden flex flex-col h-full min-h-0 overflow-hidden bg-white">
+                        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin">
+                            <MerchantNavList activePrimary={activePrimary} contextNav={contextNav} />
                         </div>
                         {/* Drawer footer: compact plan + user — single system, no big cards */}
                         <div className="shrink-0 border-t border-gray-100 bg-gray-50/50 overflow-x-hidden">
@@ -272,119 +266,44 @@ export function AppSidebar() {
                 </SidebarContent>
 
                 <SidebarFooter className="hidden xl:flex xl:flex-col shrink-0 border-t border-gray-100 bg-white p-0 gap-0 overflow-hidden">
-                    {compactPlanRow && <div className="p-2 border-b border-gray-100 overflow-hidden">{compactPlanRow}</div>}
-                    {/* User row — single compact row, no clipped text */}
-                    <div className="px-1.5 pt-2 pb-2 min-w-0">
-                        {desktopContextActive ? (
-                            <NavUser position={position} compact />
-                        ) : (
-                            <div className="flex justify-center">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button
-                                            aria-label={auth.user?.name || 'Account'}
-                                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200/60 bg-white hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
-                                        >
-                                            <Avatar className="h-7 w-7 overflow-hidden rounded-full">
-                                                <AvatarImage src={auth.user?.avatar ?? undefined} alt={auth.user?.name || 'User'} />
-                                                <AvatarFallback className="rounded-full bg-neutral-100 text-black text-[11px]">
-                                                    {(auth.user?.name || 'U').slice(0, 2).toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="min-w-56 rounded-lg" align="end" side="bottom">
-                                        <UserMenuContent user={auth.user!} />
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                    {sidebarState === 'collapsed' ? (
+                        <div className="flex flex-col items-center gap-1.5 p-2">
+                            {auth.user?.plan && (
+                                <Link href={route('plans.index')} prefetch aria-label={t('Upgrade')} title={t('Upgrade')} className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
+                                    <Zap className="h-4 w-4" />
+                                </Link>
+                            )}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        aria-label={auth.user?.name || 'Account'}
+                                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200/60 bg-white hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                                    >
+                                        <Avatar className="h-7 w-7 overflow-hidden rounded-full">
+                                            <AvatarImage src={auth.user?.avatar ?? undefined} alt={auth.user?.name || 'User'} />
+                                            <AvatarFallback className="rounded-full bg-neutral-100 text-black text-[11px]">
+                                                {(auth.user?.name || 'U').slice(0, 2).toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="min-w-56 rounded-lg" align="end" side="bottom">
+                                    <UserMenuContent user={auth.user!} />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    ) : (
+                        <>
+                            {compactPlanRow && <div className="p-2 border-b border-gray-100 overflow-hidden">{compactPlanRow}</div>}
+                            {/* User row — single compact row, no clipped text */}
+                            <div className="px-1.5 pt-2 pb-2 min-w-0">
+                                <NavUser position={position} compact />
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
                 </SidebarFooter>
                 <DesignerNavigationModal open={designerOpen} onOpenChange={setDesignerOpen} storeId={designerStoreId} />
             </Sidebar>
-        );
-    }
-
-    function MerchantDrawerNav({ activePrimary, contextNav }: { activePrimary: any; contextNav: any }) {
-        const { t } = useTranslation();
-        const { url } = usePage();
-        return (
-            <nav aria-label={t('Main navigation') || 'التنقل الرئيسي'} className="flex flex-col gap-0.5 py-2 px-1.5">
-                {MERCHANT_PRIMARY_AREAS.map((area: any) => {
-                    const isActive = activePrimary === area.id;
-                    const label = t(area.labelKey) !== area.labelKey ? t(area.labelKey) : area.labelAr;
-                    const Icon = area.icon;
-                    // compute href same as primary nav
-                    const storeId = (usePage().props as any)?.auth?.user?.current_store ?? null;
-                    const sid = storeId ? String(storeId) : '';
-                    let href = '/dashboard';
-                    try {
-                        switch (area.id) {
-                            case 'dashboard': href = route('dashboard'); break;
-                            case 'orders': href = route('orders.index'); break;
-                            case 'delivery': try { href = route('delivery.index'); } catch { href = '/delivery'; } break;
-                            case 'payments': try { href = route('cod-payments.index'); } catch { href = '/cod-payments'; } break;
-                            case 'sales': try { href = route('pos.index'); } catch { href = '/pos'; } break;
-                            case 'products': href = route('products.index'); break;
-                            case 'customers': href = route('customers.index'); break;
-                            case 'store': try { href = route('stores.index'); } catch { href = sid ? `/stores/${sid}/designer` : '/stores'; } break;
-                            case 'marketing': try { href = route('coupon-system.index'); } catch { href = '/coupon-system'; } break;
-                            case 'analytics': href = route('analytics.index'); break;
-                            case 'settings': href = sid ? `/stores/${sid}/settings` : route('dashboard'); break;
-                            default: href = route('dashboard');
-                        }
-                    } catch { href = '/dashboard'; }
-                    const showChildren = isActive && contextNav && contextNav.items?.length > 0;
-                    return (
-                        <div key={area.id} className="flex flex-col">
-                            <Link
-                                href={href}
-                                prefetch
-                                aria-current={isActive ? 'page' : undefined}
-                                data-active={isActive}
-                                className={
-                                    (isActive
-                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 '
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800 border border-transparent ') +
-                                    'group relative flex w-full items-center gap-2.5 rounded-lg ps-2.5 pe-2 py-2.5 text-start transition-colors duration-150 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600'
-                                }
-                            >
-                                {isActive && <span aria-hidden="true" className="absolute inset-y-1 start-0 w-[2.5px] rounded-full bg-emerald-600" />}
-                                <Icon className={(isActive ? 'text-emerald-600 ' : 'text-gray-400 group-hover:text-gray-500 ') + 'h-[16px] w-[16px] shrink-0'} strokeWidth={1.7} />
-                                <span className={'flex-1 truncate text-[13px] font-medium leading-none ' + (isActive ? 'text-emerald-700' : 'text-gray-700')}>{label}</span>
-                            </Link>
-                            {showChildren && (
-                                <ul className="ms-3 mt-1 flex flex-col gap-0.5 border-s border-gray-200/70 ps-2 py-1">
-                                    {contextNav.items.map((item: any) => {
-                                        const cur = (url as string).split('?')[0].replace(/\/+$/, '') || '/';
-                                        const normalize = (p: string) => p.replace(/\/+$/, '') || '/';
-                                        const parsePath = (u: string) => (u.startsWith('http') ? (()=>{ try{return new URL(u).pathname;}catch{return u.split('?')[0];}})() : u.split('?')[0]);
-                                        let active = false;
-                                        if (item.activePaths?.length) { for (const ap of item.activePaths) if (normalize(parsePath(ap))===normalize(cur)) active=true; }
-                                        else if (item.href) active = normalize(parsePath(item.href))===normalize(cur);
-                                        return (
-                                            <li key={item.title}>
-                                                <Link
-                                                    href={item.href || '#'}
-                                                    prefetch
-                                                    aria-current={active ? 'page' : undefined}
-                                                    className={
-                                                        (active ? 'bg-emerald-50 text-emerald-700 font-medium border-s-2 border-emerald-600 -ms-px ps-[7px] ' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700 border border-transparent ') +
-                                                        'flex w-full items-center rounded-md ps-2 pe-2 py-2 text-[12.5px] leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 min-h-[34px]'
-                                                    }
-                                                >
-                                                    <span className="truncate">{item.title}</span>
-                                                </Link>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            )}
-                        </div>
-                    );
-                })}
-            </nav>
         );
     }
 

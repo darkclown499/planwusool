@@ -73,9 +73,9 @@ class DeliveryDestinationTest extends TestCase
         $this->assertStringContainsString("tryRoute('delivery.index', '/delivery')", $primary, 'context nav hub uses delivery.index');
         $this->assertStringContainsString("tryRoute('delivery.zones.index', '/delivery/zones')", $primary);
 
-        // MerchantPrimaryNav resolves the delivery area to the canonical hub
-        $nav = file_get_contents(resource_path('js/components/merchant/MerchantPrimaryNav.tsx'));
-        $this->assertStringContainsString("try { return route('delivery.index'); } catch { return '/delivery'; }", $nav, 'primary nav delivery href must resolve to delivery hub');
+        // Canonical resolver (getMerchantPrimaryHref) resolves the delivery area
+        // to the hub for every consumer (desktop rail, collapsed rail, drawer).
+        $this->assertStringContainsString("case 'delivery': try { return route('delivery.index'); } catch { return '/delivery'; }", $primary, 'primary href resolver must return delivery hub');
 
         // The canonical route itself resolves to /delivery and is reachable
         [$owner] = $this->ownerWithStore();
