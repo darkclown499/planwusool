@@ -720,6 +720,10 @@ if (! function_exists('hasUsablePaymentMethods')) {
      * usable — the payment processing layer will reject the order if
      * required keys are missing.
      *
+     * Partner methods (PalPay, Bank of Palestine, CliQ, …) are NEVER
+     * usable: they need an off-platform merchant contract and have no
+     * wiring adapter in the app.
+     *
      * @param int|null $userId
      * @param int|null $storeId
      * @return int  number of genuinely usable payment methods
@@ -739,6 +743,11 @@ if (! function_exists('hasUsablePaymentMethods')) {
             // Manual/offline methods are usable when enabled — no credentials needed
             if ($type === \App\Services\Payment\PaymentProviderCatalog::TYPE_MANUAL) {
                 $usable++;
+                continue;
+            }
+
+            // Partner methods need an off-platform contract — never usable in-app
+            if ($type === \App\Services\Payment\PaymentProviderCatalog::TYPE_PARTNER) {
                 continue;
             }
 

@@ -9,7 +9,6 @@ use App\Models\Store;
 use App\Models\StoreConfiguration;
 use App\Models\StoreDomain;
 use App\Models\StoreErpConfig;
-use App\Services\Payment\PaymentProviderCatalog;
 
 class StoreHealthService
 {
@@ -449,43 +448,13 @@ class StoreHealthService
     /**
      * Determine if at least one payment method can actually process a checkout.
      *
-     * Reuses existing truths — does NOT forge a parallel readiness fact:
-     * - getEnabledPaymentMethods: toggle-based enabled list (canonical).
-     * - PaymentProviderCatalog::typeOf: method type (manual/partner/connected/international).
-     * - getPaymentMethodConfig: credential presence (same fields StorePaymentController checks).
-     *
-     * Manual methods are always usable when enabled.
-     * Partner methods are never usable (need off-platform contract).
-     * Connected/international methods need at least one credential present.
+     * Delegates to the canonical shared helper (same truth as the onboarding
+     * readiness snapshot): manual methods usable when enabled, partner methods
+     * never usable, connected/international methods need a saved credential.
      */
     private function hasUsablePaymentMethod(Store $store, $user): bool
     {
-        $enabled = getEnabledPaymentMethods($user->id, $store->id);
-        if (empty($enabled)) {
-            return false;
-        }
-
-        foreach (array_keys($enabled) as $method) {
-            $type = PaymentProviderCatalog::typeOf($method);
-
-            if ($type === PaymentProviderCatalog::TYPE_MANUAL) {
-                return true;
-            }
-
-            if ($type === PaymentProviderCatalog::TYPE_PARTNER) {
-                continue;
-            }
-
-            // Connected / international — usable only if credentials are present.
-            $config = getPaymentMethodConfig($method, $user->id, $store->id);
-            foreach ($config as $k => $v) {
-                if ($k !== 'enabled' && ! empty($v)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return hasUsablePaymentMethods($user->id, $store->id) > 0;
     }
 
     /* ------------------------------------------------------------------ */
