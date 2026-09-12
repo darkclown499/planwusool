@@ -19,10 +19,10 @@ use Tests\TestCase;
  * P2C-01 — Merchant Store Readiness Status.
  *
  * The dashboard exposes a normalized server-sourced readiness snapshot with the
- * five basics (الأساسيات / المنتجات / المدفوعات / التوصيل / النشر), each
- * READY or NOT READY from real persisted data — never fabricated. `readyToSell`
- * is true only when ALL five are met. The readiness card must not duplicate the
- * single primary next-action CTA (P2B-03 contract preserved).
+ * six basics (الأساسيات / التصميم / المنتجات / المدفوعات / التوصيل / النشر),
+ * each READY or NOT READY from real persisted data — never fabricated.
+ * `readyToSell` is true only when ALL six are met. The readiness card must not
+ * duplicate the single primary next-action CTA (P2B-03 contract preserved).
  */
 class StoreReadinessStatusTest extends TestCase
 {
@@ -111,7 +111,7 @@ class StoreReadinessStatusTest extends TestCase
         return $onboarding['readiness'];
     }
 
-    public function test_empty_store_has_only_basics_ready_and_products_next(): void
+    public function test_empty_store_has_basics_design_published_ready_and_products_next(): void
     {
         $user = $this->merchant();
         $this->createStore($user, 'readiness-empty');
@@ -120,14 +120,17 @@ class StoreReadinessStatusTest extends TestCase
         $readiness = $this->getReadiness();
 
         $this->assertTrue($readiness['items']['basics'], 'name+slug identity is always present on a created store');
+        // The default template renders a real storefront, so design is ready on creation.
+        $this->assertTrue($readiness['items']['design']);
         $this->assertFalse($readiness['items']['products']);
         $this->assertFalse($readiness['items']['payment']);
         $this->assertFalse($readiness['items']['delivery']);
         // Absent store_status means the store is live on its subdomain by default.
         $this->assertTrue($readiness['items']['published']);
         $this->assertFalse($readiness['readyToSell']);
-        $this->assertSame(2, $readiness['completeCount']);
-        $this->assertSame(5, $readiness['totalCount']);
+        $this->assertSame(3, $readiness['completeCount']);
+        $this->assertSame(6, $readiness['totalCount']);
+        $this->assertSame(50, $readiness['percentage']);
         $this->assertSame('products', $readiness['nextStep']['key']);
         $this->assertSame(route('products.create'), $readiness['nextStep']['href']);
     }
@@ -274,12 +277,15 @@ class StoreReadinessStatusTest extends TestCase
         $readiness = $this->getReadiness();
 
         $this->assertTrue($readiness['items']['basics']);
+        $this->assertTrue($readiness['items']['design']);
         $this->assertTrue($readiness['items']['products']);
         $this->assertTrue($readiness['items']['payment']);
         $this->assertTrue($readiness['items']['delivery']);
         $this->assertFalse($readiness['items']['published']);
         $this->assertFalse($readiness['readyToSell'], 'published state is required for readyToSell');
-        $this->assertSame(4, $readiness['completeCount']);
+        $this->assertSame(5, $readiness['completeCount']);
+        $this->assertSame(6, $readiness['totalCount']);
+        $this->assertSame(83, $readiness['percentage']);
         $this->assertSame('published', $readiness['nextStep']['key']);
         $this->assertSame(route('stores.settings', $store->id) . '?tab=general', $readiness['nextStep']['href']);
         // Existing nextAction priority must agree.
@@ -297,12 +303,15 @@ class StoreReadinessStatusTest extends TestCase
         $readiness = $this->getReadiness();
 
         $this->assertTrue($readiness['items']['basics']);
+        $this->assertTrue($readiness['items']['design']);
         $this->assertTrue($readiness['items']['products']);
         $this->assertTrue($readiness['items']['payment']);
         $this->assertTrue($readiness['items']['delivery']);
         $this->assertTrue($readiness['items']['published']);
         $this->assertTrue($readiness['readyToSell']);
-        $this->assertSame(5, $readiness['completeCount']);
+        $this->assertSame(6, $readiness['completeCount']);
+        $this->assertSame(6, $readiness['totalCount']);
+        $this->assertSame(100, $readiness['percentage']);
         $this->assertNull($readiness['nextStep']);
     }
 
@@ -389,6 +398,6 @@ class StoreReadinessStatusTest extends TestCase
 
         // The optional full-step grid remains reachable (collapsed) — steps not deleted.
         $this->assertStringContainsString('عرض جميع الخطوات', $source);
-        $this->assertStringContainsString('onboarding.steps.map((step)', $source);
+        $this->assertStringContainsString('onboarding.steps.map((step', $source);
     }
 }
