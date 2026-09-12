@@ -149,8 +149,13 @@ class DashboardController extends Controller
         // (shipping_enabled/shipping_methods) is never consumed by the
         // storefront, so counting it would fabricate a ready state with no
         // actual deliverable method for the customer.
-        $hasShippingEntitlement = $store->canUsePlanFeature('shipping_method');
-        $hasShipping = $hasShippingEntitlement && \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
+        // FIX PACK 01 — delivery is plan-aware: Starter plans without the
+        // shipping_method entitlement treat delivery as NOT APPLICABLE (never
+        // blocking), Growth+ plans require an ACTIVE method. A merchant must
+        // never be marked "not ready" for a feature their plan excludes.
+        $deliveryApplicable = $store->isDeliveryApplicable();
+        $hasActiveShipping = \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
+        $hasShipping = $deliveryApplicable && $hasActiveShipping;
         $hasPayments = hasUsablePaymentMethods($user->id, $store->id) > 0;
         $hasTaxes = \App\Models\Tax::where('store_id', $store->id)->exists();
         $hasDomain = !empty($store->custom_domain) || !empty($store->custom_subdomain);
@@ -158,18 +163,18 @@ class DashboardController extends Controller
         $storePublished = ($config['store_status'] ?? null) === true || ($config['store_status'] ?? null) === 'true' || !array_key_exists('store_status', $config);
 
         // Commerce-ready vs publishable distinction:
-        // - PUBLISHABLE = store_status can be true at any time (preview before inventory complete)
-        // - READY TO ACCEPT ORDERS = at least one active product + shipping + payment
-        // Keep publish step about store visibility, commerce-ready about order capability
-        $isReadyToPublish = $hasProducts && $hasShipping && $hasPayments;
+        // - PUBLISHABLE (isPublishable) = ONLY the store_status runtime state.
+        // - READY TO SELL (isReadyToPublish) = applicable setup tasks complete.
+        // Delivery blocks setup ONLY when the plan includes it.
+        $isReadyToPublish = $hasProducts && $hasPayments && (!$deliveryApplicable || $hasShipping);
         $isPublishable = $storePublished;
-        $nextAction = $this->resolveNextAction($store, $hasProducts, $hasPayments, $hasShipping, $isPublishable);
+        $nextAction = $this->resolveNextAction($store, $hasProducts, $hasPayments, $hasShipping, $isPublishable, $deliveryApplicable);
 
         // P2C-01 — single-source merchant readiness snapshot. Every flag is
         // derived from the same persisted truth used above (no fabricated
         // toggles): products counts only ACTIVE products (matching the
         // storefront catalog), readiness never mutates business rules.
-        $readiness = $this->buildReadinessSnapshot($store, $user, $config, $hasProducts, $hasPayments, $hasShipping, $isPublishable);
+        $readiness = $this->buildReadinessSnapshot($store, $user, $config, $hasProducts, $hasPayments, $hasShipping, $isPublishable, $deliveryApplicable);
 
         try {
             $canManageStoreSettings = $user->can('settings-stores') || $user->type === 'company';
@@ -242,8 +247,9 @@ class DashboardController extends Controller
             'steps' => $steps,
             'isReadyToPublish' => $isReadyToPublish,
             'isPublishable' => $isPublishable,
+            'deliveryApplicable' => $deliveryApplicable,
             'missingForPublish' => array_values(array_filter([
-                !$hasShipping ? 'الشحن والتوصيل' : null,
+                ($deliveryApplicable && !$hasShipping) ? 'الشحن والتوصيل' : null,
                 !$hasPayments ? 'طرق الدفع' : null,
                 !$hasProducts ? 'المنتجات' : null,
             ])),
@@ -263,30 +269,34 @@ class DashboardController extends Controller
      * canonical CTA route in priority order: basics → products → payment →
      * delivery → publish → null (fully ready).
      */
-    private function buildReadinessSnapshot(Store $store, $user, array $config, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable): array
+    private function buildReadinessSnapshot(Store $store, $user, array $config, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable, bool $deliveryApplicable = true): array
     {
         $hasBasics = !empty($store->name) && !empty($store->slug);
         $hasDesign = !empty($store->theme) || !empty($config['design_tokens']) || !empty($config['template_overrides']);
 
         $items = [
-            'basics'    => ['ready' => $hasBasics,    'href' => route('stores.settings', $store->id) . '?tab=general'],
-            'design'    => ['ready' => $hasDesign,    'href' => route('stores.designer', $store->id) . '?tab=templates'],
-            'products'  => ['ready' => $hasProducts,  'href' => route('products.create')],
-            'payment'   => ['ready' => $hasPayments,  'href' => '/stores/' . $store->id . '/settings?tab=payments'],
-            'delivery'  => ['ready' => $hasShipping,  'href' => route('delivery.index')],
-            'published' => ['ready' => $isPublishable, 'href' => route('stores.settings', $store->id) . '?tab=general'],
+            'basics'    => ['ready' => $hasBasics,    'href' => route('stores.settings', $store->id) . '?tab=general', 'applicable' => true],
+            'design'    => ['ready' => $hasDesign,    'href' => route('stores.designer', $store->id) . '?tab=templates', 'applicable' => true],
+            'products'  => ['ready' => $hasProducts,  'href' => route('products.create'), 'applicable' => true],
+            'payment'   => ['ready' => $hasPayments,  'href' => '/stores/' . $store->id . '/settings?tab=payments', 'applicable' => true],
+            'delivery'  => ['ready' => $hasShipping,  'href' => route('delivery.index'), 'applicable' => $deliveryApplicable],
+            'published' => ['ready' => $isPublishable, 'href' => route('stores.settings', $store->id) . '?tab=general', 'applicable' => true],
         ];
 
         $nextStep = null;
         foreach ($items as $key => $item) {
+            if (!$item['applicable']) {
+                continue;
+            }
             if (!$item['ready']) {
                 $nextStep = ['key' => $key, 'href' => $item['href']];
                 break;
             }
         }
 
-        $completeCount = count(array_filter($items, fn ($item) => $item['ready']));
-        $totalCount = count($items);
+        $applicableItems = array_filter($items, fn ($item) => $item['applicable']);
+        $completeCount = count(array_filter($applicableItems, fn ($item) => $item['ready']));
+        $totalCount = count($applicableItems);
 
         return [
             'items' => [
@@ -297,7 +307,10 @@ class DashboardController extends Controller
                 'delivery'  => $hasShipping,
                 'published' => $isPublishable,
             ],
-            'readyToSell' => $hasBasics && $hasDesign && $hasProducts && $hasPayments && $hasShipping && $isPublishable,
+            // FIX PACK 01 — delivery is N/A (not incomplete) when the plan
+            // excludes it. Health/readiness never penalize unavailable features.
+            'deliveryApplicable' => $deliveryApplicable,
+            'readyToSell' => $hasBasics && $hasDesign && $hasProducts && $hasPayments && (!$deliveryApplicable || $hasShipping) && $isPublishable,
             'completeCount' => $completeCount,
             'totalCount' => $totalCount,
             'percentage' => $totalCount > 0 ? (int) round(($completeCount / $totalCount) * 100) : 0,
@@ -310,7 +323,7 @@ class DashboardController extends Controller
      * facts (products/payments/delivery/publish state + live order queue) with a
      * fixed priority, never inventing unsupported states.
      */
-    private function resolveNextAction(Store $store, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable): array
+    private function resolveNextAction(Store $store, bool $hasProducts, bool $hasPayments, bool $hasShipping, bool $isPublishable, bool $deliveryApplicable = true): array
     {
         if (!$hasProducts) {
             return [
@@ -332,7 +345,7 @@ class DashboardController extends Controller
             ];
         }
 
-        if (!$hasShipping) {
+        if ($deliveryApplicable && !$hasShipping) {
             return [
                 'type' => 'setup_delivery',
                 'title' => 'إعداد التوصيل',

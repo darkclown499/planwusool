@@ -111,17 +111,20 @@ class StoreSettingsController extends Controller
         })->values();
         
         // Publish readiness for frontend guard (mirrors Dashboard checklist but lightweight)
+        // FIX PACK 01 — delivery is N/A when the plan excludes shipping_method.
         $userForReadiness = Auth::user();
+        $deliveryApplicableSettings = $store->isDeliveryApplicable();
         $hasProducts = \App\Models\Product::where('store_id', $store->id)->exists();
-        $hasShipping = \App\Models\Shipping::where('store_id', $store->id)->exists();
-        if (!$hasShipping) $hasShipping = !empty($configuration['shipping_enabled']) || !empty($configuration['shipping_methods']);
+        $hasActiveShippingSettings = \App\Models\Shipping::where('store_id', $store->id)->where('is_active', true)->exists();
+        $hasShipping = $deliveryApplicableSettings && $hasActiveShippingSettings;
         $hasPayments = count(getEnabledPaymentMethods($userForReadiness->id, $store->id)) > 0;
         $publishReadiness = [
             'hasProducts' => $hasProducts,
             'hasShipping' => $hasShipping,
             'hasPayments' => $hasPayments,
-            'isReady' => $hasProducts && $hasShipping && $hasPayments,
-            'missing' => array_values(array_filter([$hasProducts ? null : 'المنتجات', $hasShipping ? null : 'الشحن والتوصيل', $hasPayments ? null : 'طرق الدفع'])),
+            'deliveryApplicable' => $deliveryApplicableSettings,
+            'isReady' => $hasProducts && $hasPayments && (!$deliveryApplicableSettings || $hasShipping),
+            'missing' => array_values(array_filter([$hasProducts ? null : 'المنتجات', ($deliveryApplicableSettings && !$hasShipping) ? 'الشحن والتوصيل' : null, $hasPayments ? null : 'طرق الدفع'])),
         ];
 
         return Inertia::render('stores/settings', [
@@ -417,19 +420,20 @@ class StoreSettingsController extends Controller
             $isTransitionToEnabled = !$currentlyEnabled;
             // Also treat first-time publish (no record) as transition if no product/shipping/payment yet
             if ($isTransitionToEnabled || !$currentStatusRecord) {
+                $guardStore = \App\Models\Store::find($storeId);
+                // FIX PACK 01 — Starter plans without shipping entitlement can
+                // publish without delivery; checkout already allows no-method
+                // orders for them. Never block publish on unavailable features.
+                $deliveryApplicableGuard = $guardStore ? $guardStore->isDeliveryApplicable() : true;
                 $hasProducts = \App\Models\Product::where('store_id', $storeId)->exists();
-                $hasShipping = \App\Models\Shipping::where('store_id', $storeId)->exists();
-                if (!$hasShipping) {
-                    $cfgTmp = StoreConfiguration::getConfiguration($storeId);
-                    $hasShipping = !empty($cfgTmp['shipping_enabled']) || !empty($cfgTmp['shipping_methods']);
-                }
+                $hasShipping = $deliveryApplicableGuard && \App\Models\Shipping::where('store_id', $storeId)->where('is_active', true)->exists();
                 $hasPayments = count(getEnabledPaymentMethods($user->id, $storeId)) > 0;
                 // Respect store type that doesn't require shipping (e.g. digital goods only)
-                $cfgTmp = $cfgTmp ?? StoreConfiguration::getConfiguration($storeId);
+                $cfgTmp = StoreConfiguration::getConfiguration($storeId);
                 $isDigitalOnly = false; // extend if a flag like 'requires_shipping' exists
                 $missing = [];
                 if (!$hasProducts) $missing[] = 'المنتجات';
-                if (!$hasShipping && !$isDigitalOnly) $missing[] = 'الشحن والتوصيل';
+                if ($deliveryApplicableGuard && !$hasShipping && !$isDigitalOnly) $missing[] = 'الشحن والتوصيل';
                 if (!$hasPayments) $missing[] = 'طرق الدفع';
                 if (count($missing) > 0) {
                     // Return structured error so frontend can show direct CTAs

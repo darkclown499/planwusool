@@ -297,7 +297,36 @@ protected $fillable = [
         }
         return false;
     }
-    
+
+    /**
+     * FIX PACK 01 — canonical delivery applicability.
+     * Delivery readiness is NOT APPLICABLE when the current plan does not
+     * include the shipping_method entitlement. Such stores must never be
+     * marked "not ready" for a feature they cannot use.
+     */
+    public function isDeliveryApplicable(): bool
+    {
+        return $this->canUsePlanFeature('shipping_method');
+    }
+
+    /**
+     * FIX PACK 01 — canonical delivery readiness.
+     * Applicable plans: at least one usable ACTIVE shipping method.
+     * Non-applicable plans: always false here; callers must consult
+     * isDeliveryApplicable() and treat delivery as N/A (excluded from
+     * readiness denominators), never as incomplete.
+     */
+    public function isDeliveryReady(): bool
+    {
+        if (!$this->isDeliveryApplicable()) {
+            return false;
+        }
+
+        return \App\Models\Shipping::where('store_id', $this->id)
+            ->where('is_active', true)
+            ->exists();
+    }
+
     /**
      * Generate store route with custom domain support
      */

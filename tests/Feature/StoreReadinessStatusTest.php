@@ -159,12 +159,10 @@ class StoreReadinessStatusTest extends TestCase
 
     public function test_entitlement_off_with_active_method_is_not_delivery_ready(): void
     {
-        // P2C RELEASE BLOCKER: a store on a plan WITHOUT the shipping_method
-        // entitlement cannot offer its active shipping method to customers —
-        // the storefront checkout API returns no methods/zones and order
-        // placement rejects shipping/delivery (422). So the dashboard must NOT
-        // report delivery ready (nor 5/5 readyToSell) from an active method
-        // alone on an unentitled plan. This mirrors the Delivery hub locked state.
+        // FIX PACK 01 — supersedes the old P2C blocker: delivery is NOT
+        // APPLICABLE on plans without the shipping_method entitlement, so an
+        // active method alone must neither block nor complete readiness. The
+        // store is ready to sell without delivery; the next step skips it.
         $user = User::factory()->create(['type' => 'company', 'onboarded_at' => now()]);
         $plan = Plan::factory()->create([
             'max_stores' => 5,
@@ -188,15 +186,13 @@ class StoreReadinessStatusTest extends TestCase
         $this->assertFalse($store->canUsePlanFeature('shipping_method'), 'fixture must model a plan without the shipping entitlement');
         $this->assertTrue($readiness['items']['products']);
         $this->assertTrue($readiness['items']['payment']);
-        $this->assertFalse($readiness['items']['delivery'], 'an active method without the shipping entitlement must NOT count as delivery ready');
-        $this->assertFalse($readiness['readyToSell'], 'store must not become 5/5 ready solely from an unentitled active method');
-        $this->assertSame('delivery', $readiness['nextStep']['key']);
+        $this->assertFalse($readiness['deliveryApplicable'], 'delivery must be N/A without the entitlement');
+        $this->assertTrue($readiness['readyToSell'], 'Starter must be ready to sell without delivery');
+        $this->assertNotSame('delivery', $readiness['nextStep']['key'] ?? null);
 
-        // The existing commerce readiness and CTA priority must also downgrade:
-        // not ready to publish (delivery missing), next action = set up delivery.
         $onboarding = $this->get(route('dashboard'))->inertiaPage()['props']['onboarding'];
-        $this->assertFalse($onboarding['isReadyToPublish']);
-        $this->assertSame('setup_delivery', $onboarding['nextAction']['type']);
+        $this->assertTrue($onboarding['isReadyToPublish']);
+        $this->assertNotContains('الشحن والتوصيل', $onboarding['missingForPublish']);
     }
 
     public function test_inactive_shipping_methods_do_not_count_as_delivery_ready(): void
